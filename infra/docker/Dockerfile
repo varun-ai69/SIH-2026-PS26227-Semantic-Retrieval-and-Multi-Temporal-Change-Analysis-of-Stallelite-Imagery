@@ -23,7 +23,7 @@ WORKDIR /app
 # Copy requirements and install
 COPY requirements.txt /app/
 RUN pip install --upgrade pip && \
-    pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
+    pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121 && \
     pip install -r requirements.txt
 
 # Copy source repository

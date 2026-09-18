@@ -53,7 +53,7 @@ services:
     volumes:
       - minio_data:/data
 
-  # --- AeroLens Backend API & Leaflet Web UI ---------------------------
+  # --- Canopus Backend API & Leaflet Web UI ---------------------------
   backend:
     build:
       context: ..
@@ -61,23 +61,36 @@ services:
     container_name: eo_backend
     restart: unless-stopped
     entrypoint: ["/bin/bash", "/app/infra/docker/entrypoint.sh"]
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     depends_on:
       postgres:
         condition: service_healthy
       qdrant:
         condition: service_healthy
     environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - DEVICE=cuda
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_DB=eo_archive
-      - POSTGRES_USER=eo_admin
-      - POSTGRES_PASSWORD=eo_password
+      - POSTGRES_DB=${POSTGRES_DB:-eo_archive}
+      - POSTGRES_USER=${POSTGRES_USER:-eo_admin}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-eo_password}
       - QDRANT_HOST=qdrant
       - QDRANT_PORT=6333
       - MINIO_ENDPOINT=minio:9000
-      - MINIO_ACCESS_KEY=eo_admin
-      - MINIO_SECRET_KEY=eo_password
-      - PORT=8000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY:-eo_admin}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY:-eo_password}
+      - PORT=${PORT:-8000}
+      - OFFLINE_MODE=${OFFLINE_MODE:-false}
+      - HF_HUB_OFFLINE=${HF_HUB_OFFLINE:-0}
+      - TRANSFORMERS_OFFLINE=${TRANSFORMERS_OFFLINE:-0}
     ports:
       - "${PORT:-8000}:8000"
     volumes:
@@ -85,6 +98,7 @@ services:
       - ../models:/app/models
       - ../frontend:/app/frontend
       - ../backend:/app/backend
+      - ../scripts:/app/scripts
 
 volumes:
   postgres_data:
