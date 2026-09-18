@@ -10,7 +10,7 @@ Change Detection API Router:
 import logging
 from typing import Dict, Any, Optional
 from pydantic import BaseModel, Field
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 import psycopg2.extras
 
 from backend.ingestion.db_writer import get_pg_connection
@@ -127,3 +127,187 @@ def compute_pair_change(request: TilePairChangeRequest):
     except Exception as e:
         logger.error(f"Change pair evaluation error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Change detection failed: {str(e)}")
+
+
+@router.get("/runs", response_model=Dict[str, Any])
+def list_change_runs(limit: int = 50):
+    """
+    Lists all change analysis pipeline runs stored in PostgreSQL / PostGIS.
+    """
+    try:
+        from backend.services.change_persistence import get_change_runs_list
+        runs = get_change_runs_list(limit=limit)
+        return {
+            "status": "success",
+            "total_runs": len(runs),
+            "runs": runs
+        }
+    except Exception as e:
+        logger.error(f"Error retrieving change runs: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to fetch change runs: {str(e)}")
+
+
+@router.get("/runs/{run_id}", response_model=Dict[str, Any])
+def get_change_run(run_id: str):
+    """
+    Retrieves full stage-by-stage relational history for a specific change pipeline run:
+    - Target tile & timeline
+    - Quality audit (STAY vs DROPPED per epoch)
+    - Temporal splitting / onset bracket
+    - Change clusters & semantic typing
+    - Candidate patches with PostGIS geometry
+    """
+    try:
+        from backend.services.change_persistence import get_change_run_details
+        details = get_change_run_details(run_id)
+        if not details:
+            raise HTTPException(status_code=404, detail=f"Change run {run_id} not found.")
+        return {
+            "status": "success",
+            "run_id": run_id,
+            "data": details
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error retrieving change run details for {run_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to fetch run details: {str(e)}")
+
+
+@router.get("/runs/{run_id}/candidates.geojson")
+def export_run_candidates_geojson(run_id: str):
+    """
+    Exports all candidate patches for a change run as standard GeoJSON FeatureCollection,
+    including real-world geospatial polygons, cluster assignments, and spectral deltas.
+    """
+    try:
+        from backend.services.change_persistence import export_candidates_geojson
+        return export_candidates_geojson(run_id)
+    except Exception as e:
+        logger.error(f"Error exporting candidates GeoJSON for {run_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to export GeoJSON: {str(e)}")
+
+
+# =============================================================================
+# Analyst Review Workflow Endpoints (Change Detection)
+# =============================================================================
+
+class AnalystChangeDecisionRequest(BaseModel):
+    candidate_id: str
+    decision: str = Field(..., description="'confirmed', 'rejected', or 'unsure'")
+    analyst_id: str = Field("ANALYST-DEF-01", description="Identifier of the reviewing analyst")
+    note: str = Field("", description="Intelligence note or justification")
+    tags: Optional[list] = Field(default_factory=list, description="Optional classification tags")
+
+
+@router.get("/runs-summary", response_model=Dict[str, Any])
+def get_runs_review_summary():
+    """
+    Returns high-level summary of all change runs and analyst review progress.
+    """
+    try:
+        from backend.services.analyst_workflow import get_change_runs_summary
+        runs = get_change_runs_summary()
+        return {"status": "success", "runs": runs}
+    except Exception as e:
+        logger.error(f"Error fetching runs summary: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/runs/{run_id}/review-queue", response_model=Dict[str, Any])
+def get_run_review_queue(run_id: str):
+    """
+    Returns candidate patches for run_id with priority ranking and current review status.
+    """
+    try:
+        from backend.services.analyst_workflow import get_change_review_queue
+        queue = get_change_review_queue(run_id)
+        return {
+            "status": "success",
+            "run_id": run_id,
+            "total_candidates": len(queue),
+            "queue": queue
+        }
+    except Exception as e:
+        logger.error(f"Error fetching review queue for {run_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/runs/{run_id}/decide", response_model=Dict[str, Any])
+def submit_change_decision(run_id: str, request: AnalystChangeDecisionRequest):
+    """
+    Appends an immutable analyst decision record (confirmed, rejected, unsure).
+    """
+    try:
+        from backend.services.analyst_workflow import record_change_decision
+        decision = record_change_decision(
+            run_id=run_id,
+            candidate_id=request.candidate_id,
+            decision=request.decision,
+            analyst_id=request.analyst_id,
+            note=request.note,
+            tags=request.tags
+        )
+        return {"status": "success", "decision": decision}
+    except ValueError as ve:
+        raise HTTPException(status_code=400, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Error recording decision for {run_id}/{request.candidate_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/runs/{run_id}/candidates/{candidate_id}/history", response_model=Dict[str, Any])
+def get_candidate_decision_history(run_id: str, candidate_id: str):
+    """
+    Returns complete immutable audit history for a specific candidate patch.
+    """
+    try:
+        from backend.services.analyst_workflow import get_change_candidate_history
+        history = get_change_candidate_history(run_id, candidate_id)
+        return {"status": "success", "candidate_id": candidate_id, "history": history}
+    except Exception as e:
+        logger.error(f"Error fetching candidate history: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/runs/{run_id}/export.geojson")
+def export_change_review_geojson(run_id: str, status: Optional[str] = None):
+    """
+    Exports candidates with latest analyst decisions and full cryptographic provenance.
+    Filter by status: e.g. status=confirmed or omit for all.
+    """
+    try:
+        from backend.services.analyst_workflow import export_change_geojson
+        statuses = [status] if status else None
+        return export_change_geojson(run_id, statuses)
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Error exporting GeoJSON for {run_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/runs/{run_id}/export.pdf")
+def export_change_review_pdf(run_id: str):
+    """
+    Exports a high-fidelity Defense Intelligence PDF Dossier for run_id.
+    Includes embedded comparative satellite imagery, change footprints,
+    cluster dynamics, and analyst audit records.
+    """
+    try:
+        from backend.services.pdf_report_generator import generate_change_dossier_pdf
+        pdf_bytes = generate_change_dossier_pdf(run_id)
+        filename = f"Change_Intelligence_Dossier_{run_id}.pdf"
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=404, detail=str(ve))
+    except Exception as e:
+        logger.error(f"Error generating PDF dossier for {run_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+

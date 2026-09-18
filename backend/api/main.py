@@ -6,7 +6,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -18,6 +18,7 @@ from backend.api.routers.search import router as search_router
 from backend.api.routers.change import router as change_router
 from backend.api.routers.discovery import router as discovery_router
 from backend.api.routers.chat import router as chat_router
+from backend.api.routers.review import router as review_router
 
 app = FastAPI(
     title="Satellite Imagery Semantic Retrieval & Change Detection API",
@@ -42,6 +43,7 @@ app.include_router(search_router)
 app.include_router(change_router)
 app.include_router(discovery_router)
 app.include_router(chat_router)
+app.include_router(review_router)
 
 # Mount Data & Static directories if they exist
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -53,6 +55,11 @@ frontend_dir.mkdir(parents=True, exist_ok=True)
 
 app.mount("/data", StaticFiles(directory=str(data_dir)), name="data")
 app.mount("/frontend", StaticFiles(directory=str(frontend_dir)), name="frontend")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return Response(status_code=204)
 
 
 @app.get("/")

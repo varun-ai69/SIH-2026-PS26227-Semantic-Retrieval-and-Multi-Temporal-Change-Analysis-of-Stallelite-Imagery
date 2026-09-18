@@ -7,6 +7,7 @@ and tile metadata from PostgreSQL.
 
 import json
 import logging
+from datetime import datetime
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException, Query
 import psycopg2.extras
@@ -148,3 +149,82 @@ def get_tiles(
     except Exception as e:
         logger.error(f"Failed to fetch tiles: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to fetch tiles: {str(e)}")
+
+
+@router.get("/tiles/{tile_id}", response_model=Dict[str, Any])
+def get_tile_by_id(tile_id: str):
+    """
+    Returns complete metadata, spectral indices, and thumbnail URL for a single tile.
+    """
+    try:
+        conn = get_pg_connection()
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("""
+                SELECT
+                    t.tile_id,
+                    t.scene_id,
+                    t.site_key,
+                    t.acquisition_date,
+                    t.centroid_lat,
+                    t.centroid_lon,
+                    t.cloud_pct,
+                    t.quality_confidence,
+                    t.mean_ndvi,
+                    t.mean_ndwi,
+                    t.mean_ndbi,
+                    t.file_path,
+                    t.thumbnail_path,
+                    t.source_type,
+                    t.created_at,
+                    ST_AsGeoJSON(t.geometry) AS footprint_json
+                FROM tiles t
+                WHERE t.tile_id = %s;
+            """, (tile_id,))
+            r = cur.fetchone()
+        conn.close()
+
+        if not r:
+            raise HTTPException(status_code=404, detail=f"Tile {tile_id} not found.")
+
+        thumb_path = r.get("thumbnail_path")
+        thumb_url = None
+        if thumb_path:
+            clean_tp = thumb_path.replace("\\", "/")
+            if "/data/" in clean_tp:
+                thumb_url = "/data/" + clean_tp.split("/data/", 1)[1]
+            elif clean_tp.startswith("data/"):
+                thumb_url = "/" + clean_tp
+            elif clean_tp.startswith("/"):
+                thumb_url = clean_tp
+            else:
+                thumb_url = f"/data/{clean_tp}"
+        elif r.get("site_key"):
+            thumb_url = f"/data/tiles/{r['site_key']}/{tile_id}_thumb.jpg"
+
+        acq_str = r["acquisition_date"].isoformat() if isinstance(r["acquisition_date"], datetime) else str(r.get("acquisition_date", ""))
+
+        return {
+            "status": "success",
+            "tile": {
+                "tile_id": r["tile_id"],
+                "scene_id": r["scene_id"],
+                "site_key": r["site_key"],
+                "acquisition_date": acq_str,
+                "centroid_lat": r["centroid_lat"],
+                "centroid_lon": r["centroid_lon"],
+                "cloud_pct": r["cloud_pct"],
+                "quality_confidence": r["quality_confidence"],
+                "mean_ndvi": r["mean_ndvi"],
+                "mean_ndwi": r["mean_ndwi"],
+                "mean_ndbi": r["mean_ndbi"],
+                "thumbnail_url": thumb_url,
+                "thumbnail_path": r["thumbnail_path"],
+                "file_path": r["file_path"],
+                "geometry_geojson": json.loads(r["footprint_json"]) if r.get("footprint_json") else None
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to fetch tile {tile_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
