@@ -181,14 +181,163 @@ CREATE INDEX IF NOT EXISTS idx_chat_messages_conv_created
   ON chat_messages(conversation_id, created_at ASC);
 
 -- ============================================================
--- Notes
+-- 10. CHANGE_RUNS & PIPELINE PERSISTENCE (Stages 1 - 5)
 -- ============================================================
--- * No login/signup for the hackathon build — analyst_id columns default
---   to 'demo_analyst' as a placeholder. Columns stay so auth can be added
---   later without a schema rework.
--- * Vector embeddings themselves live in Qdrant, NOT here — this DB only
---   stores tile_id references and metadata. See docker-compose.yml's
---   qdrant-init service for the tile_embeddings collection definition.
--- * band_count / bit_depth / file_size_bytes were added after the
---   per-tile storage sizing discussion — needed for the evaluation
---   report's storage-footprint number.
+CREATE TABLE IF NOT EXISTS change_runs (
+    run_id                  TEXT PRIMARY KEY,
+    target_tile_id          TEXT REFERENCES tiles(tile_id) ON DELETE SET NULL,
+    site_key                TEXT NOT NULL,
+    region_id               TEXT,
+    geometry                GEOMETRY(Polygon, 4326),
+    centroid_lat            FLOAT,
+    centroid_lon            FLOAT,
+    total_timeline_epochs   INT DEFAULT 0,
+    available_dates         JSONB DEFAULT '[]'::jsonb,
+    quality_total_seen      INT DEFAULT 0,
+    quality_passed_count    INT DEFAULT 0,
+    quality_dropped_count   INT DEFAULT 0,
+    staging_dir             TEXT,
+    manifest_path           TEXT,
+    status                  TEXT DEFAULT 'completed',
+    created_at              TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_change_runs_site_key ON change_runs(site_key);
+CREATE INDEX IF NOT EXISTS idx_change_runs_geom ON change_runs USING GIST(geometry);
+CREATE INDEX IF NOT EXISTS idx_change_runs_created ON change_runs(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS change_quality_audits (
+    audit_id                SERIAL PRIMARY KEY,
+    run_id                  TEXT NOT NULL REFERENCES change_runs(run_id) ON DELETE CASCADE,
+    tile_id                 TEXT,
+    acquisition_date        TIMESTAMP WITH TIME ZONE,
+    year                    INT,
+    cloud_pct               FLOAT,
+    bad_pixels              INT,
+    total_pixels            INT,
+    bad_pixel_pct           FLOAT,
+    usable_pct              FLOAT,
+    decision                VARCHAR(20) NOT NULL, -- 'STAY' or 'DROPPED'
+    drop_reasons            JSONB DEFAULT '[]'::jsonb,
+    created_at              TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_change_qa_run_id ON change_quality_audits(run_id);
+CREATE INDEX IF NOT EXISTS idx_change_qa_tile_id ON change_quality_audits(tile_id);
+CREATE INDEX IF NOT EXISTS idx_change_qa_decision ON change_quality_audits(decision);
+
+CREATE TABLE IF NOT EXISTS change_temporal_splits (
+    split_id                SERIAL PRIMARY KEY,
+    run_id                  TEXT NOT NULL REFERENCES change_runs(run_id) ON DELETE CASCADE,
+    method                  TEXT NOT NULL,
+    total_clean_epochs      INT DEFAULT 0,
+    optimal_split_index     INT DEFAULT 0,
+    step_score              FLOAT,
+    split_date_before       TIMESTAMP WITH TIME ZONE,
+    split_date_after        TIMESTAMP WITH TIME ZONE,
+    onset_bracket           TEXT,
+    onset_bracket_days      INT,
+    device                  TEXT,
+    device_name             TEXT,
+    all_split_scores        JSONB DEFAULT '[]'::jsonb,
+    created_at              TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_change_splits_run_id ON change_temporal_splits(run_id);
+
+CREATE TABLE IF NOT EXISTS change_clusters (
+    cluster_db_id           SERIAL PRIMARY KEY,
+    run_id                  TEXT NOT NULL REFERENCES change_runs(run_id) ON DELETE CASCADE,
+    cluster_id              INT NOT NULL,
+    predicted_type          TEXT NOT NULL,
+    cluster_transition      TEXT NOT NULL,
+    confidence_pct          FLOAT,
+    patch_count             INT DEFAULT 0,
+    area_m2                 FLOAT DEFAULT 0.0,
+    mean_delta_ndbi         FLOAT,
+    mean_delta_ndvi         FLOAT,
+    mean_delta_ndwi         FLOAT,
+    mean_delta_bsi          FLOAT,
+    interpretation          TEXT,
+    ai_model                TEXT,
+    created_at              TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_change_clusters_run_id ON change_clusters(run_id);
+CREATE INDEX IF NOT EXISTS idx_change_clusters_type ON change_clusters(predicted_type);
+
+CREATE TABLE IF NOT EXISTS change_candidate_patches (
+    candidate_id            TEXT PRIMARY KEY,
+    run_id                  TEXT NOT NULL REFERENCES change_runs(run_id) ON DELETE CASCADE,
+    patch_id                INT NOT NULL,
+    grid_row                INT NOT NULL,
+    grid_col                INT NOT NULL,
+    bbox_px                 INT[] NOT NULL,
+    geometry                GEOMETRY(Polygon, 4326),
+    centroid_lat            FLOAT,
+    centroid_lon            FLOAT,
+    cluster_id              INT,
+    distance                FLOAT,
+    z_score                 FLOAT,
+    predicted_type          TEXT,
+    transition_label        TEXT,
+    confidence_pct          FLOAT,
+    ndvi_t1                 FLOAT,
+    ndvi_t2                 FLOAT,
+    delta_ndvi              FLOAT,
+    ndwi_t1                 FLOAT,
+    ndwi_t2                 FLOAT,
+    delta_ndwi              FLOAT,
+    ndbi_t1                 FLOAT,
+    ndbi_t2                 FLOAT,
+    delta_ndbi              FLOAT,
+    bad_frac_t1             FLOAT,
+    bad_frac_t2             FLOAT,
+    source_tile_before      TEXT REFERENCES tiles(tile_id) ON DELETE SET NULL,
+    source_tile_after       TEXT REFERENCES tiles(tile_id) ON DELETE SET NULL,
+    created_at              TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_change_patches_run_id ON change_candidate_patches(run_id);
+CREATE INDEX IF NOT EXISTS idx_change_patches_cluster ON change_candidate_patches(cluster_id);
+CREATE INDEX IF NOT EXISTS idx_change_patches_geom ON change_candidate_patches USING GIST(geometry);
+
+-- ============================================================
+-- 10. ANALYST WORKFLOW & PROVENANCE TABLES
+-- ============================================================
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- 10.1 ANALYST_DECISIONS: Immutable append-only audit trail of analyst change decisions
+CREATE TABLE IF NOT EXISTS analyst_decisions (
+    decision_id     UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    run_id          TEXT NOT NULL REFERENCES change_runs(run_id) ON DELETE CASCADE,
+    candidate_id    TEXT NOT NULL,
+    analyst_id      VARCHAR(100) NOT NULL DEFAULT 'ANALYST-DEF-01',
+    decision        VARCHAR(30) NOT NULL, -- 'confirmed', 'rejected', 'unsure'
+    note            TEXT DEFAULT '',
+    tags            JSONB DEFAULT '[]'::jsonb,
+    decided_at      TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_analyst_decisions_run_cand ON analyst_decisions (run_id, candidate_id);
+CREATE INDEX IF NOT EXISTS idx_analyst_decisions_decided_at ON analyst_decisions (decided_at DESC);
+CREATE INDEX IF NOT EXISTS idx_analyst_decisions_analyst ON analyst_decisions (analyst_id);
+CREATE INDEX IF NOT EXISTS idx_analyst_decisions_decision ON analyst_decisions (decision);
+
+-- 10.2 SEARCH_FEEDBACK: Relevance feedback for Semantic Retrieval
+CREATE TABLE IF NOT EXISTS search_feedback (
+    feedback_id     UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    analyst_id      VARCHAR(100) NOT NULL DEFAULT 'ANALYST-DEF-01',
+    query_text      TEXT NOT NULL,
+    tile_id         TEXT REFERENCES tiles(tile_id) ON DELETE CASCADE,
+    relevant        BOOLEAN NOT NULL, -- true = Relevant / Hit, false = Irrelevant / False Alarm
+    relevance_score FLOAT DEFAULT 1.0,
+    tag             VARCHAR(100) DEFAULT '',
+    note            TEXT DEFAULT '',
+    recorded_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_search_feedback_query ON search_feedback (query_text, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_search_feedback_tile ON search_feedback (tile_id);
+CREATE INDEX IF NOT EXISTS idx_search_feedback_analyst ON search_feedback (analyst_id);
+CREATE INDEX IF NOT EXISTS idx_search_feedback_recorded ON search_feedback (recorded_at DESC);
