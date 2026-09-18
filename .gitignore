@@ -1,5 +1,5 @@
 # ==========================================
-# AeroLens Git Ignore Rules
+# CANOPUS Git Ignore Rules
 # ==========================================
 
 # 1. Satellite Imagery, Rasters, Tiles & Previews
@@ -13,10 +13,14 @@
 *.bmp
 *.npy
 *.npz
+*.pdf
 data/tiles/
 data/uploads/
+data/change_staging/
+data/runs/
 data/processed_scenes/
 data/cache/
+data/exports/
 !data/README.md
 !data/custom_aoi.geojson
 
@@ -25,6 +29,10 @@ models/retrieval/*.pt
 models/retrieval/*.bin
 models/retrieval/*.safetensors
 models/retrieval/*.onnx
+models/**/*.pt
+models/**/*.bin
+models/**/*.safetensors
+models/**/*.onnx
 *.pt
 *.bin
 *.safetensors
@@ -66,7 +74,7 @@ scratch/
 .system_generated/
 
 # 7. Archives & Compressed Dumps
-.zip
+*.zip
 *.tar
 *.tar.gz
 *.tgz
