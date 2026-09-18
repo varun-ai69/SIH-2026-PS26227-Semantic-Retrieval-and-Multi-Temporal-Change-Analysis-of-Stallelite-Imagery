@@ -1,5 +1,5 @@
 /**
- * AeroLens Frontend Application Logic
+ * Canopus Frontend Application Logic
  * ====================================
  * Manages:
  *  1. Top navigation switching across pages (Map, Semantic Retrieval, Change Detection, Clustering, Review Tool)
@@ -812,7 +812,7 @@ window.startIngestion = async function() {
           populate_db: true
         };
 
-        console.log("[AeroLens] Submitting Maxar async job:", maxarPayload);
+        console.log("[Canopus] Submitting Maxar async job:", maxarPayload);
 
         // Step 1: Submit  returns job_id INSTANTLY (no timeout risk)
         const submitRes = await fetch(`${API_BASE}/api/v1/ingest/maxar`, {
@@ -829,7 +829,7 @@ window.startIngestion = async function() {
         const submitResult = await submitRes.json();
         const jobId = submitResult.job_id;
         const regionId = submitResult.region_id;
-        console.log(`[AeroLens] Maxar job queued: ${jobId} for region: ${regionId}`);
+        console.log(`[Canopus] Maxar job queued: ${jobId} for region: ${regionId}`);
 
         if (!jobId) {
           throw new Error("No job_id received from server.");
@@ -854,7 +854,7 @@ window.startIngestion = async function() {
                 return;
               }
               const job = await pollRes.json();
-              console.log(`[AeroLens] Job ${jobId}:`, job.status, job.progress + '%', job.message);
+              console.log(`[Canopus] Job ${jobId}:`, job.status, job.progress + '%', job.message);
 
               // Animate progress bar based on server progress
               fakeProgress = Math.max(fakeProgress, job.progress || fakeProgress + 3);
@@ -1138,10 +1138,10 @@ let cachedConversations = [];
 let defaultWelcomeFeedHtml = '';
 
 function getCurrentUserId() {
-  let uid = localStorage.getItem('aerolens_user_id');
+  let uid = localStorage.getItem('canopus_user_id');
   if (!uid) {
     uid = 'analyst_' + Math.random().toString(36).substring(2, 10);
-    localStorage.setItem('aerolens_user_id', uid);
+    localStorage.setItem('canopus_user_id', uid);
   }
   return uid;
 }
@@ -1149,7 +1149,7 @@ function getCurrentUserId() {
 window.regenerateUserIdentity = function() {
   const newUid = 'analyst_' + Math.random().toString(36).substring(2, 10);
   if (confirm(`Switch analyst identity to "${newUid}"?\nThis starts an isolated session separate from current chats.`)) {
-    localStorage.setItem('aerolens_user_id', newUid);
+    localStorage.setItem('canopus_user_id', newUid);
     const label = document.getElementById('analystIdLabel');
     if (label) label.textContent = `Analyst: ${newUid}`;
     startNewChat();
@@ -1168,7 +1168,7 @@ window.toggleChatSidebar = function() {
   if (floatBtn) {
     floatBtn.style.display = isCollapsed ? 'inline-flex' : 'none';
   }
-  localStorage.setItem('aerolens_sidebar_collapsed', isCollapsed ? 'true' : 'false');
+  localStorage.setItem('canopus_sidebar_collapsed', isCollapsed ? 'true' : 'false');
 };
 
 function formatRelativeTime(dateStr) {
@@ -1413,7 +1413,7 @@ function initChatSystem() {
   }
 
   // Restore sidebar collapse state
-  if (localStorage.getItem('aerolens_sidebar_collapsed') === 'true') {
+  if (localStorage.getItem('canopus_sidebar_collapsed') === 'true') {
     const sidebar = document.getElementById('chatSidebar');
     const wrapper = document.querySelector('.retrieval-layout-wrapper');
     const floatBtn = document.getElementById('floatingSidebarBtn');
@@ -1793,7 +1793,7 @@ function renderAssistantResultsBubble(response, queryInfo) {
     <div class="chat-bubble" style="width: 100%; max-width: 100%;">
       <div class="chat-bubble-header" style="flex-wrap: wrap; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="assistant-name" style="font-size: 14px; font-weight: 700;">AeroLens Search Results</span>
+          <span class="assistant-name" style="font-size: 14px; font-weight: 700;">Canopus Search Results</span>
           <span class="tag-badge" style="background: rgba(6,182,212,0.15); color: #38bdf8;">${targetSensorName}</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; font-size: 11px; font-family: 'JetBrains Mono', monospace;">
@@ -1820,12 +1820,19 @@ function renderAssistantResultsBubble(response, queryInfo) {
 
 // Fallback image generator for missing/mock tile previews
 window.getTileThumbnailUrl = function(item) {
+  if (!item) return '';
   if (item.thumbnail_url && !item.thumbnail_url.includes('/null/')) {
     let t = item.thumbnail_url.trim();
     if (t.startsWith('//')) t = t.replace(/^\/+/, '/');
     if (t.startsWith('/app/')) t = t.replace('/app/', '/');
     else if (t.startsWith('app/')) t = t.replace('app/', '/');
     return t.startsWith('http') ? t : `${API_BASE}${t.startsWith('/') ? '' : '/'}${t}`;
+  }
+  if (item.thumbnail_path) {
+    let t = item.thumbnail_path.replace(/\\/g, '/');
+    if (t.includes('/data/')) t = '/data/' + t.split('/data/')[1];
+    else if (t.startsWith('/app/')) t = t.replace('/app/', '/');
+    return `${API_BASE}${t.startsWith('/') ? '' : '/'}${t}`;
   }
   if (item.site_key && item.site_key !== 'null') {
     return `${API_BASE}/data/tiles/${item.site_key}/${item.tile_id}_thumb.jpg`;
@@ -2031,12 +2038,101 @@ window.openTileInspect = function(tileId) {
 
   modal.style.zIndex = '100000';
   modal.style.setProperty('display', 'flex', 'important');
+
+  // If tile metadata or thumbnail is missing/incomplete, asynchronously fetch from database API
+  if (item.mean_ndvi === null || item.mean_ndvi === undefined || !item.thumbnail_url || !item.centroid_lat) {
+    fetch(`${API_BASE}/api/v1/archive/tiles/${encodeURIComponent(tileId)}`)
+      .then(res => res.ok ? res.json() : null)
+      .then(data => {
+        if (data && data.status === 'success' && data.tile) {
+          const t = data.tile;
+          currentInspectingTile = Object.assign(currentInspectingTile || {}, t);
+          if (imgEl && t.thumbnail_url) imgEl.src = getTileThumbnailUrl(t);
+          if (subTitleEl && t.scene_id) subTitleEl.innerText = `${t.sensor || (isMaxar ? 'Maxar WorldView' : 'Sentinel-2 L2A')} • Scene: ${t.scene_id}`;
+          if (metaSceneId && t.scene_id) metaSceneId.innerText = t.scene_id;
+          if (metaCoords && t.centroid_lat && t.centroid_lon) {
+            metaCoords.innerText = `${t.centroid_lat.toFixed(4)}° N, ${t.centroid_lon.toFixed(4)}° E`;
+          }
+          if (metaDate && t.acquisition_date) metaDate.innerText = t.acquisition_date.split('T')[0];
+          if (t.cloud_pct !== null && t.cloud_pct !== undefined && metaCloud) {
+            metaCloud.innerText = `${t.cloud_pct.toFixed(1)}%`;
+          }
+          if (t.quality_confidence !== null && t.quality_confidence !== undefined && metaQuality) {
+            metaQuality.innerText = `${t.quality_confidence.toFixed(2)} (Gated)`;
+          }
+          if (t.mean_ndvi !== null && t.mean_ndvi !== undefined && valNdviEl && barNdviEl) {
+            valNdviEl.innerText = t.mean_ndvi.toFixed(3);
+            barNdviEl.style.width = `${Math.min(100, Math.max(0, ((t.mean_ndvi + 1) / 2) * 100))}%`;
+          }
+          if (t.mean_ndwi !== null && t.mean_ndwi !== undefined && valNdwiEl && barNdwiEl) {
+            valNdwiEl.innerText = t.mean_ndwi.toFixed(3);
+            barNdwiEl.style.width = `${Math.min(100, Math.max(0, ((t.mean_ndwi + 1) / 2) * 100))}%`;
+          }
+          if (t.mean_ndbi !== null && t.mean_ndbi !== undefined && valNdbiEl && barNdbiEl) {
+            valNdbiEl.innerText = t.mean_ndbi.toFixed(3);
+            barNdbiEl.style.width = `${Math.min(100, Math.max(0, ((t.mean_ndbi + 1) / 2) * 100))}%`;
+          }
+          if (t.site_key && tifBtn) {
+            tifBtn.href = `${API_BASE}/data/tiles/${t.site_key}/${t.tile_id}.tif`;
+          }
+        }
+      })
+      .catch(e => console.warn('Tile details async fetch error:', e));
+  }
 };
 
 window.closeTileInspect = function() {
   const modal = document.getElementById('tileInspectModal');
   if (modal) modal.style.setProperty('display', 'none', 'important');
   currentInspectingTile = null;
+};
+
+window.quickModalFeedback = async function(isRelevant) {
+  if (!currentInspectingTile || !currentInspectingTile.tile_id) return;
+  const tileId = currentInspectingTile.tile_id;
+
+  const inputEl = document.getElementById('searchPromptInput');
+  let q = (inputEl && inputEl.value && inputEl.value.trim()) || '';
+  if (!q && typeof currentSearchQuery !== 'undefined' && currentSearchQuery) {
+    q = currentSearchQuery;
+  }
+  if (!q) {
+    q = (currentInspectingTile.spot_description)
+      ? currentInspectingTile.spot_description.slice(0, 60)
+      : 'General Satellite Reconnaissance';
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/review/retrieval/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query_text: q,
+        tile_id: tileId,
+        relevant: isRelevant,
+        analyst_id: 'CAPT. VERMA (INTEL-01)'
+      })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      const btnAccept = document.getElementById('inspectAcceptBtn');
+      const btnReject = document.getElementById('inspectRejectBtn');
+      if (btnAccept && btnReject) {
+        if (isRelevant) {
+          btnAccept.style.background = '#10b981';
+          btnAccept.style.color = '#000';
+          btnReject.style.opacity = '0.5';
+        } else {
+          btnReject.style.background = '#f43f5e';
+          btnReject.style.color = '#fff';
+          btnAccept.style.opacity = '0.5';
+        }
+      }
+      alert(`Tile #${tileId} successfully marked as ${isRelevant ? 'ACCEPTED (Relevant Target)' : 'REJECTED (False Alarm)'}!\nLogged into immutable Analyst Audit Trail.`);
+    }
+  } catch (err) {
+    alert('Failed to save feedback: ' + err.message);
+  }
 };
 
 window.inspectOpenInMapClicked = function() {
