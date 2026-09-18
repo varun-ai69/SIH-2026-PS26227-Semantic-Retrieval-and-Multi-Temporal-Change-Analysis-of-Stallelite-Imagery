@@ -1,4 +1,4 @@
-# 🛰️ AeroLens — Semantic Retrieval & Multi-Temporal Change Analysis of Satellite Imagery
+# 🛰️ Canopus — Semantic Retrieval & Multi-Temporal Change Analysis of Satellite Imagery
 
 <div align="center">
 
@@ -30,9 +30,9 @@ Modern Earth Observation (EO) archives capture terabytes of satellite imagery da
 1. **The Semantic Discovery Bottleneck**: Traditional catalog search systems are restricted to rigid metadata filters — querying exclusively by geographic bounding coordinates, sensor IDs, and capture timestamps. Analysts cannot search archives by **semantic meaning** or visual intent (e.g., querying *"airfield runways with hangars near water"*, *"cargo vessels docked at berths"*, *"new military encampments"*, or *"vegetated river valleys"*).
 2. **The Multi-Temporal Change Bottleneck**: Identifying landscape transformations across temporal epochs ($T_1$ vs. $T_2$ across multiple years) traditionally requires intensive manual photo-interpretation. Furthermore, automated change detection is notoriously plagued by **high false-alarm rates** caused by ephemeral atmospheric interference — including cloud contamination, cloud shadow projection, seasonal vegetation swings, off-nadir sun angle variations, and sub-pixel spatial misalignments.
 
-### The AeroLens Platform Vision
+### The Canopus Platform Vision
 
-**AeroLens** is an end-to-end, sovereign platform built to solve **Semantic Retrieval and Multi-Temporal Change Analysis of Satellite Imagery** (Problem Statement SIH-26227). The system unifies natural language zero-shot retrieval, multi-spectral change intelligence, and unsupervised pattern discovery into a streamlined analytical workflow:
+**Canopus** is an end-to-end, sovereign platform built to solve **Semantic Retrieval and Multi-Temporal Change Analysis of Satellite Imagery** (Problem Statement SIH-26227). The system unifies natural language zero-shot retrieval, multi-spectral change intelligence, and unsupervised pattern discovery into a streamlined analytical workflow:
 
 * **Natural Language & Visual Semantic Retrieval**: Powered by fine-tuned vision-language foundation models (RemoteCLIP ViT-B-32) and high-dimensional vector indexing (Qdrant), analysts can search planetary archives using plain conversational text prompts, exemplar satellite image patches, or multimodal queries with sub-second response times.
 * **Multi-Temporal Change Analysis & Verification**: Tracks structural, infrastructural, and environmental evolution across multi-year temporal intervals. It isolates real physical changes (construction, earthworks, road development, water boundary shifts), estimates the earliest emergence date via temporal traversal, and provides an analyst review queue with exportable provenance.
@@ -124,20 +124,16 @@ git clone https://github.com/varun-ai69/SIH-2026-PS26227-Semantic-Retrieval-and-
 cd SIH-2026-PS26227-Semantic-Retrieval-and-Multi-Temporal-Analysis-
 ```
 
-### 2. Verify RemoteCLIP Model Checkpoint
-Ensure the fine-tuned `RemoteCLIP-ViT-B-32.pt` model weights (~605 MB) are present in the `models/retrieval/` directory:
-```bash
-# If not already present, download via curl:
-mkdir -p models/retrieval
-curl -L -o models/retrieval/RemoteCLIP-ViT-B-32.pt "https://huggingface.co/chendelong/RemoteCLIP/resolve/main/RemoteCLIP-ViT-B-32.pt"
-```
-
-### 3. Launch the Stack (Single Command)
+### 2. Launch the Stack (Single Command)
 Run Docker Compose from the root directory:
 ```bash
 docker compose up -d --build
 ```
-> **Note:** All services include health checks and self-healing schema migrations. PostgreSQL tables, Qdrant vector collections, and directory mounts are created automatically on startup.
+> **Zero-Friction Auto-Provisioning**:
+> - **Databases**: PostgreSQL 16 + PostGIS 3.4 automatically initializes all schemas and migrations (`schema.sql`, `change_*` detection tables, `analyst_decisions`, `search_feedback`).
+> - **Vector Search**: Qdrant vector engine initializes and mounts high-dimensional collections.
+> - **AI Models**: Foundation models (`RemoteCLIP ViT-B-32` and `Prithvi-EO-2.0-300M`) automatically download from Hugging Face on first execution if not already cached locally.
+> - **Web UI & API**: Open **[http://localhost:8000](http://localhost:8000)** in your browser!
 
 ### 4. Run Automated Test Suite
 To verify the complete test suite inside the running backend container:

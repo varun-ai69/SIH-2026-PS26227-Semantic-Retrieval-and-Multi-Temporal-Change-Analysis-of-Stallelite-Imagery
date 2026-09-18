@@ -1,8 +1,8 @@
-# 🌐 AeroLens Unsupervised Clustering & Cross-Site Discovery Specification
+# 🌐 Canopus Unsupervised Clustering & Cross-Site Discovery Specification
 
 This document provides the complete technical specification for the **Unsupervised Clustering and Cross-Site Discovery Subsystem** (`backend/jobs/run_clustering.py`, `backend/services/discovery.py`, `backend/api/routers/discovery.py`).
 
-It details how AeroLens periodically organizes large-scale satellite archives into semantic clusters using **HDBSCAN** and empowers defense intelligence analysts to branch out from a single tile of interest to discover visual and contextual "twins" across the entire archive with zero manual query engineering.
+It details how Canopus periodically organizes large-scale satellite archives into semantic clusters using **HDBSCAN** and empowers defense intelligence analysts to branch out from a single tile of interest to discover visual and contextual "twins" across the entire archive with zero manual query engineering.
 
 ---
 

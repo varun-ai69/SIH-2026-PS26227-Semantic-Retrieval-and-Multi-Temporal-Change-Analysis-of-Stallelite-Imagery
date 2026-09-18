@@ -1,6 +1,6 @@
-# 🔍 AeroLens Multimodal Semantic Retrieval Pipeline Specification
+# 🔍 Canopus Multimodal Semantic Retrieval Pipeline Specification
 
-This document provides the complete technical specification for the **AeroLens Multimodal Semantic Retrieval Pipeline** (`backend/services/vector_search.py`, `backend/services/encoder.py`, `backend/api/routers/search.py`).
+This document provides the complete technical specification for the **Canopus Multimodal Semantic Retrieval Pipeline** (`backend/services/vector_search.py`, `backend/services/encoder.py`, `backend/api/routers/search.py`).
 
 It details how natural language text prompts and exemplar satellite image patches are encoded into a shared vision-language latent space, matched against high-dimensional vector collections using $k$-NN search, filtered by spatial and temporal parameters, and enriched with PostgreSQL spatial metadata.
 
@@ -70,7 +70,7 @@ The pipeline bridges unstructured human language and high-resolution Earth Obser
 
 ## 3. Dual Query Modalities & Feature Encoding (`backend/services/encoder.py`)
 
-AeroLens utilizes **RemoteCLIP** (a foundation model fine-tuned specifically on remote sensing image-text pairs) to align visual features with tactical military vocabulary.
+Canopus utilizes **RemoteCLIP** (a foundation model fine-tuned specifically on remote sensing image-text pairs) to align visual features with tactical military vocabulary.
 
 ### 3.1 Singleton Encoder Service (`RemoteCLIPEncoder`)
 - **Model Architecture:** `ViT-B-32` (Vision Transformer backbone with 32×32 patch size).

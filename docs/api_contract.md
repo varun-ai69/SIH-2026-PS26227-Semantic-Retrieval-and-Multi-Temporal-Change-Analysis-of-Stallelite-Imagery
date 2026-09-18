@@ -1,6 +1,6 @@
-# 🌐 AeroLens REST API Contract Specification
+# 🌐 Canopus REST API Contract Specification
 
-This document provides the verified API specification for the AeroLens backend service (`/api/v1`), detailing active endpoints, HTTP methods, request bodies, query parameters, response structures, and status codes.
+This document provides the verified API specification for the Canopus backend service (`/api/v1`), detailing active endpoints, HTTP methods, request bodies, query parameters, response structures, and status codes.
 
 ---
 

@@ -1,6 +1,6 @@
 # ⚡ Index-Build & Incremental Ingestion Procedure
 
-This document provides the comprehensive technical specification and operational walkthrough for **Index Building and Incremental Ingestion** in the AeroLens platform.
+This document provides the comprehensive technical specification and operational walkthrough for **Index Building and Incremental Ingestion** in the Canopus platform.
 
 It directly fulfills the requirements of Ministry of Defence (MoD) / Indian Army (DGIS) Problem Statement **SIH-26227**:
 * **Section 2.2.6 (Scale, Incremental Ingestion and Sovereignty):** *"Support efficient vector or equivalent indexing, incremental addition of newly acquired imagery without a complete index rebuild, and complete on-premises operation without cloud services or external APIs."*
@@ -26,9 +26,9 @@ The system must support **true incremental ingestion**:
 
 ---
 
-## 2. The AeroLens Incremental Dual-Index Architecture
+## 2. The Canopus Incremental Dual-Index Architecture
 
-To solve this problem, AeroLens decouples storage, spatial geometry, and high-dimensional vector search into independent, atomically appendable storage engines:
+To solve this problem, Canopus decouples storage, spatial geometry, and high-dimensional vector search into independent, atomically appendable storage engines:
 
 ```
                   ┌──────────────────────────────────────────────────────────┐
@@ -56,7 +56,7 @@ To solve this problem, AeroLens decouples storage, spatial geometry, and high-di
 ```
 
 ### 2.1 Engine 1: Segment-Based Vector Upserts (Qdrant HNSW)
-Traditional vector libraries (like static Faiss index files) require full index rebuilding when adding vectors. AeroLens utilizes **Qdrant**, which uses an append-only Write-Ahead Log (WAL) and **segment-based LSM (Log-Structured Merge) architecture**:
+Traditional vector libraries (like static Faiss index files) require full index rebuilding when adding vectors. Canopus utilizes **Qdrant**, which uses an append-only Write-Ahead Log (WAL) and **segment-based LSM (Log-Structured Merge) architecture**:
 1. **Deterministic Point IDs:** Each tile generates a deterministic UUIDv5 derived from its permanent `tile_id`:
    ```python
    point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, tile.tile_id))

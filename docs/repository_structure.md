@@ -1,6 +1,6 @@
-# 📁 AeroLens Repository Directory Structure
+# 📁 Canopus Repository Directory Structure
 
-This document outlines the organization and layout of the AeroLens codebase, detailing key directories, services, and operational components.
+This document outlines the organization and layout of the Canopus codebase, detailing key directories, services, and operational components.
 
 ```
 .

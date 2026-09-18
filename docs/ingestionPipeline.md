@@ -1,6 +1,6 @@
-# 🛰️ AeroLens Ingestion & Preprocessing Pipeline Specification
+# 🛰️ Canopus Ingestion & Preprocessing Pipeline Specification
 
-This document provides the complete, end-to-end technical specification for the **AeroLens Ingestion & Preprocessing Pipeline** (`backend/ingestion/`). It details how raw Earth Observation rasters are validated, aligned across diverse sensors, atmospherically calibrated, partitioned into uniform georeferenced tiles, embedded into high-dimensional vector space, and atomically indexed into spatial and vector databases.
+This document provides the complete, end-to-end technical specification for the **Canopus Ingestion & Preprocessing Pipeline** (`backend/ingestion/`). It details how raw Earth Observation rasters are validated, aligned across diverse sensors, atmospherically calibrated, partitioned into uniform georeferenced tiles, embedded into high-dimensional vector space, and atomically indexed into spatial and vector databases.
 
 ---
 
@@ -40,7 +40,7 @@ The pipeline achieves **sensor-proof ingestion** via `assemble_canvas_from_file(
 
 ## 3. Tier-1 False-Alarm Suppression Strategy
 
-A primary failure mode in automated military change detection is false alarms triggered by transient atmospheric interference (clouds, cloud shadows, haze, seasonal illumination changes). The AeroLens architecture eliminates these artifacts at the source before tiles enter the archive:
+A primary failure mode in automated military change detection is false alarms triggered by transient atmospheric interference (clouds, cloud shadows, haze, seasonal illumination changes). The Canopus architecture eliminates these artifacts at the source before tiles enter the archive:
 
 ```
 [Raw Satellite Bands] ──► [s2cloudless ML Model] ──► [cloud_mask (bool)]
@@ -86,7 +86,7 @@ A primary failure mode in automated military change detection is false alarms tr
 
 ## 4. Dual Normalization Architecture
 
-A critical innovation in AeroLens is the separation of **Visual Contrast Normalization** from **Physical Reflectance Normalization**:
+A critical innovation in Canopus is the separation of **Visual Contrast Normalization** from **Physical Reflectance Normalization**:
 
 ### 4.1 Adaptive Percentile Normalization (For Visual Thumbnails & CLIP)
 * If raw optical bands are saved directly as RGB images, varying sun angles and seasonal atmospheric haze cause dark or washed-out images.
