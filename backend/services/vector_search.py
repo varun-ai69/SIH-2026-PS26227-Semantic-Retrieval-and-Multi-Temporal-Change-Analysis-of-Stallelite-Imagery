@@ -175,6 +175,7 @@ class SearchRequest(BaseModel):
     query_text: Optional[str] = Field(None, description="Natural language prompt query")
     query_image_path: Optional[str] = Field(None, description="Path to query image file")
     query_image_bytes: Optional[bytes] = Field(None, description="Raw query image bytes")
+    query_filename: Optional[str] = Field(None, description="Original uploaded filename for self-match exclusion")
     filters: Optional[SearchFilter] = Field(default_factory=SearchFilter)
     top_k: int = Field(5, ge=1, le=100, description="Number of top ranked results to retrieve")
     analyst_id: str = Field("demo_analyst", description="Analyst identity for audit logging")
@@ -636,23 +637,59 @@ class VectorSearchService:
             raise ValueError("Invalid SearchRequest: Must provide query_text, query_image_path, or query_image_bytes.")
 
         # Step 2: Vector Search (Phase 2.2)
+        # Fetch extra candidates for image search so excluding the query image still fulfills top_k
+        fetch_k = request.top_k + (3 if query_type == "image" else 0)
         ranked_pairs = self.search_vectors(
             query_vector=query_vec,
-            top_k=request.top_k,
+            top_k=fetch_k,
             filters=request.filters
         )
 
         # Step 3: Hydrate & Describe Results (Phases 2.3 & 2.4)
         results = self.hydrate_from_postgres(
             ranked_tile_pairs=ranked_pairs,
-            top_k=request.top_k,
+            top_k=fetch_k,
             deduplicate_spatial=True
         )
 
-        # Image-to-image similarity threshold: Only show matches >= threshold (default 65% / 0.65)
+        # Self-match exclusion for image-to-image queries:
+        # When an analyst uploads an image to find similar scenes, exclude the query image itself!
         if query_type == "image":
+            clean_q_fn = request.query_filename or (
+                os.path.basename(request.query_image_path) if request.query_image_path else ""
+            )
+            clean_stem = ""
+            if clean_q_fn:
+                import re
+                clean_stem = re.sub(r'(_thumb|_preview)?\.(jpg|jpeg|png|tif|tiff)$', '', clean_q_fn.lower())
+
+            filtered_results = []
+            excluded_self = False
+
+            for r in results:
+                is_self = False
+                # 1. Similarity score >= 0.988 indicates identical image vector in 512-dim RemoteCLIP space
+                if r.score >= 0.988:
+                    is_self = True
+                # 2. Uploaded filename match with tile_id or file paths
+                elif clean_stem:
+                    r_tid_low = r.tile_id.lower()
+                    if clean_stem == r_tid_low or clean_stem in r_tid_low or r_tid_low in clean_stem:
+                        is_self = True
+                    elif r.thumbnail_path and clean_stem in r.thumbnail_path.lower():
+                        is_self = True
+                    elif r.file_path and clean_stem in r.file_path.lower():
+                        is_self = True
+
+                if is_self and not excluded_self:
+                    log.info(f"[SemanticRetrieval] Excluded uploaded query image itself from results: tile_id='{r.tile_id}', score={r.score}")
+                    excluded_self = True
+                    continue
+
+                filtered_results.append(r)
+
             cutoff = request.min_similarity if request.min_similarity is not None else 0.65
-            results = [r for r in results if r.score >= cutoff]
+            results = [r for r in filtered_results if r.score >= cutoff][:request.top_k]
 
         # Step 4: Audit Logging (Phase 2.5)
         result_ids = [r.tile_id for r in results]

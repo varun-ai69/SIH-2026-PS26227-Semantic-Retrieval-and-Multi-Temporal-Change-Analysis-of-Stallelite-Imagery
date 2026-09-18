@@ -90,6 +90,7 @@ async def search_semantic_image(
 
         request = SearchRequest(
             query_image_bytes=contents,
+            query_filename=file.filename,
             filters=search_filters,
             top_k=top_k,
             analyst_id=analyst_id,
