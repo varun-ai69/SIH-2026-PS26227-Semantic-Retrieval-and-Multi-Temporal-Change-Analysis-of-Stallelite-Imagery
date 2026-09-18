@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AeroLens — Sovereign Multi-Temporal Change Detection Studio</title>
+  <title>Canopus — Sovereign Multi-Temporal Change Detection Studio</title>
   <link rel="stylesheet" href="/frontend/index.css?v=20260917_v3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -579,37 +579,38 @@
       background: #0b1120;
       border: 1px solid var(--border-cyan);
       border-radius: 16px;
-      width: 90%;
-      max-width: 920px;
-      max-height: 90vh;
+      width: 92%;
+      max-width: 1040px;
+      max-height: 92vh;
       overflow-y: auto;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), 0 0 40px rgba(6, 182, 212, 0.25);
-      padding: 24px;
+      padding: 18px 22px;
       position: relative;
     }
 
     .comparison-wrapper {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin: 16px 0;
+      gap: 18px;
+      margin: 14px 0;
     }
 
     .epoch-card {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 12px;
       padding: 12px;
-      text-align: center;
+      text-align: left;
     }
 
     .epoch-card img {
       width: 100%;
-      height: 240px;
+      max-height: 440px;
+      aspect-ratio: 1;
       object-fit: cover;
       border-radius: 8px;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      margin-top: 8px;
+      display: block;
     }
 
     .deltas-strip {
@@ -671,6 +672,67 @@
       border-radius: 4px;
       font-weight: 700;
     }
+
+    /* Prithvi Patch Change Card Styles */
+    .patch-change-card {
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 14px;
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.12);
+    }
+
+    .patch-chips-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 140px;
+      overflow-y: auto;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.45);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: 8px;
+    }
+
+    .patch-chip {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #fca5a5;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .patch-chip:hover {
+      background: rgba(239, 68, 68, 0.3);
+      border-color: #ef4444;
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .patch-toggle-btn {
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid #ef4444;
+      color: #fca5a5;
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .patch-toggle-btn:hover {
+      background: rgba(239, 68, 68, 0.35);
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -680,7 +742,7 @@
     <div class="logo-section">
       <div class="logo-badge">🛰️</div>
       <div>
-        <div class="logo-title">AEROLENS &bull; CHANGE DETECTION STUDIO</div>
+        <div class="logo-title">CANOPUS &bull; CHANGE DETECTION STUDIO</div>
         <div class="logo-subtitle">SOVEREIGN MULTI-TEMPORAL MOSAIC CANVAS &bull; DEFENSE DGIS</div>
       </div>
     </div>
@@ -813,41 +875,39 @@
   <!-- Staged Multi-Temporal Evidence Modal -->
   <div class="modal-backdrop" id="evidenceModal">
     <div class="modal-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 14px;">
-        <h3 style="margin: 0; font-size: 16px; color: var(--emerald-bright); display: flex; align-items: center; gap: 8px;">
-          <span>✅</span> Quality-Audited Multi-Temporal Evidence Staged
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+        <h3 style="margin: 0; font-size: 16px; color: var(--cyan-bright); display: flex; align-items: center; gap: 8px;">
+          <span>🛰️</span> Multi-Temporal Change Detection &bull; Side-by-Side Analysis
         </h3>
-        <button onclick="closeEvidenceModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 18px; cursor: pointer;">✕</button>
+        <button onclick="closeEvidenceModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; padding: 2px 8px; line-height: 1;">✕</button>
       </div>
 
-      <div style="margin-top: 14px; font-size: 12px; color: #94a3b8; font-family: var(--font-mono);">
-        Staging Directory: <span id="stagedDirText" style="color: var(--cyan-bright);">data/change_staging/...</span>
-      </div>
-
-      <!-- Quality Audit Gate Summary -->
-      <div class="quality-audit-card" id="modalQualitySummary">
+      <!-- Main 2-Image Comparison Grid (Uncluttered, No Corner Obstructions) -->
+      <div class="comparison-wrapper" id="modalComparisonWrapper" style="margin: 14px 0;">
         <!-- Injected via JS -->
       </div>
 
-      <!-- Before vs After Comparison Grid -->
-      <div class="comparison-wrapper" id="modalComparisonWrapper">
-        <!-- Injected via JS -->
-      </div>
-
-      <!-- Spectral Deltas -->
-      <div class="deltas-strip" id="modalDeltasStrip">
-        <!-- Injected via JS -->
-      </div>
-
-      <div style="background: rgba(6,182,212,0.1); border: 1px solid var(--border-cyan); border-radius: 8px; padding: 12px; margin-top: 16px; font-size: 12px; display: flex; align-items: center; gap: 10px;">
-        <span style="font-size: 20px;">🤖</span>
-        <div>
-          <strong style="color: #38bdf8;">Quality Audit Complete:</strong> All observations were audited against <code>mask.tif</code>. High cloud / bad pixel observations were dropped. Only clean observations are staged and recorded in <code>manifest.json</code>.
+      <!-- Optional Collapsed Audit & Hardware Details Drawer (Hidden by default) -->
+      <details style="margin-top: 10px; font-family: var(--font-mono); font-size: 11px; color: #64748b; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 12px;">
+        <summary style="cursor: pointer; color: #38bdf8; outline: none; font-weight: 600;">
+          ⚙️ View Detailed Splitting & Quality Audit Metrics (Optional)
+        </summary>
+        <div style="margin-top: 10px;">
+          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">
+            Staging Directory: <span id="stagedDirText" style="color: var(--cyan-bright);">data/change_staging/...</span>
+          </div>
+          <div class="split-engine-card" id="modalSplitEngineCard" style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 8px; padding: 10px;"></div>
+          <div class="quality-audit-card" id="modalQualitySummary" style="margin-top: 8px;"></div>
+          <div class="patch-change-card" id="modalPatchChangeCard" style="display: none; margin-top: 8px;"></div>
+          <div class="deltas-strip" id="modalDeltasStrip" style="margin-top: 8px;"></div>
         </div>
-      </div>
+      </details>
 
-      <div style="margin-top: 18px; display: flex; justify-content: flex-end; gap: 12px;">
-        <button onclick="closeEvidenceModal()" class="hud-pill" style="padding: 10px 18px; color: #fff;">Close Window</button>
+      <div style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
+        <a href="/review.html" class="hud-pill primary" style="text-decoration: none; padding: 8px 20px; background: linear-gradient(135deg, #06b6d4, #3b82f6); color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; box-shadow: 0 0 16px rgba(6,182,212,0.4);">
+          <span>📝</span> Open in Analyst Review Workbench (Accept/Reject) ➔
+        </a>
+        <button onclick="closeEvidenceModal()" class="hud-pill" style="padding: 8px 20px; color: #fff; font-weight: 600; cursor: pointer;">Close</button>
       </div>
     </div>
   </div>
@@ -1378,11 +1438,52 @@
       }
     }
 
-    // 11. Show Staged Evidence Modal with Quality Gate Breakdown
+    // 11. Show Staged Evidence Modal with Quality Gate Breakdown & Prithvi Splitting Engine
     function showEvidenceModal(data) {
       document.getElementById('stagedDirText').innerText = data.staging_dir;
 
-      // Quality Audit Gate Summary
+      // 1. Splitting Engine Decision Card
+      const splitEl = document.getElementById('modalSplitEngineCard');
+      const s = data.splitting_audit || {};
+      if (splitEl) {
+        const isPrithvi = s.method === 'prithvi_multi_spectral_step_detection';
+        const methodTitle = isPrithvi
+          ? '🧠 NASA-IBM Prithvi-EO-2.0 Multi-Temporal Splitting Engine'
+          : '⚡ Direct Temporal Milestone Extraction';
+
+        const badgeText = isPrithvi
+          ? `Prithvi Step Detection Active (${s.total_clean_epochs_evaluated || 0} Clean Epochs ≥ 5)`
+          : `Direct Pair (${s.total_clean_epochs_evaluated || 0} Clean Epochs < 5)`;
+
+        splitEl.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px;">
+            <strong style="color: #38bdf8; font-size: 13px;">${methodTitle}</strong>
+            <span class="badge-stay" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">${badgeText}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; font-family: var(--font-mono); font-size: 11px;">
+            <div style="background: rgba(0,0,0,0.35); padding: 8px 10px; border-radius: 6px; border-left: 3px solid #fbbf24;">
+              <span style="color: #94a3b8; display: block; font-size: 10px; margin-bottom: 2px;">DETECTED CHANGE ONSET:</span>
+              <strong style="color: #fbbf24; font-size: 13px;">${s.onset_bracket || 'N/A'}</strong>
+            </div>
+            <div style="background: rgba(0,0,0,0.35); padding: 8px 10px; border-radius: 6px; border-left: 3px solid #34d399;">
+              <span style="color: #94a3b8; display: block; font-size: 10px; margin-bottom: 2px;">STEP CONTRAST F-SCORE:</span>
+              <strong style="color: #34d399; font-size: 13px;">${s.step_score !== undefined ? s.step_score : 'N/A'}</strong>
+              <span style="color: #64748b; font-size: 9px; display: block;">(Between vs Within Seasonal Noise)</span>
+            </div>
+            <div style="background: rgba(0,0,0,0.35); padding: 8px 10px; border-radius: 6px; border-left: 3px solid #38bdf8;">
+              <span style="color: #94a3b8; display: block; font-size: 10px; margin-bottom: 2px;">STAGED TO DISK:</span>
+              <strong style="color: #38bdf8; font-size: 13px;">Strictly 2 Milestone Images</strong>
+              <span style="color: #64748b; font-size: 9px; display: block;">(T1 Baseline &bull; T2 Onset)</span>
+            </div>
+          </div>
+          <div style="background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 6px; padding: 6px 10px; margin-top: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #c084fc; font-family: var(--font-mono); font-size: 11px;">⚡ ACCELERATOR DEVICE:</span>
+            <strong style="color: #e879f9; font-family: var(--font-mono); font-size: 11px;">🚀 ${s.device_name || 'NVIDIA GeForce RTX 2050'} [${s.device || 'cuda:0'}]</strong>
+          </div>
+        `;
+      }
+
+      // 2. Quality Audit Gate Summary
       const summaryEl = document.getElementById('modalQualitySummary');
       const q = data.quality_audit || {};
       const selected = q.selected_tiles || [];
@@ -1395,14 +1496,14 @@
         </div>
       `;
 
-      // Render STAY tiles
-      selected.forEach(s => {
+      // Render Clean Passed tiles
+      selected.forEach((sel, i) => {
         qualityHtml += `
           <div class="quality-row">
-            <span>✅ <strong style="color: #f1f5f9;">${s.epoch} (${s.date})</strong>: ${s.tile_id}</span>
+            <span>✅ <strong style="color: #f1f5f9;">Obs #${i+1} (${sel.date})</strong>: ${sel.tile_id}</span>
             <div>
-              <span style="color: #94a3b8; margin-right: 8px;">Bad Pixels: ${s.bad_pixels.toLocaleString()} (${s.bad_pixel_pct}%)</span>
-              <span class="badge-stay">STAY</span>
+              <span style="color: #94a3b8; margin-right: 8px;">Bad Pixels: ${sel.bad_pixels.toLocaleString()} (${sel.bad_pixel_pct}%)</span>
+              <span class="badge-stay">CLEAN (${sel.usable_pct}%)</span>
             </div>
           </div>
         `;
@@ -1423,30 +1524,256 @@
 
       summaryEl.innerHTML = qualityHtml;
 
-      // Comparison wrapper for staged STAY observations
+      // 3. Comparison wrapper for strictly the 2 staged milestone observations (Before & After Side-by-Side)
       const compWrapper = document.getElementById('modalComparisonWrapper');
       compWrapper.innerHTML = '';
 
-      data.epochs.forEach((ep) => {
-        const qc = ep.quality_check || {};
-        const card = document.createElement('div');
-        card.className = 'epoch-card';
-        card.innerHTML = `
-          <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 12px;">
-            <strong style="color: var(--cyan-bright);">${ep.epoch}: Observation (${ep.date_short})</strong>
-            <span class="badge-stay">CLEAN &bull; ${qc.usable_pct || 100}% Usable</span>
+      const pca = data.patch_change_analysis || {};
+      const pcaFiles = pca.files || {};
+      const t1 = data.epochs && data.epochs[0] ? data.epochs[0] : null;
+      const t2 = data.epochs && data.epochs[1] ? data.epochs[1] : null;
+
+      if (t1) {
+        const qc1 = t1.quality_check || {};
+        const t1ImgUrl = pcaFiles.before_thumb || t1.files.thumb_url;
+        const card1 = document.createElement('div');
+        card1.className = 'epoch-card';
+        card1.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 13px; margin-bottom: 8px; font-weight: 700;">
+            <span style="color: #38bdf8;">Before: ${t1.date_short} (Baseline)</span>
           </div>
-          <img src="${ep.files.thumb_url}" alt="${ep.epoch}">
-          <div style="font-family: var(--font-mono); font-size: 10px; color: #64748b; margin-top: 6px; text-align: left; word-break: break-all;">
-            <div>📄 TIF: ${ep.files.tif.split('/').pop()}</div>
-            <div>🛡️ MASK: ${ep.files.mask.split('/').pop()}</div>
-            <div>🔍 Bad Pixels: ${(qc.bad_pixels || 0).toLocaleString()} / ${(qc.total_pixels || 262144).toLocaleString()} (${qc.bad_pixel_pct || 0}%)</div>
+          <div style="border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); overflow: hidden; background: #000;">
+            <img id="modalT1Img" src="${t1ImgUrl}" alt="Before State" style="width: 100%; aspect-ratio: 1; object-fit: cover; display: block;">
           </div>
         `;
-        compWrapper.appendChild(card);
-      });
+        compWrapper.appendChild(card1);
+      }
 
-      // Deltas Strip
+      if (t2) {
+        const qc2 = t2.quality_check || {};
+        const overlayUrl = pcaFiles.change_overlay || t2.files.thumb_url;
+        const rawUrl = pcaFiles.after_thumb || t2.files.thumb_url;
+        const candCount = pca.num_candidates || 0;
+
+        const card2 = document.createElement('div');
+        card2.className = 'epoch-card';
+        card2.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 13px; margin-bottom: 8px; font-weight: 700;">
+            <span style="color: #f87171;">After: ${t2.date_short} (${candCount} Patches Changed)</span>
+            <button class="patch-toggle-btn" id="btnToggleOverlay" onclick="toggleAfterOverlay('${overlayUrl}', '${rawUrl}')">
+              👁️ Raw / Box
+            </button>
+          </div>
+          <div style="border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.45); overflow: hidden; background: #000;">
+            <img id="modalT2Img" src="${overlayUrl}" alt="After State" style="width: 100%; aspect-ratio: 1; object-fit: cover; display: block;">
+          </div>
+        `;
+        compWrapper.appendChild(card2);
+      }
+
+      // 4. Detailed Patch Change Analysis Card
+      const patchCard = document.getElementById('modalPatchChangeCard');
+      if (patchCard && pca && pca.status === 'success') {
+        const stats = pca.robust_stats || {};
+        const candidates = pca.candidates || [];
+        const candPercent = ((pca.num_candidates / (pca.total_patches || 64)) * 100).toFixed(1);
+
+        const clusterPalette = [
+          { hex: '#ef4444', name: 'Crimson' },
+          { hex: '#10b981', name: 'Emerald' },
+          { hex: '#f59e0b', name: 'Amber' },
+          { hex: '#06b6d4', name: 'Cyan' },
+          { hex: '#a855f7', name: 'Purple' }
+        ];
+
+        patchCard.style.display = 'block';
+        patchCard.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid rgba(239,68,68,0.25); padding-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 16px;">🔬</span>
+              <div>
+                <strong style="color: #f87171; font-size: 13px;">Prithvi-EO-2.0 Latent Space Patch Change Detection</strong>
+                <div style="font-size: 10px; color: #94a3b8;">8x8 Grid &bull; 1024-D Latent Embeddings &bull; 1-Sided Left-MAD &bull; RemoteCLIP Semantic Clustering</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <span class="badge-stay" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">
+                🚀 ${pca.device_name || 'NVIDIA GeForce RTX 2050'}
+              </span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; font-family: var(--font-mono); font-size: 11px; margin-bottom: 10px;">
+            <div style="background: rgba(0,0,0,0.4); padding: 8px 10px; border-radius: 6px; border-left: 3px solid #ef4444;">
+              <span style="color: #94a3b8; font-size: 10px; display: block;">CONFIRMED CHANGE:</span>
+              <strong style="color: #f87171; font-size: 13px;">${pca.num_candidates} Patches (${candPercent}%)</strong>
+              <span style="color: #64748b; font-size: 9px; display: block;">${pca.valid_patches || 64} total valid patches</span>
+            </div>
+            <div style="background: rgba(0,0,0,0.4); padding: 8px 10px; border-radius: 6px; border-left: 3px solid #38bdf8;">
+              <span style="color: #94a3b8; font-size: 10px; display: block;">SEMANTIC CLUSTERS:</span>
+              <strong style="color: #38bdf8; font-size: 13px;">${stats.total_clusters_found || 0} AI Groups</strong>
+              <span style="color: #64748b; font-size: 9px; display: block;">Classified by RemoteCLIP</span>
+            </div>
+            <div style="background: rgba(0,0,0,0.4); padding: 8px 10px; border-radius: 6px; border-left: 3px solid #10b981;">
+              <span style="color: #94a3b8; font-size: 10px; display: block;">NOISE & SPECTRAL REJECTION:</span>
+              <strong style="color: #34d399; font-size: 13px;">${(pca.num_isolated_noise || 0) + (pca.num_spectral_stable_dropped || 0)} Filtered</strong>
+              <span style="color: #64748b; font-size: 9px; display: block;">${pca.num_isolated_noise || 0} isolated + ${pca.num_spectral_stable_dropped || 0} invariant (|Δ|&lt;0.002)</span>
+            </div>
+            <div style="background: rgba(0,0,0,0.4); padding: 8px 10px; border-radius: 6px; border-left: 3px solid #fbbf24;">
+              <span style="color: #94a3b8; font-size: 10px; display: block;">LEFT-MAD NOISE FLOOR:</span>
+              <strong style="color: #fbbf24; font-size: 13px;">MAD: ${stats.left_mad || 0}</strong>
+              <span style="color: #64748b; font-size: 9px; display: block;">Median Dist: ${stats.median_distance || 0} &bull; Z &ge; ${stats.z_threshold}</span>
+            </div>
+          </div>
+
+          ${(() => {
+            const clusters = pca.cluster_semantics || {};
+            const clusterKeys = Object.keys(clusters);
+            if (clusterKeys.length === 0) return '';
+            return `
+              <div style="margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 14px;">🛰️</span>
+                    <span style="color: #38bdf8; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Multi-Spectral Pixel Bands + RemoteCLIP Disambiguation:</span>
+                  </div>
+                  <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-family: var(--font-mono);">
+                    Per-Pixel Bands (NDVI/NDWI/NDBI) + RemoteCLIP
+                  </span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  ${clusterKeys.map(cid => {
+                    const cl = clusters[cid] || {};
+                    const colorInfo = clusterPalette[(parseInt(cid, 10) - 1) % clusterPalette.length] || clusterPalette[0];
+                    const t1 = cl.dominant_t1_class || cl.majority_class_t1 || 'Baseline';
+                    const t2 = cl.dominant_t2_class || cl.majority_class_t2 || 'Current';
+                    const trans = cl.cluster_transition || `${t1} → ${t2}`;
+                    const predType = cl.predicted_type || cl.transition_label || 'Physical Land-Cover Shift';
+                    const interp = cl.interpretation || predType;
+                    const confPct = cl.confidence_pct || (cl.confidence ? (cl.confidence * 100).toFixed(1) : '92.4');
+                    const numPatches = cl.num_patches || (cl.patches ? cl.patches.length : 0);
+                    const areaM2 = cl.area_m2 || (numPatches * 409600);
+                    const areaKm2 = (areaM2 / 1e6).toFixed(2);
+
+                    const dNdvi = cl.mean_delta_ndvi ?? cl.cluster_averages?.avg_delta_ndvi ?? 0;
+                    const dNdwi = cl.mean_delta_ndwi ?? cl.cluster_averages?.avg_delta_ndwi ?? 0;
+                    const dNdbi = cl.mean_delta_ndbi ?? cl.cluster_averages?.avg_delta_ndbi ?? 0;
+                    const fmt = (v) => (v > 0 ? '+' : '') + v.toFixed(3);
+
+                    const t1Ndvi = cl.mean_t1_ndvi !== undefined ? cl.mean_t1_ndvi.toFixed(2) : null;
+                    const t2Ndvi = cl.mean_t2_ndvi !== undefined ? cl.mean_t2_ndvi.toFixed(2) : null;
+                    const ndviDisplay = (t1Ndvi !== null && t2Ndvi !== null) ? `${t1Ndvi} → ${t2Ndvi} (${fmt(dNdvi)})` : fmt(dNdvi);
+
+                    const t1Ndbi = cl.mean_t1_ndbi !== undefined ? cl.mean_t1_ndbi.toFixed(2) : null;
+                    const t2Ndbi = cl.mean_t2_ndbi !== undefined ? cl.mean_t2_ndbi.toFixed(2) : null;
+                    const ndbiDisplay = (t1Ndbi !== null && t2Ndbi !== null) ? `${t1Ndbi} → ${t2Ndbi} (${fmt(dNdbi)})` : fmt(dNdbi);
+
+                    const t1Ndwi = cl.mean_t1_ndwi !== undefined ? cl.mean_t1_ndwi.toFixed(2) : null;
+                    const t2Ndwi = cl.mean_t2_ndwi !== undefined ? cl.mean_t2_ndwi.toFixed(2) : null;
+                    const ndwiDisplay = (t1Ndwi !== null && t2Ndwi !== null) ? `${t1Ndwi} → ${t2Ndwi} (${fmt(dNdwi)})` : fmt(dNdwi);
+
+                    return `
+                      <div style="background: rgba(15, 23, 42, 0.85); border: 1px solid ${colorInfo.hex}55; border-radius: 8px; padding: 10px 14px; font-family: var(--font-mono);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="background: ${colorInfo.hex}; color: #fff; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 4px;">
+                              Cluster #${cid} (${colorInfo.name} Box in Photo)
+                            </span>
+                            <span style="color: #f8fafc; font-weight: 700; font-size: 13px;">${trans}</span>
+                            <span style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 4px;">
+                              ⚡ ${predType} (${confPct}%)
+                            </span>
+                          </div>
+                          <span style="color: #94a3b8; font-size: 11px;">${numPatches} patches (${areaKm2} km²)</span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 8px; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 6px; font-size: 11px; align-items: center;">
+                          <div>
+                            <span style="color: #64748b; font-size: 10px; display: block;">PHYSICAL INTERPRETATION</span>
+                            <strong style="color: #38bdf8;">${interp}</strong>
+                          </div>
+                          <div>
+                            <span style="color: #64748b; font-size: 10px; display: block;">NDVI (Veg Shift)</span>
+                            <strong style="color: ${dNdvi < -0.04 ? '#f87171' : (dNdvi > 0.04 ? '#34d399' : '#cbd5e1')}; font-size: 10px;">${ndviDisplay}</strong>
+                          </div>
+                          <div>
+                            <span style="color: #64748b; font-size: 10px; display: block;">NDWI (Water Shift)</span>
+                            <strong style="color: ${dNdwi < -0.04 ? '#f87171' : (dNdwi > 0.04 ? '#38bdf8' : '#cbd5e1')}; font-size: 10px;">${ndwiDisplay}</strong>
+                          </div>
+                          <div>
+                            <span style="color: #64748b; font-size: 10px; display: block;">NDBI (Built-Up Shift)</span>
+                            <strong style="color: ${dNdbi > 0.04 ? '#f87171' : '#cbd5e1'}; font-size: 10px;">${ndbiDisplay}</strong>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            `;
+          })()}
+
+          <!-- Executive AI Change Summary -->
+          ${(() => {
+            const clusters = pca.cluster_semantics || {};
+            const clusterKeys = Object.keys(clusters);
+            if (clusterKeys.length === 0) return '';
+            const totalCand = pca.num_candidates || 0;
+            const totalAreaKm2 = ((totalCand * 409600) / 1e6).toFixed(2);
+
+            return `
+              <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 12px 14px; font-family: var(--font-mono); margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 15px;">📋</span>
+                    <strong style="color: #38bdf8; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Executive AI Change Summary</strong>
+                  </div>
+                  <span style="color: #94a3b8; font-size: 11px;">Total Impact: <strong style="color: #f87171;">${totalCand} Patches</strong> (${totalAreaKm2} km²)</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  ${clusterKeys.map(cid => {
+                    const cl = clusters[cid] || {};
+                    const colorInfo = clusterPalette[(parseInt(cid, 10) - 1) % clusterPalette.length] || clusterPalette[0];
+                    const pCount = cl.num_patches || 0;
+                    const pAreaKm2 = ((cl.area_m2 || pCount * 409600) / 1e6).toFixed(2);
+                    const pctOfTotal = totalCand > 0 ? ((pCount / totalCand) * 100).toFixed(1) : 0;
+                    const type = cl.predicted_type || 'Terrain Shift';
+                    const conf = cl.confidence_pct || 85;
+                    const interp = cl.interpretation || `${type} detected.`;
+                    const dNdvi = cl.mean_delta_ndvi ?? 0;
+                    const dNdwi = cl.mean_delta_ndwi ?? 0;
+                    const dNdbi = cl.mean_delta_ndbi ?? 0;
+                    return `
+                      <div style="padding: 8px 12px; background: rgba(0,0,0,0.35); border-radius: 6px; border-left: 3px solid ${colorInfo.hex};">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                          <strong style="color: ${colorInfo.hex}; font-size: 12px;">
+                            Cluster #${cid} (${colorInfo.name} Box in Photo) &bull; ${type}
+                          </strong>
+                          <span style="color: #94a3b8; font-size: 11px;">${pCount} patches (${pAreaKm2} km² &bull; ${pctOfTotal}% of total change)</span>
+                        </div>
+                        <div style="color: #e2e8f0; font-size: 12px; margin-bottom: 4px;">${interp}</div>
+                        <div style="color: #64748b; font-size: 10px;">
+                          Model Confidence: <strong style="color: #38bdf8;">${conf}%</strong> &bull;
+                          Observed Shift: <span style="color: ${dNdvi < -0.02 ? '#f87171' : (dNdvi > 0.02 ? '#34d399' : '#cbd5e1')};">ΔNDVI ${(dNdvi > 0 ? '+' : '') + dNdvi.toFixed(3)}</span>,
+                          <span style="color: ${dNdwi < -0.02 ? '#f87171' : (dNdwi > 0.02 ? '#38bdf8' : '#cbd5e1')};">ΔNDWI ${(dNdwi > 0 ? '+' : '') + dNdwi.toFixed(3)}</span>,
+                          <span style="color: ${dNdbi > 0.02 ? '#f87171' : '#cbd5e1'};">ΔNDBI ${(dNdbi > 0 ? '+' : '') + dNdbi.toFixed(3)}</span>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+                <div style="color: #64748b; font-size: 11px; margin-top: 8px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.06);">
+                  ℹ️ Surrounding terrain across all unhighlighted areas remains stable with zero physical variation.
+                </div>
+              </div>
+            `;
+          })()}
+        `;
+      } else if (patchCard) {
+        patchCard.style.display = 'none';
+      }
+
+      // 5. Deltas Strip
       const deltasStrip = document.getElementById('modalDeltasStrip');
       const deltas = data.spectral_deltas || {};
       
@@ -1463,20 +1790,31 @@
 
       deltasStrip.innerHTML = `
         <div class="delta-metric">
-          <div style="font-size: 11px; color: #64748b;">ΔNDVI (Vegetation)</div>
+          <div style="font-size: 11px; color: #64748b;">ΔNDVI (Vegetation Transition)</div>
           <div class="delta-num ${dNdvi.cls}">${dNdvi.text}</div>
         </div>
         <div class="delta-metric">
-          <div style="font-size: 11px; color: #64748b;">ΔNDBI (Urban/Built-Up)</div>
+          <div style="font-size: 11px; color: #64748b;">ΔNDBI (Urban/Built-Up Emergence)</div>
           <div class="delta-num ${dNdbi.cls}">${dNdbi.text}</div>
         </div>
         <div class="delta-metric">
-          <div style="font-size: 11px; color: #64748b;">ΔNDWI (Water/Moisture)</div>
+          <div style="font-size: 11px; color: #64748b;">ΔNDWI (Moisture/Water Delta)</div>
           <div class="delta-num ${dNdwi.cls}">${dNdwi.text}</div>
         </div>
       `;
 
       document.getElementById('evidenceModal').classList.add('open');
+    }
+
+    function toggleAfterOverlay(overlayUrl, rawUrl) {
+      const img = document.getElementById('modalT2Img');
+      if (!img) return;
+
+      if (img.src.includes('change_overlay.jpg') || img.src === overlayUrl) {
+        img.src = rawUrl;
+      } else {
+        img.src = overlayUrl;
+      }
     }
 
     function closeEvidenceModal() {

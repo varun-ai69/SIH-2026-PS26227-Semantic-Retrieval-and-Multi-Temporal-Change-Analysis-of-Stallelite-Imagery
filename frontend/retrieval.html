@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AeroLens — Multimodal Semantic Satellite Image Retrieval</title>
+  <title>Canopus — Multimodal Semantic Satellite Image Retrieval</title>
   
   <!-- Leaflet CSS for Footprint previews if needed -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
@@ -223,7 +223,7 @@
         <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
       </div>
       <div>
-        <div class="logo-title">AEROLENS &bull; EO SEMANTIC RETRIEVAL</div>
+        <div class="logo-title">CANOPUS &bull; EO SEMANTIC RETRIEVAL</div>
         <div class="logo-subtitle">MULTIMODAL REMOTECLIP ViT-B-32 &bull; DEFENSE DGIS</div>
       </div>
     </div>
@@ -331,7 +331,7 @@
           </div>
           <div class="chat-bubble">
             <div class="chat-bubble-header">
-              <span class="assistant-name">AeroLens Neural Search Agent</span>
+              <span class="assistant-name">Canopus Neural Search Agent</span>
               <span class="assistant-meta">RemoteCLIP ViT-B-32 &bull; 512-dim Cosine Sim &bull; PostGIS GIST</span>
             </div>
             <div class="chat-text">
@@ -518,6 +518,20 @@
             <a id="inspectDownloadTifBtn" href="#" download class="map-btn" style="text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
               <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download GeoTIFF (.tif)
             </a>
+          </div>
+
+          <!-- Quick Analyst Verification (Accept / Reject) -->
+          <div style="margin-top: 14px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px;">
+            <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; font-family: monospace;">Analyst Verification (Accept / Reject)</div>
+            <div style="display: flex; gap: 8px;">
+              <button id="inspectAcceptBtn" class="map-btn" style="flex: 1; background: rgba(16,185,129,0.2); border-color: #10b981; color: #34d399; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" onclick="quickModalFeedback(true)">
+                <span>👍</span> Accept (Target)
+              </button>
+              <button id="inspectRejectBtn" class="map-btn" style="flex: 1; background: rgba(244,63,94,0.2); border-color: #f43f5e; color: #fb7185; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" onclick="quickModalFeedback(false)">
+                <span>👎</span> Reject (Noise)
+              </button>
+            </div>
+            <a href="/review.html" style="font-size: 11px; color: #94a3b8; text-align: center; text-decoration: underline; margin-top: 2px;">Open Full Analyst Review Workbench ↗</a>
           </div>
         </div>
 

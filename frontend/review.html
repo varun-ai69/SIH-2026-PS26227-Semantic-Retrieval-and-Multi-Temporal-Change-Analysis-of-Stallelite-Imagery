@@ -3,23 +3,994 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AeroLens — Analyst Review & Verification Workbench</title>
+  <title>Canopus — Analyst Review & Verification Workbench</title>
   <link rel="stylesheet" href="/frontend/index.css">
   <style>
+    /* ============================================================
+       ANALYST REVIEW WORKBENCH THEME & STYLES
+       ============================================================ */
+    :root {
+      --bg-void: #050811;
+      --bg-panel: rgba(13, 20, 36, 0.88);
+      --bg-card: rgba(20, 30, 55, 0.75);
+      --bg-card-hover: rgba(28, 42, 75, 0.9);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-cyan: rgba(6, 182, 212, 0.4);
+      --border-cyan-glow: rgba(6, 182, 212, 0.85);
+      --cyan-bright: #38bdf8;
+      --emerald-bright: #34d399;
+      --rose-bright: #fb7185;
+      --amber-bright: #fbbf24;
+      --indigo-bright: #818cf8;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html, body {
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-void);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      font-family: 'Inter', sans-serif;
+      color: #f1f5f9;
+    }
+
     .nav-item.active {
       background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.25));
       border-color: var(--border-active);
       color: #38bdf8;
     }
+
+    /* Sub-header Mode Selector */
+    .review-mode-bar {
+      height: 52px;
+      background: rgba(10, 16, 30, 0.95);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 10;
+    }
+
+    .mode-tabs {
+      display: flex;
+      gap: 12px;
+    }
+
+    .mode-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .mode-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .mode-tab-btn.active {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
+      border-color: var(--accent-cyan);
+      color: var(--cyan-bright);
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.25);
+    }
+
+    .tab-badge {
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+    }
+
+    .mode-tab-btn.active .tab-badge {
+      background: rgba(6, 182, 212, 0.3);
+      color: #fff;
+    }
+
+    .analyst-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+    }
+
+    .analyst-pulse {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* Main Content Area */
+    .workbench-viewport {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg-void);
+    }
+
+    .tab-view {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      overflow: hidden;
+    }
+
+    .tab-view.active {
+      display: flex;
+    }
+
+    /* Sidebar + Main Inspector Layout */
+    .view-sidebar {
+      width: 380px;
+      min-width: 380px;
+      height: 100%;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(16px);
+      z-index: 5;
+    }
+
+    .view-main {
+      flex: 1;
+      height: 100%;
+      background: rgba(5, 8, 17, 0.8);
+      overflow-y: auto;
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .sidebar-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--cyan-bright);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .search-box-input {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: rgba(0, 0, 0, 0.4);
+      color: #fff;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-box-input:focus {
+      border-color: var(--accent-cyan);
+    }
+
+    /* Query Type Segmented Switcher */
+    .query-type-switcher {
+      display: flex;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .type-tab-btn {
+      flex: 1;
+      padding: 7px 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .type-tab-btn.active {
+      background: rgba(6, 182, 212, 0.22);
+      color: var(--cyan-bright);
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+    }
+
+    .sidebar-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Cards in Sidebar */
+    .list-item-card {
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .list-item-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(6, 182, 212, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .list-item-card.active {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(99, 102, 241, 0.15));
+      border-color: var(--cyan-bright);
+      box-shadow: 0 0 14px rgba(6, 182, 212, 0.2);
+    }
+
+    .item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .item-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .item-subtitle {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .item-stats-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Status Badges */
+    .status-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
+      font-family: var(--font-mono);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-confirmed { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .status-rejected { background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
+    .status-unsure { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); }
+    .status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    /* Top Action Bar in Main View */
+    .action-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-md);
+    }
+
+    .banner-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .banner-desc {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .banner-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Buttons */
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn-cyan {
+      background: linear-gradient(135deg, #06b6d4, #0284c7);
+      color: #fff;
+      border-color: #38bdf8;
+      box-shadow: 0 0 14px rgba(6, 182, 212, 0.35);
+    }
+
+    .btn-cyan:hover {
+      background: linear-gradient(135deg, #0891b2, #0369a1);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #f43f5e, #e11d48);
+      color: #fff;
+    }
+
+    /* Grid for Retrieval Tiles */
+    .retrieval-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .tile-review-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tile-review-card:hover {
+      border-color: var(--border-cyan);
+      box-shadow: var(--shadow-md), 0 0 15px rgba(6, 182, 212, 0.2);
+    }
+
+    .tile-thumb-container {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      background: #000;
+      overflow: hidden;
+      cursor: zoom-in;
+    }
+
+    .tile-thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .tile-thumb-container:hover .tile-thumb-img {
+      transform: scale(1.04);
+    }
+
+    .tile-badge-overlay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      gap: 6px;
+    }
+
+    .score-badge {
+      background: rgba(0, 0, 0, 0.75);
+      border: 1px solid var(--accent-cyan);
+      color: var(--cyan-bright);
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      backdrop-filter: blur(4px);
+    }
+
+    .tile-card-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .tile-header-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .tile-id-txt {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      font-family: var(--font-mono);
+    }
+
+    .tile-coords {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    /* Spectral pill clusters */
+    .spectral-pills {
+      display: flex;
+      gap: 6px;
+    }
+
+    .spectral-tag {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+    }
+
+    /* Analyst decision buttons on tile */
+    .analyst-tile-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .verdict-btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-verdict {
+      flex: 1;
+      padding: 7px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-verdict.hit.active {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      color: #34d399;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-verdict.miss.active {
+      background: rgba(244, 63, 94, 0.25);
+      border-color: #f43f5e;
+      color: #fb7185;
+      box-shadow: 0 0 10px rgba(244, 63, 94, 0.3);
+    }
+
+    .tag-select-input {
+      width: 100%;
+      padding: 6px 10px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 11px;
+      font-family: inherit;
+    }
+
+    .tile-review-card.status-accepted {
+      border-color: rgba(16, 185, 129, 0.65);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.22);
+    }
+
+    .tile-review-card.status-rejected {
+      border-color: rgba(244, 63, 94, 0.65);
+      box-shadow: 0 0 16px rgba(244, 63, 94, 0.22);
+    }
+
+    .tile-status-overlay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+    }
+
+    /* Results Filter Bar */
+    .results-filter-bar {
+      padding: 12px 24px;
+      background: rgba(10, 16, 30, 0.8);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .filter-tab-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .subtab-btn {
+      padding: 6px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .subtab-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .subtab-btn.active {
+      background: rgba(6, 182, 212, 0.25);
+      border-color: var(--cyan-bright);
+      color: #fff;
+    }
+
+    .subtab-btn.accepted.active {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: #10b981;
+      color: #34d399;
+    }
+
+    .subtab-btn.rejected.active {
+      background: rgba(244, 63, 94, 0.25);
+      border-color: #f43f5e;
+      color: #fb7185;
+    }
+
+    .subtab-btn.pending.active {
+      background: rgba(245, 158, 11, 0.25);
+      border-color: #f59e0b;
+      color: #fbbf24;
+    }
+
+    /* Change Detection Evidence Inspector */
+    .evidence-inspector-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .triplet-satellite-viewer {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 12px;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .satellite-epoch-pane {
+      background: #000;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .epoch-date-badge {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--cyan-bright);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+    }
+
+    .epoch-footer-id {
+      padding: 6px 12px;
+      background: rgba(0, 0, 0, 0.5);
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border-subtle);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .highlight-pane {
+      border-color: rgba(244, 63, 94, 0.5) !important;
+      box-shadow: 0 0 16px rgba(244, 63, 94, 0.25);
+    }
+
+    .epoch-header {
+      padding: 8px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-family: var(--font-mono);
+    }
+
+    .epoch-img-wrapper {
+      width: 100%;
+      height: 260px;
+      position: relative;
+      cursor: zoom-in;
+    }
+
+    .epoch-img-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .change-target-box {
+      position: absolute;
+      border: 2px solid #fb7185;
+      background: rgba(244, 63, 94, 0.35);
+      box-shadow: 0 0 14px rgba(244, 63, 94, 0.8), inset 0 0 8px rgba(244, 63, 94, 0.4);
+      pointer-events: none;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+
+    .target-corner {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-color: #fff;
+    }
+    .target-corner.tl { top: -2px; left: -2px; border-top: 2px solid #fff; border-left: 2px solid #fff; }
+    .target-corner.tr { top: -2px; right: -2px; border-top: 2px solid #fff; border-right: 2px solid #fff; }
+    .target-corner.bl { bottom: -2px; left: -2px; border-bottom: 2px solid #fff; border-left: 2px solid #fff; }
+    .target-corner.br { bottom: -2px; right: -2px; border-bottom: 2px solid #fff; border-right: 2px solid #fff; }
+
+    .target-label {
+      background: #fb7185;
+      color: #000;
+      font-size: 9px;
+      font-weight: 800;
+      font-family: var(--font-mono);
+      padding: 1px 4px;
+      border-radius: 2px;
+      transform: translateY(-100%);
+      white-space: nowrap;
+    }
+
+    .view-mode-pill {
+      font-size: 10px;
+      font-family: var(--font-mono);
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .view-mode-pill:hover {
+      background: rgba(56, 189, 248, 0.18);
+      color: #38bdf8;
+      border-color: #38bdf8;
+    }
+    .view-mode-pill.active {
+      background: rgba(244, 63, 94, 0.25);
+      border-color: #fb7185;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
+    }
+
+    .change-delta-divider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 0 6px;
+    }
+
+    .delta-pulse-arrow {
+      font-size: 24px;
+      color: var(--cyan-bright);
+      text-shadow: 0 0 12px var(--cyan-bright);
+    }
+
+    /* Spectral Metrics Bar Graph */
+    .spectral-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .metric-metric-box {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .metric-box-title {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .metric-box-val {
+      font-size: 20px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .val-positive { color: #34d399; }
+    .val-negative { color: #fb7185; }
+    .val-neutral { color: #38bdf8; }
+
+    /* Change Decision Box */
+    .change-decision-box {
+      background: rgba(13, 20, 36, 0.95);
+      border: 1px solid var(--border-cyan);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .decision-btn-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .decision-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-color);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      background: rgba(255, 255, 255, 0.04);
+      color: #fff;
+    }
+
+    .decision-btn.confirm:hover, .decision-btn.confirm.active {
+      background: rgba(16, 185, 129, 0.3);
+      border-color: #10b981;
+      color: #34d399;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .decision-btn.reject:hover, .decision-btn.reject.active {
+      background: rgba(244, 63, 94, 0.3);
+      border-color: #f43f5e;
+      color: #fb7185;
+      box-shadow: 0 0 16px rgba(244, 63, 94, 0.4);
+    }
+
+    .decision-btn.unsure:hover, .decision-btn.unsure.active {
+      background: rgba(99, 102, 241, 0.3);
+      border-color: #6366f1;
+      color: #a5b4fc;
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+    }
+
+    .decision-notes-input {
+      width: 100%;
+      height: 60px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 12px;
+      outline: none;
+      resize: none;
+    }
+
+    /* Provenance Box */
+    .provenance-card {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px dashed var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    /* Table for Audit Log */
+    .audit-table-wrapper {
+      width: 100%;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .audit-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    .audit-table th {
+      background: rgba(255, 255, 255, 0.04);
+      padding: 14px 18px;
+      color: var(--cyan-bright);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-color);
+      font-family: var(--font-mono);
+    }
+
+    .audit-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+
+    .audit-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* Modal for Image Preview */
+    .zoom-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .zoom-modal.active {
+      display: flex;
+    }
+
+    .zoom-img-target {
+      max-width: 80vw;
+      max-height: 80vh;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--accent-cyan);
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
+    }
   </style>
 </head>
 <body>
+  <!-- Header -->
   <header>
     <div class="logo-section">
       <div class="logo-badge">🛰️</div>
       <div>
-        <div class="logo-title">AEROLENS &bull; ANALYST REVIEW BENCH</div>
-        <div class="logo-subtitle">QUALITY AUDITING & BENCHMARK CURATION &bull; DEFENSE DGIS</div>
+        <div class="logo-title">CANOPUS &bull; ANALYST REVIEW BENCH</div>
+        <div class="logo-subtitle">HUMAN-IN-THE-LOOP VERIFICATION & PROVENANCE &bull; DEFENSE DGIS</div>
       </div>
     </div>
     <nav class="nav-links">
@@ -30,26 +1001,1059 @@
       <a href="/review.html" class="nav-item active" id="nav-review" style="text-decoration: none;"><span>📝</span> Review Tool</a>
     </nav>
     <div class="header-status">
-      <a href="/" class="ingest-aoi-nav-btn" style="text-decoration: none;"><span>🗺️</span> Open Map Explorer</a>
-      <span class="tag-badge">Phase 5</span>
+      <div class="analyst-badge">
+        <span class="analyst-pulse"></span>
+        <span id="headerAnalystId">CAPT. VERMA (INTEL-01)</span>
+      </div>
     </div>
   </header>
 
-  <div class="content-container">
-    <div class="coming-soon-wrapper">
-      <div class="coming-soon-card">
-        <div class="coming-soon-icon">📝</div>
-        <h2>Analyst Review & Verification Workbench</h2>
-        <p>
-          Quality assessment workbench allowing military intelligence analysts to verify detected semantic anomalies, flag cloud contamination, override quality masks, and curate evaluation benchmarks.
-        </p>
-        <div class="badge-cluster">
-          <span class="feature-tag">Quality Score Auditing</span>
-          <span class="feature-tag">Cloud Contamination Mask Override</span>
-          <span class="feature-tag">GeoTIFF Export</span>
-        </div>
-      </div>
+  <!-- Sub-header Mode Selector -->
+  <div class="review-mode-bar">
+    <div class="mode-tabs">
+      <button class="mode-tab-btn active" id="tabBtnRetrieval" onclick="switchMode('retrieval')">
+        <span>🔍</span> Semantic Retrieval Review
+        <span class="tab-badge" id="badgeRetrievalCount">0</span>
+      </button>
+      <button class="mode-tab-btn" id="tabBtnChange" onclick="switchMode('change')">
+        <span>🔄</span> Change Detection Review
+        <span class="tab-badge" id="badgeChangeCount">0</span>
+      </button>
+      <button class="mode-tab-btn" id="tabBtnAudit" onclick="switchMode('audit')">
+        <span>📜</span> Unified Audit Log
+        <span class="tab-badge" id="badgeAuditCount">0</span>
+      </button>
+    </div>
+    <div>
+      <span style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">CLASSIFICATION: RESTRICTED // DGIS</span>
     </div>
   </div>
+
+  <!-- Workbench Viewport -->
+  <div class="workbench-viewport">
+    <!-- ============================================================
+         1. SEMANTIC RETRIEVAL REVIEW TAB
+         ============================================================ -->
+    <div class="tab-view active" id="viewRetrieval">
+      <!-- Left: Query Browser -->
+      <aside class="view-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">
+            <span>Audited Queries</span>
+            <button class="btn-action btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="loadRetrievalQueries()">↻ Refresh</button>
+          </div>
+          <!-- Query Type Segmented Switcher (Text vs Image) -->
+          <div class="query-type-switcher">
+            <button class="type-tab-btn active" id="tabTypeText" onclick="switchQueryType('text')">
+              <span>📝</span> Text Queries (<span id="txtCount">0</span>)
+            </button>
+            <button class="type-tab-btn" id="tabTypeImage" onclick="switchQueryType('image')">
+              <span>🖼️</span> Image Queries (<span id="imgCount">0</span>)
+            </button>
+          </div>
+          <input type="text" id="querySearchFilter" class="search-box-input" placeholder="Filter queries or test new..." oninput="filterQueriesList()">
+        </div>
+        <div class="sidebar-list" id="retrievalQueryList">
+          <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">Loading query history...</div>
+        </div>
+      </aside>
+
+      <!-- Main: Targets Inspection & Feedback -->
+      <main class="view-main">
+        <div class="action-banner">
+          <div>
+            <div class="banner-title">
+              <span id="activeQueryTitle">Select a query to review</span>
+            </div>
+            <div class="banner-desc" id="activeQueryMeta">
+              Review returned candidate tiles, mark positive hits / false alarms individually, and export dossiers.
+            </div>
+          </div>
+          <div class="banner-actions">
+            <button class="btn-action btn-cyan" id="btnRocchioRerank" onclick="triggerRocchioRerank()">
+              <span>⚡</span> Apply Rocchio Rerank
+            </button>
+            <button class="btn-action btn-outline" id="btnExportDossier" onclick="exportRetrievalDossier()">
+              <span>📁</span> Export Target Dossier (GeoJSON)
+            </button>
+          </div>
+        </div>
+
+        <!-- Status Filter Sub-tabs for Results -->
+        <div class="results-filter-bar">
+          <div class="filter-tab-group">
+            <button class="subtab-btn active" id="btnFilterAll" onclick="setResultStatusFilter('all')">
+              All Candidates (<span id="cntAll">0</span>)
+            </button>
+            <button class="subtab-btn accepted" id="btnFilterAccepted" onclick="setResultStatusFilter('accepted')">
+              <span>👍</span> Accepted Targets (<span id="cntAccepted">0</span>)
+            </button>
+            <button class="subtab-btn rejected" id="btnFilterRejected" onclick="setResultStatusFilter('rejected')">
+              <span>👎</span> False Alarms (<span id="cntRejected">0</span>)
+            </button>
+            <button class="subtab-btn pending" id="btnFilterPending" onclick="setResultStatusFilter('pending')">
+              <span>⏳</span> Pending Review (<span id="cntPending">0</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Tile Results Grid -->
+        <div class="retrieval-grid" id="retrievalResultsGrid">
+          <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">
+            Select a search query from the left sidebar to audit retrieved candidate tiles.
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ============================================================
+         2. CHANGE DETECTION REVIEW TAB
+         ============================================================ -->
+    <div class="tab-view" id="viewChange">
+      <!-- Left: Runs & Candidate Queue -->
+      <aside class="view-sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-title">
+            <span>Change Detection Runs</span>
+            <button class="btn-action btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="loadChangeRuns()">↻ Refresh</button>
+          </div>
+          <select id="changeRunSelect" class="search-box-input" onchange="onSelectChangeRun()">
+            <option value="">Loading runs...</option>
+          </select>
+          <div style="display: flex; gap: 4px; font-size: 11px; flex-wrap: wrap;">
+            <button class="btn-action btn-outline active" id="btnCandFilterAll" style="flex: 1; padding: 4px;" onclick="filterCandidateStatus('all')">All (<span id="candCntAll">0</span>)</button>
+            <button class="btn-action btn-outline" id="btnCandFilterConfirmed" style="flex: 1; padding: 4px;" onclick="filterCandidateStatus('confirmed')">Confirmed (<span id="candCntConfirmed">0</span>)</button>
+            <button class="btn-action btn-outline" id="btnCandFilterRejected" style="flex: 1; padding: 4px;" onclick="filterCandidateStatus('rejected')">Rejected (<span id="candCntRejected">0</span>)</button>
+            <button class="btn-action btn-outline" id="btnCandFilterPending" style="flex: 1; padding: 4px;" onclick="filterCandidateStatus('pending')">Pending (<span id="candCntPending">0</span>)</button>
+          </div>
+        </div>
+        <div class="sidebar-list" id="changeCandidateList">
+          <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">Select a run to load change events.</div>
+        </div>
+      </aside>
+
+      <!-- Main: Evidence & Provenance Inspector -->
+      <main class="view-main">
+        <div class="action-banner">
+          <div>
+            <div class="banner-title" id="candidateBannerTitle">
+              <span>Change Event Inspector</span>
+            </div>
+            <div class="banner-desc" id="candidateBannerMeta">
+              Side-by-side comparative inspection: Before (T1) vs After (T2) with localized detected change footprint overlay.
+            </div>
+          </div>
+          <div class="banner-actions">
+            <button class="btn-action" onclick="exportChangePDF()" style="background: linear-gradient(135deg, #ef4444, #991b1b); color: #fff; font-weight: 700; border: 1px solid #f87171; box-shadow: 0 0 14px rgba(239, 68, 68, 0.45);">
+              <span>📄</span> Export PDF Dossier
+            </button>
+            <button class="btn-action btn-cyan" onclick="exportConfirmedChangeGeoJSON()">
+              <span>📥</span> Export Confirmed GeoJSON
+            </button>
+            <button class="btn-action btn-outline" onclick="exportAllChangeGeoJSON()">
+              <span>🗺️</span> Export Full Run
+            </button>
+          </div>
+        </div>
+
+        <!-- Evidence Container -->
+        <div id="changeEvidenceCard" class="evidence-inspector-card" style="display: none;">
+          <!-- Triplet Comparative Viewer: Before (T1) | After (T2) | Change Footprint -->
+          <div class="triplet-satellite-viewer">
+            <!-- 1. Before T1 -->
+            <div class="satellite-epoch-pane">
+              <div class="epoch-header">
+                <span>Observation T1 (Pre-Change)</span>
+                <span id="t1DateBadge" class="epoch-date-badge">--</span>
+              </div>
+              <div class="epoch-img-wrapper" onclick="zoomImage(document.getElementById('imgBefore').src)">
+                <img id="imgBefore" src="" alt="T1 Baseline Observation">
+              </div>
+              <div class="epoch-footer-id" id="t1TileId">--</div>
+            </div>
+
+            <div class="change-delta-divider">
+              <span class="delta-pulse-arrow">➔</span>
+              <span class="status-pill status-pending" id="deltaTransitionPill">Analyzing</span>
+            </div>
+
+            <!-- 2. After T2 -->
+            <div class="satellite-epoch-pane">
+              <div class="epoch-header">
+                <span>Observation T2 (Post-Change)</span>
+                <span id="t2DateBadge" class="epoch-date-badge">--</span>
+              </div>
+              <div class="epoch-img-wrapper" onclick="zoomImage(document.getElementById('imgAfter').src)">
+                <img id="imgAfter" src="" alt="T2 Subsequent Observation">
+              </div>
+              <div class="epoch-footer-id" id="t2TileId">--</div>
+            </div>
+
+            <div class="change-delta-divider">
+              <span class="delta-pulse-arrow">🎯</span>
+              <span class="status-pill status-confirmed">Overlay</span>
+            </div>
+
+            <!-- 3. Change Patch / Overlay -->
+            <div class="satellite-epoch-pane highlight-pane">
+              <div class="epoch-header" style="justify-content: space-between;">
+                <span>Change Footprint</span>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                  <button type="button" class="view-mode-pill active" id="btnViewOverlay" onclick="event.stopPropagation(); setFootprintViewMode('overlay')">Footprint</button>
+                  <button type="button" class="view-mode-pill" id="btnViewComposite" onclick="event.stopPropagation(); setFootprintViewMode('composite')">Split</button>
+                  <button type="button" class="view-mode-pill" id="btnViewRaw" onclick="event.stopPropagation(); setFootprintViewMode('raw')">Raw T2</button>
+                </div>
+              </div>
+              <div class="epoch-img-wrapper" id="patchOverlayWrapper" onclick="zoomImage(document.getElementById('imgPatchOverlay').src)">
+                <img id="imgPatchOverlay" src="" alt="Detected Change Footprint Overlay">
+                <div id="changeTargetBox" class="change-target-box">
+                  <div class="target-corner tl"></div>
+                  <div class="target-corner tr"></div>
+                  <div class="target-corner bl"></div>
+                  <div class="target-corner br"></div>
+                  <span class="target-label" id="changeTargetBoxLabel">CHANGE DETECTED</span>
+                </div>
+              </div>
+              <div class="epoch-footer-id" id="patchCoordsInfo">--</div>
+            </div>
+          </div>
+
+          <!-- Spectral Deltas -->
+          <div class="spectral-metrics-grid">
+            <div class="metric-metric-box">
+              <div class="metric-box-title">
+                <span>Δ NDBI (Built-up / Concrete)</span>
+                <span>Construction</span>
+              </div>
+              <div class="metric-box-val val-positive" id="metricNdbi">0.00</div>
+              <div style="font-size: 11px; color: var(--text-muted);" id="metricNdbiDetail">T1: -- | T2: --</div>
+            </div>
+            <div class="metric-metric-box">
+              <div class="metric-box-title">
+                <span>Δ NDVI (Vegetation Loss/Gain)</span>
+                <span>Canopy</span>
+              </div>
+              <div class="metric-box-val val-negative" id="metricNdvi">0.00</div>
+              <div style="font-size: 11px; color: var(--text-muted);" id="metricNdviDetail">T1: -- | T2: --</div>
+            </div>
+            <div class="metric-metric-box">
+              <div class="metric-box-title">
+                <span>Δ NDWI (Water / Moisture)</span>
+                <span>Hydrology</span>
+              </div>
+              <div class="metric-box-val val-neutral" id="metricNdwi">0.00</div>
+              <div style="font-size: 11px; color: var(--text-muted);" id="metricNdwiDetail">T1: -- | T2: --</div>
+            </div>
+          </div>
+
+          <!-- Decision Action Box -->
+          <div class="change-decision-box">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 13px; font-weight: 700; color: #fff;">ANALYST VERIFICATION ACTION</span>
+              <span id="currentCandidateStatusPill" class="status-pill status-pending">PENDING</span>
+            </div>
+            <div class="decision-btn-group">
+              <button class="decision-btn confirm" id="btnConfirmChange" onclick="recordChangeVerdict('confirmed')">
+                <span>✅</span> Confirm Change
+              </button>
+              <button class="decision-btn reject" id="btnRejectChange" onclick="recordChangeVerdict('rejected')">
+                <span>❌</span> Reject (False Alarm)
+              </button>
+              <button class="decision-btn unsure" id="btnUnsureChange" onclick="recordChangeVerdict('unsure')">
+                <span>❓</span> Mark Inconclusive
+              </button>
+            </div>
+            <textarea id="changeAnalystNote" class="decision-notes-input" placeholder="Enter intelligence remarks or justification for this decision..."></textarea>
+          </div>
+
+          <!-- Provenance Block -->
+          <div class="provenance-card">
+            <div style="color: var(--cyan-bright); font-weight: 700; margin-bottom: 2px;">DATA PROVENANCE & LINEAGE:</div>
+            <div>&bull; Sensor: Sentinel-2 Multispectral L2A BOA (10m Resolution)</div>
+            <div id="provenanceRunId">&bull; Run ID: --</div>
+            <div id="provenanceCoords">&bull; Coordinates Centroid: --</div>
+            <div>&bull; Model Pipeline: Canopus-Patch-ViT-v1.0 (PostGIS Polygon Geometry)</div>
+          </div>
+        </div>
+
+        <div id="noCandidateSelectedPlaceholder" style="padding: 60px; text-align: center; color: var(--text-muted); font-size: 14px;">
+          Select a candidate patch from the left queue to inspect evidence and submit your review.
+        </div>
+      </main>
+    </div>
+
+    <!-- ============================================================
+         3. UNIFIED AUDIT TIMELINE TAB
+         ============================================================ -->
+    <div class="tab-view" id="viewAudit">
+      <main class="view-main" style="max-width: 1300px; margin: 0 auto; width: 100%;">
+        <div class="action-banner">
+          <div>
+            <div class="banner-title">
+              <span>Unified Human-in-the-Loop Audit Trail</span>
+            </div>
+            <div class="banner-desc">
+              Complete chronological audit trail of all analyst decisions across Semantic Retrieval and Change Detection.
+            </div>
+          </div>
+          <div class="banner-actions">
+            <button class="btn-action btn-outline" onclick="loadAuditTimeline()">
+              <span>↻</span> Refresh Audit Log
+            </button>
+          </div>
+        </div>
+
+        <div class="audit-table-wrapper">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Tool Engine</th>
+                <th>Analyst ID</th>
+                <th>Target / Candidate</th>
+                <th>Context / Run / Query</th>
+                <th>Verdict / Decision</th>
+                <th>Notes / Classification</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody">
+              <tr>
+                <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                  Loading audit log...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+
+  </div>
+
+  <!-- Image Zoom Modal -->
+  <div class="zoom-modal" id="zoomModal" onclick="closeZoom()">
+    <img id="zoomModalImg" class="zoom-img-target" src="" alt="High resolution satellite inspection">
+    <div style="color: #fff; font-size: 13px; font-family: var(--font-mono);">Click anywhere to close preview</div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    let activeMode = 'retrieval';
+    let currentQueryType = 'text'; // 'text' or 'image'
+    let currentResultFilter = 'all'; // 'all', 'accepted', 'rejected', 'pending'
+    let allQueries = [];
+    let currentQuery = null;
+    let currentQueryResults = [];
+    let allChangeRuns = [];
+    let currentRunId = null;
+    let currentCandidates = [];
+    let currentCandidate = null;
+    let candidateFilter = 'all';
+
+    function resolveThumbnail(pathOrUrl, tileId) {
+      if (!pathOrUrl) return createTileSvgDataUri(tileId);
+      let p = String(pathOrUrl).trim().replace(/\\/g, '/');
+      if (p.includes('/data/')) {
+        return '/data/' + p.split('/data/')[1];
+      }
+      if (p.startsWith('data/')) {
+        return '/' + p;
+      }
+      if (p.startsWith('/app/')) {
+        return p.replace('/app/', '/');
+      }
+      if (!p.startsWith('/')) {
+        return '/' + p;
+      }
+      return p;
+    }
+
+    function handleTileThumbError(img, tileId) {
+      if (!img) return;
+      img.onerror = null;
+      img.src = createTileSvgDataUri(tileId);
+    }
+
+    function createTileSvgDataUri(tileId) {
+      const cleanId = escapeHtml(tileId || 'Satellite Tile');
+      const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+          <defs>
+            <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#0a192f"/>
+              <stop offset="100%" stop-color="#020c1b"/>
+            </linearGradient>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(56, 189, 248, 0.12)" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="256" height="256" fill="url(#g)"/>
+          <rect width="256" height="256" fill="url(#grid)"/>
+          <circle cx="128" cy="110" r="32" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 2"/>
+          <text x="128" y="116" font-family="monospace" font-size="22" fill="#38bdf8" text-anchor="middle">🛰️</text>
+          <text x="128" y="165" font-family="monospace" font-size="11" fill="#94a3b8" text-anchor="middle" font-weight="bold">SENTINEL-2 L2A</text>
+          <text x="128" y="185" font-family="monospace" font-size="9" fill="#64748b" text-anchor="middle">${cleanId.substring(0, 26)}</text>
+        </svg>
+      `;
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg.trim());
+    }
+
+    // 1. Mode Switching
+    function switchMode(mode) {
+      activeMode = mode;
+      document.querySelectorAll('.mode-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+
+      if (mode === 'retrieval') {
+        document.getElementById('tabBtnRetrieval').classList.add('active');
+        document.getElementById('viewRetrieval').classList.add('active');
+        loadRetrievalQueries(true);
+      } else if (mode === 'change') {
+        document.getElementById('tabBtnChange').classList.add('active');
+        document.getElementById('viewChange').classList.add('active');
+        loadChangeRuns();
+      } else if (mode === 'audit') {
+        document.getElementById('tabBtnAudit').classList.add('active');
+        document.getElementById('viewAudit').classList.add('active');
+        loadAuditTimeline();
+      }
+    }
+
+    // 2. Semantic Retrieval Section
+    function switchQueryType(type) {
+      currentQueryType = type;
+      document.getElementById('tabTypeText').classList.toggle('active', type === 'text');
+      document.getElementById('tabTypeImage').classList.toggle('active', type === 'image');
+      document.getElementById('querySearchFilter').value = '';
+      currentQuery = null;
+      loadRetrievalQueries(true);
+    }
+
+    async function loadRetrievalQueries(autoSelect = true) {
+      try {
+        const res = await fetch(`/api/v1/review/retrieval/queries?query_type=${currentQueryType}`);
+        const data = await res.json();
+        allQueries = data.queries || [];
+
+        // Update counts
+        const txtCnt = data.text_count !== undefined ? data.text_count : allQueries.filter(q => q.query_type === 'text').length;
+        const imgCnt = data.image_count !== undefined ? data.image_count : allQueries.filter(q => q.query_type === 'image').length;
+        document.getElementById('txtCount').innerText = txtCnt;
+        document.getElementById('imgCount').innerText = imgCnt;
+        document.getElementById('badgeRetrievalCount').innerText = data.total !== undefined ? data.total : allQueries.length;
+
+        renderQueriesList(allQueries);
+
+        if (autoSelect && allQueries.length > 0) {
+          if (!currentQuery || !allQueries.some(q => q.raw_query === currentQuery)) {
+            selectQuery(allQueries[0].raw_query);
+          }
+        }
+      } catch (err) {
+        console.error('Error loading queries:', err);
+      }
+    }
+
+    function renderQueriesList(queries) {
+      const container = document.getElementById('retrievalQueryList');
+      if (!queries.length) {
+        container.innerHTML = `<div style="padding: 24px 12px; text-align: center; color: var(--text-muted); font-size: 13px;">No ${currentQueryType} queries found.<br><span style="font-size: 11px; opacity: 0.7;">Run a search in Semantic Retrieval to audit here.</span></div>`;
+        return;
+      }
+
+      container.innerHTML = queries.map(q => {
+        const isActive = currentQuery === q.raw_query;
+        const pos = q.positive_count || 0;
+        const neg = q.negative_count || 0;
+        const queryIcon = q.query_type === 'image' ? '🖼️' : '📝';
+        const dateStr = q.last_searched ? new Date(q.last_searched).toLocaleDateString() : '--';
+
+        return `
+          <div class="list-item-card ${isActive ? 'active' : ''}" onclick="selectQuery('${escapeHtml(q.raw_query)}')">
+            <div class="item-header">
+              <span class="item-title" title="${escapeHtml(q.raw_query)}">${queryIcon} ${escapeHtml(q.raw_query)}</span>
+              <span class="status-pill status-pending">${(q.query_type || 'text').toUpperCase()}</span>
+            </div>
+            <div class="item-stats-row">
+              <span class="status-pill status-confirmed">👍 ${pos}</span>
+              <span class="status-pill status-rejected">👎 ${neg}</span>
+              <span class="item-subtitle" style="margin-left: auto;">${dateStr}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterQueriesList() {
+      const txt = document.getElementById('querySearchFilter').value.toLowerCase();
+      const filtered = allQueries.filter(q => q.raw_query.toLowerCase().includes(txt));
+      renderQueriesList(filtered);
+    }
+
+    async function selectQuery(queryText) {
+      currentQuery = queryText;
+      document.getElementById('activeQueryTitle').innerText = `Query: "${queryText}"`;
+      renderQueriesList(allQueries);
+
+      const grid = document.getElementById('retrievalResultsGrid');
+      grid.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">Loading search results & recorded analyst decisions...</div>`;
+
+      try {
+        const res = await fetch(`/api/v1/review/retrieval/results?query=${encodeURIComponent(queryText)}&query_type=${currentQueryType}&top_k=12`);
+        const data = await res.json();
+        currentQueryResults = data.results || [];
+        renderRetrievalResults();
+      } catch (err) {
+        console.error('Error fetching query results:', err);
+        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--rose-bright); font-size: 14px;">Failed to load query results: ${err.message}</div>`;
+      }
+    }
+
+    function setResultStatusFilter(filter) {
+      currentResultFilter = filter;
+      document.getElementById('btnFilterAll').classList.toggle('active', filter === 'all');
+      document.getElementById('btnFilterAccepted').classList.toggle('active', filter === 'accepted');
+      document.getElementById('btnFilterRejected').classList.toggle('active', filter === 'rejected');
+      document.getElementById('btnFilterPending').classList.toggle('active', filter === 'pending');
+      renderRetrievalResults();
+    }
+
+    function renderRetrievalResults() {
+      const grid = document.getElementById('retrievalResultsGrid');
+      if (!currentQueryResults.length) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">No matching satellite tiles found for this query.</div>`;
+        return;
+      }
+
+      // Compute status counts
+      const total = currentQueryResults.length;
+      const accepted = currentQueryResults.filter(r => r.status === 'accepted').length;
+      const rejected = currentQueryResults.filter(r => r.status === 'rejected').length;
+      const pending = total - (accepted + rejected);
+
+      document.getElementById('cntAll').innerText = total;
+      document.getElementById('cntAccepted').innerText = accepted;
+      document.getElementById('cntRejected').innerText = rejected;
+      document.getElementById('cntPending').innerText = pending;
+
+      // Filter visible items
+      let visible = currentQueryResults;
+      if (currentResultFilter !== 'all') {
+        visible = currentQueryResults.filter(r => r.status === currentResultFilter);
+      }
+
+      if (!visible.length) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">No tiles match filter '<strong>${currentResultFilter.toUpperCase()}</strong>'. Switch tabs to view all candidates.</div>`;
+        return;
+      }
+
+      grid.innerHTML = visible.map(r => {
+        const status = r.status || 'pending';
+        const isHit = status === 'accepted';
+        const isMiss = status === 'rejected';
+        const thumbUrl = resolveThumbnail(r.thumbnail_url || r.thumbnail_path, r.tile_id);
+        const simPct = (r.score * 100).toFixed(1);
+
+        const statusBadgeText = isHit ? '✓ ACCEPTED' : (isMiss ? '✗ REJECTED' : '⏳ PENDING');
+        const statusBadgeClass = isHit ? 'status-confirmed' : (isMiss ? 'status-rejected' : 'status-pending');
+
+        return `
+          <div class="tile-review-card status-${status}">
+            <div class="tile-thumb-container" onclick="zoomImage('${thumbUrl}')">
+              <img class="tile-thumb-img" src="${thumbUrl}" alt="${r.tile_id}" onerror="handleTileThumbError(this, '${escapeHtml(r.tile_id)}')">
+              <div class="tile-badge-overlay">
+                <span class="score-badge">${simPct}% MATCH</span>
+              </div>
+              <div class="tile-status-overlay">
+                <span class="status-pill ${statusBadgeClass}">${statusBadgeText}</span>
+              </div>
+            </div>
+            <div class="tile-card-body">
+              <div class="tile-header-info">
+                <div>
+                  <div class="tile-id-txt">${r.tile_id}</div>
+                  <div class="tile-coords">${r.centroid_lat?.toFixed(4) || '--'}°N, ${r.centroid_lon?.toFixed(4) || '--'}°E</div>
+                </div>
+                <span class="spectral-tag">${r.region_id || 'Sentinel-2'}</span>
+              </div>
+
+              <div class="spectral-pills">
+                <span class="spectral-tag">NDVI: ${r.mean_ndvi?.toFixed(2) ?? '--'}</span>
+                <span class="spectral-tag">NDWI: ${r.mean_ndwi?.toFixed(2) ?? '--'}</span>
+                <span class="spectral-tag">NDBI: ${r.mean_ndbi?.toFixed(2) ?? '--'}</span>
+              </div>
+
+              <div class="analyst-tile-actions">
+                <div class="verdict-btn-row">
+                  <button class="btn-verdict hit ${isHit ? 'active' : ''}" onclick="submitFeedback('${escapeHtml(r.tile_id)}', true, this)">
+                    <span>👍</span> Relevant (Accept)
+                  </button>
+                  <button class="btn-verdict miss ${isMiss ? 'active' : ''}" onclick="submitFeedback('${escapeHtml(r.tile_id)}', false, this)">
+                    <span>👎</span> False Alarm (Reject)
+                  </button>
+                </div>
+                <select class="tag-select-input" onchange="updateTileTag('${escapeHtml(r.tile_id)}', this.value)">
+                  <option value="">Classification Tag...</option>
+                  <option value="Airbase Runway" ${r.tag === 'Airbase Runway' ? 'selected' : ''}>Airbase Runway</option>
+                  <option value="Aircraft Shelter" ${r.tag === 'Aircraft Shelter' ? 'selected' : ''}>Aircraft Shelter</option>
+                  <option value="SAM Battery" ${r.tag === 'SAM Battery' ? 'selected' : ''}>SAM Battery</option>
+                  <option value="Fuel Storage" ${r.tag === 'Fuel Storage' ? 'selected' : ''}>Fuel Storage</option>
+                  <option value="Naval Dockyard" ${r.tag === 'Naval Dockyard' ? 'selected' : ''}>Naval Dockyard</option>
+                  <option value="Vehicle Depots" ${r.tag === 'Vehicle Depots' ? 'selected' : ''}>Vehicle Depots</option>
+                  <option value="Military Encampment" ${r.tag === 'Military Encampment' ? 'selected' : ''}>Military Encampment</option>
+                  <option value="Industrial Facility" ${r.tag === 'Industrial Facility' ? 'selected' : ''}>Industrial Facility</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function submitFeedback(tileId, isRelevant, btnElem) {
+      if (!currentQuery) return;
+      try {
+        const res = await fetch('/api/v1/review/retrieval/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query_text: currentQuery,
+            tile_id: tileId,
+            relevant: isRelevant,
+            analyst_id: 'CAPT. VERMA (INTEL-01)'
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          // Update ONLY this specific tile in currentQueryResults
+          const target = currentQueryResults.find(t => t.tile_id === tileId);
+          if (target) {
+            target.status = isRelevant ? 'accepted' : 'rejected';
+          }
+          renderRetrievalResults();
+          loadRetrievalQueries(false); // background update of query tallies
+        }
+      } catch (err) {
+        alert('Error recording feedback: ' + err.message);
+      }
+    }
+
+    async function updateTileTag(tileId, tagValue) {
+      if (!currentQuery || !tagValue) return;
+      try {
+        await fetch('/api/v1/review/retrieval/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query_text: currentQuery,
+            tile_id: tileId,
+            relevant: true,
+            tag: tagValue,
+            analyst_id: 'CAPT. VERMA (INTEL-01)'
+          })
+        });
+        const target = currentQueryResults.find(t => t.tile_id === tileId);
+        if (target) {
+          target.tag = tagValue;
+          target.status = 'accepted';
+        }
+        renderRetrievalResults();
+      } catch (err) {
+        console.error('Error saving tag:', err);
+      }
+    }
+
+    async function triggerRocchioRerank() {
+      if (!currentQuery) return;
+      const btn = document.getElementById('btnRocchioRerank');
+      btn.innerHTML = `<span>⏳</span> Reranking...`;
+      try {
+        const res = await fetch('/api/v1/review/retrieval/rerank', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query_text: currentQuery,
+            top_k: 12,
+            alpha: 1.0,
+            beta: 0.75,
+            gamma: 0.25
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          // Reload detailed results with new reranked list
+          await selectQuery(currentQuery);
+          alert(`Rocchio Reranking applied successfully!\nPositives: ${data.data.feedback_applied.positives_count} | Negatives: ${data.data.feedback_applied.negatives_count}`);
+        }
+      } catch (err) {
+        alert('Rocchio reranking failed: ' + err.message);
+      } finally {
+        btn.innerHTML = `<span>⚡</span> Apply Rocchio Rerank`;
+      }
+    }
+
+    function exportRetrievalDossier() {
+      if (!currentQuery) return;
+      window.open(`/api/v1/review/retrieval/export.geojson?query=${encodeURIComponent(currentQuery)}`, '_blank');
+    }
+
+    // 3. Change Detection Review Section
+    async function loadChangeRuns() {
+      try {
+        const res = await fetch('/api/v1/change/runs-summary');
+        const data = await res.json();
+        allChangeRuns = data.runs || [];
+        document.getElementById('badgeChangeCount').innerText = allChangeRuns.length;
+
+        const select = document.getElementById('changeRunSelect');
+        if (!allChangeRuns.length) {
+          select.innerHTML = `<option value="">No change runs found</option>`;
+          return;
+        }
+
+        select.innerHTML = allChangeRuns.map(r => {
+          return `<option value="${r.run_id}">${r.site_key} (${r.total_candidates} events | ${r.confirmed_count} confirmed)</option>`;
+        }).join('');
+
+        if (!currentRunId && allChangeRuns.length > 0) {
+          currentRunId = allChangeRuns[0].run_id;
+          select.value = currentRunId;
+          onSelectChangeRun();
+        }
+      } catch (err) {
+        console.error('Error loading change runs:', err);
+      }
+    }
+
+    async function onSelectChangeRun() {
+      currentRunId = document.getElementById('changeRunSelect').value;
+      if (!currentRunId) return;
+
+      const listElem = document.getElementById('changeCandidateList');
+      listElem.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">Loading change events...</div>`;
+
+      try {
+        const res = await fetch(`/api/v1/change/runs/${currentRunId}/review-queue`);
+        const data = await res.json();
+        currentCandidates = data.queue || [];
+
+        updateCandidateCounts();
+        renderCandidateQueue(currentCandidates);
+
+        if (currentCandidates.length > 0) {
+          selectCandidate(currentCandidates[0].candidate_id);
+        } else {
+          document.getElementById('changeEvidenceCard').style.display = 'none';
+          document.getElementById('noCandidateSelectedPlaceholder').style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Error loading candidates:', err);
+      }
+    }
+
+    function updateCandidateCounts() {
+      const total = currentCandidates.length;
+      const confirmed = currentCandidates.filter(c => c.decision === 'confirmed').length;
+      const rejected = currentCandidates.filter(c => c.decision === 'rejected').length;
+      const pending = currentCandidates.filter(c => !c.decision || c.decision === 'pending').length;
+
+      document.getElementById('candCntAll').innerText = total;
+      document.getElementById('candCntConfirmed').innerText = confirmed;
+      document.getElementById('candCntRejected').innerText = rejected;
+      document.getElementById('candCntPending').innerText = pending;
+    }
+
+    function renderCandidateQueue(candidates) {
+      const listElem = document.getElementById('changeCandidateList');
+      let filtered = candidates;
+      if (candidateFilter !== 'all') {
+        filtered = candidates.filter(c => {
+          if (candidateFilter === 'pending') return !c.decision || c.decision === 'pending';
+          return c.decision === candidateFilter;
+        });
+      }
+
+      if (!filtered.length) {
+        listElem.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">No events match filter '${candidateFilter}'.</div>`;
+        return;
+      }
+
+      listElem.innerHTML = filtered.map((c, idx) => {
+        const isActive = currentCandidate && currentCandidate.candidate_id === c.candidate_id;
+        const decision = c.decision || 'pending';
+        const statusClass = `status-${decision}`;
+        const confPct = c.confidence_pct?.toFixed(0) || '0';
+        const eventTitle = `Event #${c.patch_id || (idx + 1)}: ${c.predicted_type || c.transition_label || 'Detected Change'}`;
+
+        return `
+          <div class="list-item-card ${isActive ? 'active' : ''}" onclick="selectCandidate('${c.candidate_id}')">
+            <div class="item-header">
+              <span class="item-title">${escapeHtml(eventTitle)}</span>
+              <span class="status-pill ${statusClass}">${decision.toUpperCase()}</span>
+            </div>
+            <div class="item-stats-row">
+              <span class="score-badge">${confPct}% CONF</span>
+              <span class="item-subtitle" style="margin-left: auto;">ΔNDBI: ${c.delta_ndbi !== undefined && c.delta_ndbi !== null ? ((c.delta_ndbi > 0 ? '+' : '') + c.delta_ndbi.toFixed(2)) : '--'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterCandidateStatus(status) {
+      candidateFilter = status;
+      document.getElementById('btnCandFilterAll').classList.toggle('active', status === 'all');
+      document.getElementById('btnCandFilterConfirmed').classList.toggle('active', status === 'confirmed');
+      document.getElementById('btnCandFilterRejected').classList.toggle('active', status === 'rejected');
+      document.getElementById('btnCandFilterPending').classList.toggle('active', status === 'pending');
+      renderCandidateQueue(currentCandidates);
+    }
+
+    function selectCandidate(candId) {
+      currentCandidate = currentCandidates.find(c => c.candidate_id === candId);
+      if (!currentCandidate) return;
+
+      renderCandidateQueue(currentCandidates);
+
+      document.getElementById('noCandidateSelectedPlaceholder').style.display = 'none';
+      const card = document.getElementById('changeEvidenceCard');
+      card.style.display = 'flex';
+
+      // Header
+      const confVal = Math.round(currentCandidate.confidence_pct || 82);
+      document.getElementById('candidateBannerTitle').innerText = `Change Event #${currentCandidate.patch_id} — ${currentCandidate.predicted_type || currentCandidate.transition_label || 'Surface Change'}`;
+      document.getElementById('deltaTransitionPill').innerText = `${confVal}% Confidence`;
+
+      // Date badges
+      const d1 = currentCandidate.date_before ? new Date(currentCandidate.date_before).toISOString().split('T')[0] : 'T1 Baseline';
+      const d2 = currentCandidate.date_after ? new Date(currentCandidate.date_after).toISOString().split('T')[0] : 'T2 Subsequent';
+      document.getElementById('t1DateBadge').innerText = d1;
+      document.getElementById('t2DateBadge').innerText = d2;
+
+      // Thumbnails
+      const t1Url = resolveThumbnail(currentCandidate.thumbnail_before, currentCandidate.source_tile_before);
+      const t2Url = resolveThumbnail(currentCandidate.thumbnail_after, currentCandidate.source_tile_after);
+      const overlayUrl = resolveThumbnail(currentCandidate.overlay_image_url || t2Url, currentCandidate.source_tile_after);
+      const compositeUrl = resolveThumbnail(currentCandidate.composite_image_url || overlayUrl, currentCandidate.source_tile_after);
+
+      window.currentCandidateImages = { t1Url, t2Url, overlayUrl, compositeUrl };
+
+      const imgBefore = document.getElementById('imgBefore');
+      const imgAfter = document.getElementById('imgAfter');
+
+      if (imgBefore) {
+        imgBefore.onerror = function() { handleTileThumbError(this, currentCandidate.source_tile_before); };
+        imgBefore.src = t1Url;
+      }
+      if (imgAfter) {
+        imgAfter.onerror = function() { handleTileThumbError(this, currentCandidate.source_tile_after); };
+        imgAfter.src = t2Url;
+      }
+
+      updateFootprintImage(currentFootprintMode || 'overlay');
+
+      // Calculate Bounding Box overlay position accurately on Sentinel-2 512x512 tile
+      const bbox = currentCandidate.bbox_px || [64, 64, 128, 128];
+      const tileSize = 512;
+      const x0 = bbox[0] || 0;
+      const y0 = bbox[1] || 0;
+      const x1 = bbox[2] || (x0 + 64);
+      const y1 = bbox[3] || (y0 + 64);
+
+      const leftPct = Math.max(0, Math.min(95, (x0 / tileSize) * 100));
+      const topPct = Math.max(0, Math.min(95, (y0 / tileSize) * 100));
+      const widthPct = Math.max(4, Math.min(100 - leftPct, ((x1 - x0) / tileSize) * 100));
+      const heightPct = Math.max(4, Math.min(100 - topPct, ((y1 - y0) / tileSize) * 100));
+
+      const targetBox = document.getElementById('changeTargetBox');
+      if (targetBox) {
+        targetBox.style.left = `${leftPct.toFixed(1)}%`;
+        targetBox.style.top = `${topPct.toFixed(1)}%`;
+        targetBox.style.width = `${widthPct.toFixed(1)}%`;
+        targetBox.style.height = `${heightPct.toFixed(1)}%`;
+      }
+      const boxLbl = document.getElementById('changeTargetBoxLabel');
+      if (boxLbl) {
+        boxLbl.innerText = `EVENT #${currentCandidate.patch_id} (${confVal}%)`;
+      }
+
+      document.getElementById('t1TileId').innerText = currentCandidate.source_tile_before || 'T1';
+      document.getElementById('t2TileId').innerText = currentCandidate.source_tile_after || 'T2';
+      document.getElementById('patchCoordsInfo').innerText = `Bounding Box: [${x0}, ${y0}, ${x1}, ${y1}] | Grid (${currentCandidate.grid_row}, ${currentCandidate.grid_col})`;
+
+      // Spectral values
+      const dNdbi = currentCandidate.delta_ndbi ?? 0;
+      const dNdvi = currentCandidate.delta_ndvi ?? 0;
+      const dNdwi = currentCandidate.delta_ndwi ?? 0;
+
+      document.getElementById('metricNdbi').innerText = (dNdbi > 0 ? '+' : '') + dNdbi.toFixed(3);
+      document.getElementById('metricNdvi').innerText = (dNdvi > 0 ? '+' : '') + dNdvi.toFixed(3);
+      document.getElementById('metricNdwi').innerText = (dNdwi > 0 ? '+' : '') + dNdwi.toFixed(3);
+
+      document.getElementById('metricNdbiDetail').innerText = `T1: ${currentCandidate.ndbi_t1?.toFixed(2) ?? '--'} | T2: ${currentCandidate.ndbi_t2?.toFixed(2) ?? '--'}`;
+      document.getElementById('metricNdviDetail').innerText = `T1: ${currentCandidate.ndvi_t1?.toFixed(2) ?? '--'} | T2: ${currentCandidate.ndvi_t2?.toFixed(2) ?? '--'}`;
+      document.getElementById('metricNdwiDetail').innerText = `T1: ${currentCandidate.ndwi_t1?.toFixed(2) ?? '--'} | T2: ${currentCandidate.ndwi_t2?.toFixed(2) ?? '--'}`;
+
+      // Status pill & notes
+      const status = currentCandidate.decision || 'pending';
+      const pill = document.getElementById('currentCandidateStatusPill');
+      pill.className = `status-pill status-${status}`;
+      pill.innerText = status.toUpperCase();
+
+      document.querySelectorAll('.decision-btn').forEach(b => b.classList.remove('active'));
+      if (status === 'confirmed') document.getElementById('btnConfirmChange').classList.add('active');
+      if (status === 'rejected') document.getElementById('btnRejectChange').classList.add('active');
+      if (status === 'unsure') document.getElementById('btnUnsureChange').classList.add('active');
+
+      document.getElementById('changeAnalystNote').value = currentCandidate.note || '';
+
+      // Provenance
+      document.getElementById('provenanceRunId').innerText = `• Run ID: ${currentCandidate.run_id}`;
+      document.getElementById('provenanceCoords').innerText = `• Coordinates: ${currentCandidate.centroid_lat?.toFixed(5) || '--'}°N, ${currentCandidate.centroid_lon?.toFixed(5) || '--'}°E`;
+    }
+
+    async function recordChangeVerdict(decision) {
+      if (!currentRunId || !currentCandidate) return;
+      const note = document.getElementById('changeAnalystNote').value;
+
+      try {
+        const res = await fetch(`/api/v1/change/runs/${currentRunId}/decide`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidate_id: currentCandidate.candidate_id,
+            decision: decision,
+            analyst_id: 'CAPT. VERMA (INTEL-01)',
+            note: note
+          })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          // Update ONLY this specific candidate
+          currentCandidate.decision = decision;
+          currentCandidate.note = note;
+          updateCandidateCounts();
+          selectCandidate(currentCandidate.candidate_id);
+          loadChangeRuns(); // background update of run counts
+        }
+      } catch (err) {
+        alert('Error saving change decision: ' + err.message);
+      }
+    }
+
+    let currentFootprintMode = 'overlay';
+
+    function setFootprintViewMode(mode) {
+      currentFootprintMode = mode;
+      document.querySelectorAll('.view-mode-pill').forEach(p => p.classList.remove('active'));
+      const btn = document.getElementById(mode === 'overlay' ? 'btnViewOverlay' : (mode === 'composite' ? 'btnViewComposite' : 'btnViewRaw'));
+      if (btn) btn.classList.add('active');
+      updateFootprintImage(mode);
+    }
+
+    function updateFootprintImage(mode) {
+      const img = document.getElementById('imgPatchOverlay');
+      const box = document.getElementById('changeTargetBox');
+      if (!img || !window.currentCandidateImages) return;
+
+      if (mode === 'composite' && window.currentCandidateImages.compositeUrl) {
+        img.src = window.currentCandidateImages.compositeUrl;
+        if (box) box.style.display = 'none'; // Side-by-side has different geometry
+      } else if (mode === 'raw') {
+        img.src = window.currentCandidateImages.t2Url;
+        if (box) box.style.display = 'block';
+      } else {
+        // 'overlay'
+        img.src = window.currentCandidateImages.overlayUrl;
+        if (box) box.style.display = 'block';
+      }
+    }
+
+    function exportChangePDF() {
+      if (!currentRunId) {
+        alert('Please select a change detection run first.');
+        return;
+      }
+      window.open(`/api/v1/change/runs/${encodeURIComponent(currentRunId)}/export.pdf`, '_blank');
+    }
+
+    function exportConfirmedChangeGeoJSON() {
+      if (!currentRunId) return;
+      window.open(`/api/v1/change/runs/${currentRunId}/export.geojson?status=confirmed`, '_blank');
+    }
+
+    function exportAllChangeGeoJSON() {
+      if (!currentRunId) return;
+      window.open(`/api/v1/change/runs/${currentRunId}/export.geojson`, '_blank');
+    }
+
+    // 4. Unified Audit Log
+    async function loadAuditTimeline() {
+      const tbody = document.getElementById('auditTableBody');
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">Fetching unified audit timeline...</td></tr>`;
+
+      try {
+        const res = await fetch('/api/v1/review/audit-log');
+        const data = await res.json();
+        const logs = data.audit_log || [];
+        document.getElementById('badgeAuditCount').innerText = logs.length;
+
+        if (!logs.length) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No recorded analyst decisions yet. Review queries or change candidates to generate audit records.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = logs.map(l => {
+          const isChange = l.tool_type === 'change_detection';
+          const toolBadge = isChange
+            ? `<span class="status-pill status-unsure">🔄 Change Analysis</span>`
+            : `<span class="status-pill status-confirmed">🔍 Semantic Retrieval</span>`;
+
+          const verdictBadge = (l.verdict === 'confirmed' || l.verdict === 'confirmed_hit')
+            ? `<span class="status-pill status-confirmed">${l.verdict}</span>`
+            : `<span class="status-pill status-rejected">${l.verdict}</span>`;
+
+          const dateStr = new Date(l.timestamp).toLocaleString();
+
+          return `
+            <tr>
+              <td style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${dateStr}</td>
+              <td>${toolBadge}</td>
+              <td style="font-family: var(--font-mono); font-size: 12px; color: var(--cyan-bright);">${l.analyst_id}</td>
+              <td style="font-family: var(--font-mono); font-size: 12px;">${l.target_id}</td>
+              <td style="font-size: 12px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${l.context_id}">${l.context_id}</td>
+              <td>${verdictBadge}</td>
+              <td style="font-size: 12px; color: var(--text-secondary);">${l.note || '--'}</td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Error fetching audit log:', err);
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--rose-bright);">Failed to load audit logs: ${err.message}</td></tr>`;
+      }
+    }
+
+    // Modal helpers
+    function zoomImage(url) {
+      if (!url) return;
+      document.getElementById('zoomModalImg').src = url;
+      document.getElementById('zoomModal').classList.add('active');
+    }
+
+    function closeZoom() {
+      document.getElementById('zoomModal').classList.remove('active');
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    // Initialize on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadRetrievalQueries();
+      loadChangeRuns();
+    });
+  </script>
 </body>
 </html>
