@@ -24,6 +24,24 @@ import rasterio
 logger = logging.getLogger("quality_auditor")
 
 
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+
+
+def resolve_file_path(path_str: Optional[str]) -> Optional[Path]:
+    if not path_str:
+        return None
+    p = Path(path_str)
+    if p.is_file():
+        return p
+    p_norm = str(path_str).replace("\\", "/")
+    idx = p_norm.find("data/")
+    if idx != -1:
+        cand = REPO_ROOT / p_norm[idx:]
+        if cand.is_file():
+            return cand
+    return None
+
+
 @dataclass
 class TileQualityReport:
     tile_id: str
@@ -46,22 +64,22 @@ class TileQualityReport:
 
 class QualityCheckEngine:
     """
-    Quality Check Engine evaluating mask.tif and cloud/bad pixel percentages.
+    Evaluates cloud cover, sensor dropouts, nodata voids, and shadow percentages
+    from `_mask.tif` and determines whether a tile is suitable for downstream
+    change detection algorithms.
     """
-    DEFAULT_MAX_BAD_PIXEL_PCT: float = 15.0     # Max 15% bad pixels allowed
-    DEFAULT_MIN_USABLE_PCT: float = 85.0        # Min 85% clear surface required
 
     def __init__(
         self,
-        max_bad_pixel_pct: float = DEFAULT_MAX_BAD_PIXEL_PCT,
-        min_usable_pct: float = DEFAULT_MIN_USABLE_PCT
+        max_bad_pixel_pct: float = 15.0,  # Dropped if >15% bad pixels
+        min_usable_pct: float = 85.0      # Must have >=85% clean usable surface
     ):
         self.max_bad_pixel_pct = max_bad_pixel_pct
         self.min_usable_pct = min_usable_pct
 
     def audit_mask_file(
         self,
-        mask_path: Optional[Union[str, Path]],
+        mask_path: Optional[str],
         tile_id: str = "unknown",
         site_key: str = "unknown",
         acquisition_date: str = "unknown"
@@ -73,7 +91,8 @@ class QualityCheckEngine:
         total_pixels = 262144  # 512x512 default
         rejection_reasons: List[str] = []
 
-        if not mask_path or not Path(mask_path).is_file():
+        resolved_p = resolve_file_path(mask_path)
+        if not resolved_p or not resolved_p.is_file():
             # If no mask file on disk, assume 0 bad pixels (clean)
             return TileQualityReport(
                 tile_id=tile_id,
@@ -91,7 +110,7 @@ class QualityCheckEngine:
                 mask_source="none_assumed_clean"
             )
 
-        p = Path(mask_path)
+        p = resolved_p
         try:
             with rasterio.open(str(p)) as src:
                 data = src.read(1)
