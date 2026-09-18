@@ -31,10 +31,27 @@ from typing import Dict, Any, List, Optional
 import psycopg2.extras
 from backend.ingestion.db_writer import get_pg_connection
 from backend.services.quality_auditor import quality_engine
+from backend.services.temporal_splitter import get_temporal_splitter
+from backend.services.patch_change_detector import get_patch_change_detector
 
 logger = logging.getLogger("change_stager")
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+
+
+def resolve_file_path(path_str: Optional[str]) -> Optional[Path]:
+    if not path_str:
+        return None
+    p = Path(path_str)
+    if p.is_file():
+        return p
+    p_norm = str(path_str).replace("\\", "/")
+    idx = p_norm.find("data/")
+    if idx != -1:
+        cand = REPO_ROOT / p_norm[idx:]
+        if cand.is_file():
+            return cand
+    return None
 
 
 def _to_web_url(file_path: Optional[str]) -> Optional[str]:
@@ -76,7 +93,7 @@ def get_all_regions_grid_map() -> Dict[str, Any]:
             """)
             coverage_rows = cur.fetchall()
 
-            # 2. Fetch all tiles with bounding coordinates
+            # 2. Fetch all Sentinel-2 tiles with bounding coordinates (exclude Maxar high-res)
             cur.execute("""
                 SELECT 
                     t.tile_id,
@@ -100,6 +117,8 @@ def get_all_regions_grid_map() -> Dict[str, Any]:
                     ST_XMax(t.geometry) as max_lon,
                     ST_YMax(t.geometry) as max_lat
                 FROM tiles t
+                WHERE (t.sensor ILIKE 'Sentinel%%' OR t.sensor IS NULL)
+                  AND (t.file_path NOT ILIKE '%%maxar%%' OR t.file_path IS NULL)
                 ORDER BY t.acquisition_date DESC, t.tile_id ASC;
             """)
             tile_rows = cur.fetchall()
@@ -206,15 +225,24 @@ def stage_tile_temporal_series(
     conn = get_pg_connection()
     try:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            # 1. Get the target tile's site_key
-            cur.execute("SELECT site_key, centroid_lat, centroid_lon FROM tiles WHERE tile_id = %s LIMIT 1;", (tile_id,))
+            # 1. Get the target tile's site_key, sensor, and file_path
+            cur.execute("SELECT site_key, sensor, file_path, centroid_lat, centroid_lon FROM tiles WHERE tile_id = %s LIMIT 1;", (tile_id,))
             target = cur.fetchone()
             if not target:
                 raise ValueError(f"Tile {tile_id} not found in database.")
 
+            # Strict guard: Exclude Maxar high-res tiles from Sentinel multi-spectral change detection
+            t_sensor = str(target.get("sensor") or "").lower()
+            t_fp = str(target.get("file_path") or "").lower()
+            if "maxar" in t_sensor or "maxar" in t_fp or "worldview" in t_sensor:
+                raise ValueError(
+                    f"Tile {tile_id} is a sub-meter optical Maxar tile ({target.get('sensor')}). "
+                    f"Change detection pipeline strictly requires Sentinel-2 10m multi-spectral observations."
+                )
+
             site_key = target.get("site_key") or tile_id
 
-            # 2. Fetch all temporal sibling tiles sharing this site_key
+            # 2. Fetch all temporal sibling tiles sharing this site_key (strictly Sentinel-2)
             cur.execute("""
                 SELECT 
                     tile_id,
@@ -234,6 +262,8 @@ def stage_tile_temporal_series(
                     thumbnail_path
                 FROM tiles
                 WHERE site_key = %s
+                  AND (sensor ILIKE 'Sentinel%%' OR sensor IS NULL)
+                  AND (file_path NOT ILIKE '%%maxar%%' OR file_path IS NULL)
                 ORDER BY acquisition_date ASC;
             """, (site_key,))
             sibling_rows = cur.fetchall()
@@ -254,39 +284,59 @@ def stage_tile_temporal_series(
     # If all tiles were dropped (e.g. extremely cloudy), fallback to the best available 2
     if len(selected_tiles) == 0 and len(dropped_tiles) > 0:
         logger.warning(f"All observations dropped by quality gate for {site_key}. Selecting best available as fallback.")
-        # Sort dropped by usable_pct descending
         fallback_sorted = sorted(dropped_tiles, key=lambda d: d["usable_pct"], reverse=True)
         selected_tiles = fallback_sorted[:2]
-        # Remove selected fallback from dropped list
         dropped_ids = {s["tile_id"] for s in selected_tiles}
         dropped_tiles = [d for d in dropped_tiles if d["tile_id"] not in dropped_ids]
 
+    if len(selected_tiles) < 2:
+        raise ValueError(f"Insufficient usable observations for site_key {site_key} (need at least 2 clean tiles).")
+
+    # ============================================================
+    # 4. RUN PRITHVI TEMPORAL SPLITTING ENGINE
+    # ============================================================
+    clean_records = [s["raw_record"] for s in selected_tiles]
+    splitter = get_temporal_splitter()
+    split_res = splitter.evaluate_series(clean_records)
+
+    rec_before = split_res["selected_before_record"]
+    rec_after = split_res["selected_after_record"]
+
+    # Quick lookup for quality stats of selected milestone records
+    sel_lookup = {s["tile_id"]: s for s in selected_tiles}
+    sel_before = sel_lookup.get(rec_before["tile_id"], selected_tiles[0])
+    sel_after = sel_lookup.get(rec_after["tile_id"], selected_tiles[-1])
+
     # Target staging directory: data/change_staging/<site_key>/
     base_staging_dir = REPO_ROOT / "data" / staging_dir_name / site_key
+    # Strictly remove any previous runs/stale epochs to ensure only the 2 milestone folders exist
+    if base_staging_dir.exists():
+        shutil.rmtree(base_staging_dir, ignore_errors=True)
     base_staging_dir.mkdir(parents=True, exist_ok=True)
 
-    # 4. Copy ONLY validated STAY tiles to epoch subdirectories (T1, T2, ...)
+    # ============================================================
+    # 5. STAGE STRICTLY AND ONLY THE 2 MILESTONE TILES (T1, T2)
+    # ============================================================
     staged_epochs: List[Dict[str, Any]] = []
-    manifest_selected: List[Dict[str, Any]] = []
+    milestone_targets = [
+        ("T1", "baseline_before", sel_before, rec_before),
+        ("T2", "onset_after", sel_after, rec_after)
+    ]
 
-    for idx, sel_item in enumerate(selected_tiles):
-        row = sel_item["raw_record"]
-        epoch_idx = idx + 1
+    for tag, role, sel_info, row in milestone_targets:
         acq_date_str = str(row["acquisition_date"])[:10]
-        epoch_folder_name = f"T{epoch_idx}_{acq_date_str}"
+        epoch_folder_name = f"{tag}_{acq_date_str}"
         epoch_dir = base_staging_dir / epoch_folder_name
         epoch_dir.mkdir(parents=True, exist_ok=True)
 
-        # File paths
-        src_tif = Path(row["file_path"]) if row.get("file_path") else None
-        src_mask = Path(row["bad_mask_path"]) if row.get("bad_mask_path") else None
-        src_thumb = Path(row["thumbnail_path"]) if row.get("thumbnail_path") else None
+        src_tif = resolve_file_path(row.get("file_path"))
+        src_mask = resolve_file_path(row.get("bad_mask_path"))
+        src_thumb = resolve_file_path(row.get("thumbnail_path"))
 
         dst_tif = epoch_dir / "tile.tif"
         dst_mask = epoch_dir / "mask.tif"
         dst_thumb = epoch_dir / "thumb.jpg"
 
-        # Copy files
         if src_tif and src_tif.is_file():
             shutil.copy2(src_tif, dst_tif)
         if src_mask and src_mask.is_file():
@@ -295,7 +345,8 @@ def stage_tile_temporal_series(
             shutil.copy2(src_thumb, dst_thumb)
 
         staged_epoch = {
-            "epoch": f"T{epoch_idx}",
+            "epoch": tag,
+            "role": role,
             "tile_id": row["tile_id"],
             "scene_id": row["scene_id"],
             "acquisition_date": str(row["acquisition_date"]),
@@ -307,10 +358,10 @@ def stage_tile_temporal_series(
             "mean_ndwi": float(row["mean_ndwi"]) if row.get("mean_ndwi") is not None else None,
             "mean_ndbi": float(row["mean_ndbi"]) if row.get("mean_ndbi") is not None else None,
             "quality_check": {
-                "bad_pixels": sel_item["bad_pixels"],
-                "total_pixels": sel_item["total_pixels"],
-                "bad_pixel_pct": sel_item["bad_pixel_pct"],
-                "usable_pct": sel_item["usable_pct"],
+                "bad_pixels": sel_info["bad_pixels"],
+                "total_pixels": sel_info["total_pixels"],
+                "bad_pixel_pct": sel_info["bad_pixel_pct"],
+                "usable_pct": sel_info["usable_pct"],
                 "status": "STAY"
             },
             "files": {
@@ -323,23 +374,11 @@ def stage_tile_temporal_series(
         }
         staged_epochs.append(staged_epoch)
 
-        manifest_selected.append({
-            "epoch": f"T{epoch_idx}",
-            "tile_id": row["tile_id"],
-            "date": acq_date_str,
-            "bad_pixels": sel_item["bad_pixels"],
-            "total_pixels": sel_item["total_pixels"],
-            "bad_pixel_pct": sel_item["bad_pixel_pct"],
-            "usable_pct": sel_item["usable_pct"],
-            "status": "STAY",
-            "folder": str(epoch_dir.relative_to(REPO_ROOT)).replace("\\", "/")
-        })
-
-    # 5. Compute spectral deltas between earliest and latest STAY observations
+    # 6. Compute spectral deltas between milestone T1 and T2
     deltas = {}
-    if len(staged_epochs) >= 2:
+    if len(staged_epochs) == 2:
         t_pre = staged_epochs[0]
-        t_post = staged_epochs[-1]
+        t_post = staged_epochs[1]
 
         if t_pre["mean_ndvi"] is not None and t_post["mean_ndvi"] is not None:
             deltas["delta_ndvi"] = round(t_post["mean_ndvi"] - t_pre["mean_ndvi"], 4)
@@ -348,10 +387,21 @@ def stage_tile_temporal_series(
         if t_pre["mean_ndbi"] is not None and t_post["mean_ndbi"] is not None:
             deltas["delta_ndbi"] = round(t_post["mean_ndbi"] - t_pre["mean_ndbi"], 4)
 
-    # 6. Assemble complete quality audit block for manifest
-    manifest_dropped = []
-    for d in dropped_tiles:
-        manifest_dropped.append({
+    # 7. Assemble Quality Audit Summary
+    manifest_passed = [
+        {
+            "tile_id": s["tile_id"],
+            "date": s["date"],
+            "bad_pixels": s["bad_pixels"],
+            "total_pixels": s["total_pixels"],
+            "bad_pixel_pct": s["bad_pixel_pct"],
+            "usable_pct": s["usable_pct"],
+            "status": "STAY"
+        }
+        for s in selected_tiles
+    ]
+    manifest_dropped = [
+        {
             "tile_id": d["tile_id"],
             "date": d["date"],
             "bad_pixels": d["bad_pixels"],
@@ -360,41 +410,120 @@ def stage_tile_temporal_series(
             "usable_pct": d["usable_pct"],
             "status": "DROPPED",
             "reasons": d.get("reasons", ["Failed quality threshold"])
-        })
+        }
+        for d in dropped_tiles
+    ]
 
     quality_audit_summary = {
         "thresholds_applied": audit_report["thresholds_applied"],
         "total_evaluated": audit_report["total_evaluated"],
-        "passed_count": len(manifest_selected),
+        "passed_count": len(manifest_passed),
         "dropped_count": len(manifest_dropped),
-        "selected_tiles": manifest_selected,
+        "selected_tiles": manifest_passed,
         "dropped_tiles": manifest_dropped
     }
 
-    # 7. Write manifest.json
+    # 8. Assemble Splitting Engine Audit
+    splitting_audit = {
+        "method": split_res["method"],
+        "device": split_res.get("device", "cpu"),
+        "device_name": split_res.get("device_name", "CPU"),
+        "total_clean_epochs_evaluated": split_res["total_clean_epochs"],
+        "optimal_split_index": split_res["split_index"],
+        "step_score": split_res["step_score"],
+        "onset_bracket": split_res["onset_bracket"],
+        "date_before": split_res["split_date_before"],
+        "date_after": split_res["split_date_after"],
+        "all_candidates": split_res.get("all_split_scores", [])
+    }
+
+    # 9. CONTINUOUS PIPELINE: Execute Prithvi Patch Change Detection on the 2 Milestone Tiles
+    patch_change_report = None
+    if len(staged_epochs) == 2:
+        try:
+            logger.info(f"Executing Prithvi Patch Change Detection on milestone tiles for site {site_key}...")
+            detector = get_patch_change_detector()
+            t1_epoch = staged_epochs[0]
+            t2_epoch = staged_epochs[1]
+
+            t1_tif = base_staging_dir / f"{t1_epoch['epoch']}_{t1_epoch['date_short']}" / "tile.tif"
+            t2_tif = base_staging_dir / f"{t2_epoch['epoch']}_{t2_epoch['date_short']}" / "tile.tif"
+            t1_mask = base_staging_dir / f"{t1_epoch['epoch']}_{t1_epoch['date_short']}" / "mask.tif"
+            t2_mask = base_staging_dir / f"{t2_epoch['epoch']}_{t2_epoch['date_short']}" / "mask.tif"
+
+            patch_change_report = detector.run_detection(
+                before_tif=str(t1_tif),
+                after_tif=str(t2_tif),
+                before_mask=str(t1_mask) if t1_mask.is_file() else None,
+                after_mask=str(t2_mask) if t2_mask.is_file() else None,
+                output_dir=str(base_staging_dir),
+                grid_size=8,
+                quality_thresh=0.20,
+                z_threshold=2.0,
+                min_dist=0.01,
+                min_cluster_size=2
+            )
+            logger.info(f"Patch change detection complete: {patch_change_report.get('num_candidates', 0)} candidate patches confirmed.")
+        except Exception as pe:
+            logger.error(f"Error running patch change detection on {site_key}: {pe}", exc_info=True)
+            patch_change_report = {
+                "status": "failed",
+                "error": str(pe),
+                "num_candidates": 0,
+                "candidates": []
+            }
+
+    # 10. Write manifest.json
     manifest_data = {
-        "manifest_version": "1.1.0",
+        "manifest_version": "2.2.0",
         "generated_at": datetime.utcnow().isoformat() + "Z",
         "site_key": site_key,
         "centroid": [float(target["centroid_lat"]), float(target["centroid_lon"])],
         "staging_dir": str(base_staging_dir.relative_to(REPO_ROOT)).replace("\\", "/"),
         "quality_audit": quality_audit_summary,
+        "splitting_audit": splitting_audit,
+        "patch_change_analysis": patch_change_report,
         "total_staged_epochs": len(staged_epochs),
         "epochs": staged_epochs,
         "spectral_deltas": deltas,
-        "downstream_ready": len(staged_epochs) >= 2
+        "downstream_ready": len(staged_epochs) == 2
     }
 
     manifest_path = base_staging_dir / "manifest.json"
     with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest_data, f, indent=2)
 
+    # 11. Transactionally persist complete pipeline execution into PostgreSQL / PostGIS
+    run_id = None
+    try:
+        from backend.services.change_persistence import save_change_pipeline_run
+        rel_manifest = str(manifest_path.relative_to(REPO_ROOT)).replace("\\", "/")
+        rel_staging = str(base_staging_dir.relative_to(REPO_ROOT)).replace("\\", "/")
+        run_id = save_change_pipeline_run(
+            target_tile_id=tile_id,
+            site_key=site_key,
+            staging_dir=rel_staging,
+            manifest_path=rel_manifest,
+            quality_audit=quality_audit_summary,
+            splitting_audit=splitting_audit,
+            patch_change_analysis=patch_change_report,
+            all_sibling_records=sibling_rows,
+            staged_epochs=staged_epochs,
+            spectral_deltas=deltas
+        )
+        logger.info(f"Pipeline run {run_id} persisted in PostgreSQL/PostGIS.")
+    except Exception as db_err:
+        logger.error(f"Error persisting change pipeline run to database: {db_err}", exc_info=True)
+
     return {
         "status": "success",
-        "message": f"Successfully staged {len(staged_epochs)} clean observations for site {site_key}.",
+        "run_id": run_id,
+        "message": f"Optimal change transition identified ({split_res['onset_bracket']}) and patch change detection executed.",
         "site_key": site_key,
         "staging_dir": str(base_staging_dir.relative_to(REPO_ROOT)).replace("\\", "/"),
         "quality_audit": quality_audit_summary,
+        "splitting_audit": splitting_audit,
+        "patch_change_analysis": patch_change_report,
         "epochs": staged_epochs,
         "spectral_deltas": deltas,
         "manifest_path": str(manifest_path.relative_to(REPO_ROOT)).replace("\\", "/")
