@@ -67,7 +67,24 @@ class RemoteCLIPEncoder:
 
         self.checkpoint_path = checkpoint_path
         if not os.path.exists(self.checkpoint_path):
-            raise FileNotFoundError(f"RemoteCLIP checkpoint not found at: {self.checkpoint_path}")
+            logger.info(f"RemoteCLIP checkpoint not found at: {self.checkpoint_path}. Attempting download from Hugging Face (chendelong/RemoteCLIP)...")
+            try:
+                from huggingface_hub import hf_hub_download
+                ckpt_dir = os.path.dirname(self.checkpoint_path)
+                os.makedirs(ckpt_dir, exist_ok=True)
+                downloaded = hf_hub_download(
+                    repo_id="chendelong/RemoteCLIP",
+                    filename="RemoteCLIP-ViT-B-32.pt",
+                    local_dir=ckpt_dir,
+                    local_dir_use_symlinks=False
+                )
+                self.checkpoint_path = downloaded
+                logger.info(f"RemoteCLIP checkpoint successfully downloaded to: {self.checkpoint_path}")
+            except Exception as e:
+                logger.error(f"Failed to auto-download RemoteCLIP checkpoint: {e}")
+                raise FileNotFoundError(
+                    f"RemoteCLIP checkpoint not found at: {self.checkpoint_path} and could not be downloaded from Hugging Face: {e}"
+                )
 
         logger.info(f"Initializing RemoteCLIP {MODEL_NAME} architecture on device '{self.device}'...")
         self.model, _, self.preprocess = open_clip.create_model_and_transforms(MODEL_NAME)
