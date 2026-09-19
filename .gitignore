@@ -30,16 +30,19 @@ models/retrieval/*.bin
 models/retrieval/*.safetensors
 models/retrieval/*.onnx
 models/**/*.pt
+models/**/*.pth
 models/**/*.bin
 models/**/*.safetensors
 models/**/*.onnx
 *.pt
+*.pth
 *.bin
 *.safetensors
 *.onnx
 *.weights
 *.h5
 *.pkl
+models/change_head/
 
 # 3. Reference & External Repositories
 SIH2026/

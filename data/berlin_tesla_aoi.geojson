@@ -1,0 +1,18 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Tesla Gigafactory Berlin (Grünheide)"
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [13.7869, 52.3765],
+        [13.8329, 52.3765],
+        [13.8329, 52.4225],
+        [13.7869, 52.4225],
+        [13.7869, 52.3765]
+      ]
+    ]
+  }
+}
