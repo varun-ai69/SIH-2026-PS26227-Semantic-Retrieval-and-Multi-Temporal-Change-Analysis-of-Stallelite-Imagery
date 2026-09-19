@@ -1,0 +1,1054 @@
+/* ============================================================
+   CANOPUS — ORBITAL MISSION CONTROL SHADERS & EFFECTS
+   Phase 1: Clean Satellite Cursor, Reticles & Click Shockwaves
+   ============================================================ */
+
+/* Universal Tactical SVG Icon Engine */
+svg.ui-icon {
+  display: inline-block !important;
+  vertical-align: middle !important;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px !important;
+  min-height: 15px !important;
+  stroke: currentColor !important;
+  fill: none !important;
+  stroke-width: 2 !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+  flex-shrink: 0 !important;
+}
+svg.ui-icon.icon-sm { width: 13px !important; height: 13px !important; min-width: 13px !important; min-height: 13px !important; }
+svg.ui-icon.icon-md { width: 17px !important; height: 17px !important; min-width: 17px !important; min-height: 17px !important; }
+svg.ui-icon.icon-lg { width: 20px !important; height: 20px !important; min-width: 20px !important; min-height: 20px !important; }
+svg.ui-icon.icon-cyan { stroke: #06b6d4 !important; color: #06b6d4 !important; }
+svg.ui-icon.icon-emerald { stroke: #10b981 !important; color: #10b981 !important; }
+svg.ui-icon.icon-amber { stroke: #f59e0b !important; color: #f59e0b !important; }
+svg.ui-icon.icon-rose { stroke: #f43f5e !important; color: #f43f5e !important; }
+svg.ui-icon.icon-sky { stroke: #38bdf8 !important; color: #38bdf8 !important; }
+
+/* ------------------------------------------------------------
+   1. GLOBAL CURSOR CONFIGURATION (Desktop Non-Touch)
+   ------------------------------------------------------------ */
+@media (hover: hover) and (pointer: fine) {
+  body.tactical-cursor-active,
+  body.tactical-cursor-active * {
+    cursor: none !important;
+  }
+}
+
+/* Fallback / Reduced Motion: Restore standard cursor */
+@media (prefers-reduced-motion: reduce) {
+  body.tactical-cursor-active,
+  body.tactical-cursor-active * {
+    cursor: auto !important;
+  }
+  #tactical-cursor-root {
+    display: none !important;
+  }
+}
+
+/* ------------------------------------------------------------
+   2. TACTICAL CURSOR CONTAINER & LAYERS
+   ------------------------------------------------------------ */
+#tactical-cursor-root {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 999999;
+  overflow: hidden;
+  contain: layout size style;
+}
+
+/* The satellite follower element */
+.satellite-probe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38px;
+  height: 38px;
+  margin-top: -19px;
+  margin-left: -19px;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  transition: opacity 0.25s ease;
+  will-change: transform, opacity;
+}
+
+.satellite-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+  filter: drop-shadow(0 0 5px rgba(6, 182, 212, 0.75));
+  transition: transform 0.12s ease-out;
+}
+
+/* Satellite Chassis & Solar Arrays */
+.sat-body {
+  fill: #0d1b2e;
+  stroke: #06b6d4;
+  stroke-width: 1.5;
+}
+
+.sat-core {
+  fill: #38bdf8;
+  filter: drop-shadow(0 0 4px #38bdf8);
+}
+
+.sat-solar {
+  fill: #0284c7;
+  stroke: #38bdf8;
+  stroke-width: 1;
+  stroke-dasharray: 2, 2;
+}
+
+.sat-grid {
+  stroke: rgba(255, 255, 255, 0.4);
+  stroke-width: 0.75;
+}
+
+.sat-antenna {
+  stroke: #f8fafc;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+}
+
+/* Idle / Standby Mode */
+.satellite-probe.standby {
+  opacity: 0.5;
+  filter: grayscale(0.4);
+}
+
+/* ------------------------------------------------------------
+   3. TARGET ACQUISITION LOCK-ON RETICLE
+   ------------------------------------------------------------ */
+.targeting-reticle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 48px;
+  margin-top: -24px;
+  margin-left: -24px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.6) rotate(0deg);
+  transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform, opacity;
+}
+
+.reticle-ring {
+  position: absolute;
+  inset: 0;
+  border: 1.5px dashed rgba(245, 158, 11, 0.75);
+  border-radius: 50%;
+  animation: reticleSpin 6s linear infinite;
+}
+
+.reticle-inner-ring {
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  border-radius: 50%;
+}
+
+.reticle-crosshair {
+  position: absolute;
+  inset: 0;
+}
+
+.reticle-crosshair::before,
+.reticle-crosshair::after {
+  content: '';
+  position: absolute;
+  background: #f59e0b;
+}
+
+/* Horizontal crosshair ticks */
+.reticle-crosshair::before {
+  top: 50%;
+  left: -4px;
+  right: -4px;
+  height: 1.5px;
+  transform: translateY(-50%);
+  mask-image: radial-gradient(circle, transparent 60%, black 65%);
+  -webkit-mask-image: radial-gradient(circle, transparent 60%, black 65%);
+}
+
+/* Vertical crosshair ticks */
+.reticle-crosshair::after {
+  left: 50%;
+  top: -4px;
+  bottom: -4px;
+  width: 1.5px;
+  transform: translateX(-50%);
+  mask-image: radial-gradient(circle, transparent 60%, black 65%);
+  -webkit-mask-image: radial-gradient(circle, transparent 60%, black 65%);
+}
+
+@keyframes reticleSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Active Hover Over Interactive Targets */
+.satellite-probe.locked .satellite-svg {
+  transform: scale(0.7);
+  opacity: 0.8;
+}
+
+.satellite-probe.locked .targeting-reticle {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+/* Threat / Destructive Reticle State */
+.satellite-probe.threat .reticle-ring {
+  border-color: rgba(239, 68, 68, 0.85);
+}
+
+.satellite-probe.threat .reticle-inner-ring {
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.satellite-probe.threat .reticle-crosshair::before,
+.satellite-probe.threat .reticle-crosshair::after {
+  background: #ef4444;
+}
+
+/* Map Reconnaissance Crosshair State */
+.satellite-probe.map-recon .satellite-svg {
+  transform: scale(0.8);
+}
+
+.satellite-probe.map-recon .targeting-reticle {
+  opacity: 1;
+  transform: scale(0.85);
+}
+
+.satellite-probe.map-recon .reticle-ring {
+  border-color: rgba(6, 182, 212, 0.75);
+  border-style: dotted;
+}
+
+/* Text Input Mode: High Visibility Caret Reticle */
+.satellite-probe.text-mode .satellite-svg {
+  opacity: 0.25;
+  transform: scale(0.5);
+}
+
+.satellite-probe.text-mode .targeting-reticle {
+  opacity: 1;
+  transform: scale(0.7);
+}
+
+.satellite-probe.text-mode .reticle-ring {
+  border: 1.5px solid #38bdf8;
+  animation: pulseTextRing 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulseTextRing {
+  from { opacity: 0.4; }
+  to { opacity: 1; filter: drop-shadow(0 0 6px #38bdf8); }
+}
+
+/* ------------------------------------------------------------
+   4. IN-FLIGHT GLOBAL FETCH LOADING HALO
+   ------------------------------------------------------------ */
+.satellite-probe.fetching::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 54px;
+  height: 54px;
+  margin-top: -27px;
+  margin-left: -27px;
+  border: 1.5px dashed #38bdf8;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: fetchHaloSpin 0.75s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes fetchHaloSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ------------------------------------------------------------
+   5. CLICK SHOCKWAVE & CHROMATIC ABERRATION FLASH
+   ------------------------------------------------------------ */
+.cursor-shockwave {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid #38bdf8;
+  pointer-events: none;
+  box-sizing: border-box;
+  transform: translate(-50%, -50%) scale(0.1);
+  opacity: 1;
+  animation: shockwaveExpand 0.4s cubic-bezier(0.1, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes shockwaveExpand {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 1;
+    border-width: 3px;
+    filter: drop-shadow(0 0 8px #06b6d4);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(3.2);
+    opacity: 0;
+    border-width: 0.5px;
+  }
+}
+
+/* Chromatic Aberration RGB split flash */
+.chromatic-flash {
+  position: absolute;
+  top: -15px;
+  left: -15px;
+  width: 30px;
+  height: 30px;
+  pointer-events: none;
+  animation: chromaticBurst 0.15s ease-out forwards;
+}
+
+.chromatic-flash::before,
+.chromatic-flash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+
+.chromatic-flash::before {
+  border: 2px solid #ef4444;
+  transform: translate(-2px, -1px);
+  mix-blend-mode: screen;
+}
+
+.chromatic-flash::after {
+  border: 2px solid #06b6d4;
+  transform: translate(2px, 1px);
+  mix-blend-mode: screen;
+}
+
+@keyframes chromaticBurst {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* ------------------------------------------------------------
+   6. IN-MAP LEAFLET GEOGRAPHICAL SONAR PING
+   ------------------------------------------------------------ */
+.leaflet-map-sonar-ping {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  margin-top: -20px;
+  margin-left: -20px;
+  pointer-events: none;
+}
+
+.sonar-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.sonar-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid #06b6d4;
+  border-radius: 50%;
+  animation: mapSonarWave 1.4s cubic-bezier(0.1, 0.7, 0.1, 1) forwards;
+}
+
+.sonar-ring:nth-child(2) {
+  animation-delay: 0.25s;
+}
+
+@keyframes mapSonarWave {
+  0% { transform: scale(0.2); opacity: 1; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
+/* ------------------------------------------------------------
+   7. HUD CORNER BRACKET UTILITIES
+   ------------------------------------------------------------ */
+.hud-bracketed {
+  position: relative;
+}
+
+.hud-bracketed::before,
+.hud-bracketed::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hud-bracketed::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid #06b6d4;
+  border-left: 2px solid #06b6d4;
+}
+
+.hud-bracketed::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid #06b6d4;
+  border-right: 2px solid #06b6d4;
+}
+
+.hud-bracketed:hover::before {
+  transform: translate(-2px, -2px);
+  border-color: #38bdf8;
+  filter: drop-shadow(0 0 4px #38bdf8);
+}
+
+.hud-bracketed:hover::after {
+  transform: translate(2px, 2px);
+  border-color: #38bdf8;
+  filter: drop-shadow(0 0 4px #38bdf8);
+}
+
+/* ------------------------------------------------------------
+   8. AMBIENT STARFIELD & PARALLAX CANVAS (Phase 2)
+   ------------------------------------------------------------ */
+#ambient-starfield-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at bottom, #090e1a 0%, #050811 100%);
+}
+
+/* ------------------------------------------------------------
+   9. SUBTLE CRT SCANLINES & TACTICAL VIGNETTE
+   ------------------------------------------------------------ */
+#crt-scanline-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 99998;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  ), linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.02),
+    rgba(0, 255, 0, 0.01),
+    rgba(0, 0, 255, 0.02)
+  );
+  background-size: 100% 3px, 6px 100%;
+  box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.55);
+  opacity: 0.35;
+}
+
+/* ------------------------------------------------------------
+   10. GLOBAL UPLINK BOOT SEQUENCE OVERLAY
+   ------------------------------------------------------------ */
+#boot-sequence-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999999;
+  background: #04070e;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace, ui-monospace;
+  color: #06b6d4;
+  overflow: hidden;
+  transition: clip-path 0.5s cubic-bezier(0.85, 0, 0.15, 1), opacity 0.4s ease;
+  clip-path: circle(150% at 50% 50%);
+}
+
+#boot-sequence-overlay.closing {
+  clip-path: circle(0% at 50% 50%);
+  opacity: 0;
+}
+
+.boot-terminal-box {
+  width: 90%;
+  max-width: 620px;
+  background: rgba(10, 16, 28, 0.95);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 0 40px rgba(6, 182, 212, 0.25), inset 0 0 20px rgba(6, 182, 212, 0.05);
+  position: relative;
+}
+
+.boot-terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(6, 182, 212, 0.25);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #38bdf8;
+}
+
+.boot-terminal-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 140px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.boot-line {
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.boot-line.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.boot-line .time {
+  color: #64748b;
+}
+
+.boot-line .msg {
+  color: #e2e8f0;
+}
+
+.boot-line .status-ok {
+  color: #10b981;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.boot-skip-prompt {
+  margin-top: 16px;
+  font-size: 10px;
+  color: #475569;
+  text-align: right;
+  letter-spacing: 0.05em;
+}
+
+.boot-progress-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+.boot-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #06b6d4, #38bdf8);
+  box-shadow: 0 0 8px #38bdf8;
+  transition: width 0.25s ease-out;
+}
+
+/* ------------------------------------------------------------
+   11. PAGE TRANSITION CHANNEL-CHANGE SHUTTER
+   ------------------------------------------------------------ */
+.page-channel-shutter {
+  position: fixed;
+  inset: 0;
+  z-index: 9999998;
+  pointer-events: none;
+  background: #070a12;
+  opacity: 0;
+  transition: opacity 0.12s ease-in-out;
+}
+
+.page-channel-shutter.active {
+  opacity: 0.85;
+}
+
+/* ------------------------------------------------------------
+   12. CYPHER MATRIX TEXT DECRYPTION SHIMMER
+   ------------------------------------------------------------ */
+.decryption-glyph {
+  font-family: 'JetBrains Mono', monospace, ui-monospace;
+  color: #38bdf8;
+  text-shadow: 0 0 6px rgba(56, 189, 248, 0.7);
+  display: inline-block;
+}
+
+/* ------------------------------------------------------------
+   13. MAP OVERWATCH LASER POLYGONS & SURVEILLANCE SWEEP
+   ------------------------------------------------------------ */
+.tactical-laser-polygon path {
+  stroke-dasharray: 8, 6;
+  animation: laserDashMarch 25s linear infinite;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+@keyframes laserDashMarch {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+
+/* Hyperspace Teleport Warp on Map */
+.hyperspace-warp {
+  animation: warpPulse 0.45s cubic-bezier(0.1, 0.8, 0.2, 1) !important;
+}
+
+@keyframes warpPulse {
+  0% { filter: blur(0px) brightness(1); transform: scale(1); }
+  45% { filter: blur(4px) brightness(1.35); transform: scale(0.985); }
+  100% { filter: blur(0px) brightness(1); transform: scale(1); }
+}
+
+/* ------------------------------------------------------------
+   14. TACTICAL HUD TOAST NOTIFICATIONS
+   ------------------------------------------------------------ */
+#tactical-toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 999999;
+  pointer-events: none;
+}
+
+.tactical-toast {
+  background: rgba(10, 16, 28, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(6, 182, 212, 0.5);
+  border-left: 3px solid #38bdf8;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-family: 'JetBrains Mono', monospace, ui-monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #f1f5f9;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 15px rgba(6, 182, 212, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateX(20px);
+  animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.tactical-toast.fade-out {
+  animation: toastSlideOut 0.25s ease forwards;
+}
+
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes toastSlideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(20px); }
+}
+
+/* ------------------------------------------------------------
+   15. SCANNING LASER SWEEP ACROSS RESULT CARDS (Phase 5)
+   ------------------------------------------------------------ */
+.laser-scanner-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.laser-scanner-wrap::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 40%;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 182, 212, 0) 0%,
+    rgba(56, 189, 248, 0.35) 75%,
+    rgba(255, 255, 255, 0.9) 100%
+  );
+  box-shadow: 0 2px 10px #38bdf8;
+  opacity: 0.85;
+  pointer-events: none;
+  animation: laserScanDown 1.8s cubic-bezier(0.4, 0, 0.2, 1) 1;
+}
+
+@keyframes laserScanDown {
+  0% { top: -45%; opacity: 0.8; }
+  100% { top: 110%; opacity: 0; }
+}
+
+/* Staggered Entrance for Result Cards */
+.retrieval-results-grid .result-card {
+  animation: cardFadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.retrieval-results-grid .result-card:nth-child(1) { animation-delay: 0.05s; }
+.retrieval-results-grid .result-card:nth-child(2) { animation-delay: 0.10s; }
+.retrieval-results-grid .result-card:nth-child(3) { animation-delay: 0.15s; }
+.retrieval-results-grid .result-card:nth-child(4) { animation-delay: 0.20s; }
+.retrieval-results-grid .result-card:nth-child(5) { animation-delay: 0.25s; }
+.retrieval-results-grid .result-card:nth-child(6) { animation-delay: 0.30s; }
+
+@keyframes cardFadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ------------------------------------------------------------
+   16. HIGH CONFIDENCE MATCH SCORE HALO
+   ------------------------------------------------------------ */
+.high-confidence-halo {
+  position: relative;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(6, 182, 212, 0.3)) !important;
+  border: 1px solid #10b981 !important;
+  color: #34d399 !important;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.45);
+  animation: confidencePulse 1.8s infinite alternate ease-in-out;
+}
+
+@keyframes confidencePulse {
+  0% { box-shadow: 0 0 6px rgba(16, 185, 129, 0.3); }
+  100% { box-shadow: 0 0 16px rgba(16, 185, 129, 0.7); }
+}
+
+/* ------------------------------------------------------------
+   17. CLUSTER MEDOID BEACON RING (Phase 5)
+   ------------------------------------------------------------ */
+.medoid-beacon-wrap {
+  position: relative;
+}
+
+.medoid-beacon-ring {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #06b6d4;
+  box-shadow: 0 0 8px #06b6d4;
+  animation: beaconPulse 1.6s infinite ease-out;
+  pointer-events: none;
+}
+
+.medoid-beacon-ring::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1.5px solid #38bdf8;
+  border-radius: 50%;
+  animation: beaconExpand 1.6s infinite cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+
+@keyframes beaconPulse {
+  0%, 100% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; filter: drop-shadow(0 0 8px #06b6d4); }
+}
+
+@keyframes beaconExpand {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* ------------------------------------------------------------
+   18. RADAR CONIC SWEEP BUTTON LOADING STATE
+   ------------------------------------------------------------ */
+.radar-submit-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.radar-submit-btn.searching::after {
+  content: '';
+  position: absolute;
+  inset: -100%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 280deg,
+    rgba(6, 182, 212, 0.3) 330deg,
+    rgba(255, 255, 255, 0.8) 360deg
+  );
+  animation: radarConicSpin 1.2s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes radarConicSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ------------------------------------------------------------
+   19. INTERACTIVE TEMPORAL SPLIT WIPE-REVEAL SLIDER (Phase 6)
+   ------------------------------------------------------------ */
+.wipe-reveal-container {
+  position: relative;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  border: 1.5px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(6, 182, 212, 0.15);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+  cursor: ew-resize;
+  --wipe-pos: 50%;
+}
+
+.wipe-reveal-underlay,
+.wipe-reveal-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.wipe-reveal-underlay img,
+.wipe-reveal-overlay img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+/* The top overlay is clipped based on the wipe percentage */
+.wipe-reveal-overlay {
+  clip-path: inset(0 0 0 var(--wipe-pos, 50%));
+  will-change: clip-path;
+}
+
+/* Vertical glowing laser divider */
+.wipe-laser-divider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--wipe-pos, 50%);
+  width: 2px;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8, 0 0 18px rgba(6, 182, 212, 0.9), 0 0 2px #fff;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 15;
+  will-change: left;
+}
+
+/* Tactile diamond reticle handle centered on laser line */
+.wipe-laser-handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(11, 17, 32, 0.92);
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.7), inset 0 0 10px rgba(56, 189, 248, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #38bdf8;
+  pointer-events: auto;
+  cursor: ew-resize;
+  backdrop-filter: blur(6px);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.wipe-laser-handle:hover,
+.wipe-laser-handle.active {
+  transform: translate(-50%, -50%) scale(1.12);
+  border-color: #34d399;
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.8), inset 0 0 12px rgba(52, 211, 153, 0.4);
+  color: #34d399;
+}
+
+/* Corner HUD orientation badges */
+.wipe-hud-badge {
+  position: absolute;
+  bottom: 12px;
+  padding: 4px 10px;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 20;
+  backdrop-filter: blur(4px);
+}
+
+.wipe-hud-badge.left {
+  left: 12px;
+  background: rgba(14, 165, 233, 0.2);
+  border: 1px solid rgba(14, 165, 233, 0.5);
+  color: #38bdf8;
+}
+
+.wipe-hud-badge.right {
+  right: 12px;
+  background: rgba(244, 63, 94, 0.2);
+  border: 1px solid rgba(244, 63, 94, 0.5);
+  color: #fb7185;
+}
+
+/* Wipe Toolbar & Sweep Controls */
+.wipe-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+.wipe-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s ease;
+}
+
+.wipe-btn:hover {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: #06b6d4;
+  color: #38bdf8;
+}
+
+.wipe-btn.active {
+  background: rgba(6, 182, 212, 0.25);
+  border-color: #06b6d4;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
+}
+
+/* ------------------------------------------------------------
+   20. TACTILE ANALYST STAMP ANIMATIONS & VERDICT SEALS (Phase 6)
+   ------------------------------------------------------------ */
+.tactile-stamp-badge {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-6deg);
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  padding: 8px 18px;
+  border-radius: 6px;
+  pointer-events: none;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  backdrop-filter: blur(4px);
+  animation: tactileStampIn 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.tactile-stamp-badge.stamp-confirmed {
+  border: 2.5px solid #10b981;
+  color: #34d399;
+  background: rgba(6, 78, 59, 0.85);
+  box-shadow: 0 0 24px rgba(16, 185, 129, 0.6), inset 0 0 12px rgba(16, 185, 129, 0.3);
+}
+
+.tactile-stamp-badge.stamp-rejected {
+  border: 2.5px solid #f43f5e;
+  color: #fb7185;
+  background: rgba(136, 19, 55, 0.85);
+  box-shadow: 0 0 24px rgba(244, 63, 94, 0.6), inset 0 0 12px rgba(244, 63, 94, 0.3);
+}
+
+@keyframes tactileStampIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.2) rotate(-18deg);
+    filter: blur(6px);
+  }
+  65% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.92) rotate(-4deg);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(-6deg);
+  }
+}
+
+/* Flash feedback on verdict cards */
+.flash-confirmed {
+  animation: flashConfirmed 0.6s ease-out;
+}
+
+.flash-rejected {
+  animation: flashRejected 0.6s ease-out;
+}
+
+@keyframes flashConfirmed {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+  50% { box-shadow: 0 0 25px 4px rgba(16, 185, 129, 0.6); }
+  100% { box-shadow: none; }
+}
+
+@keyframes flashRejected {
+  0% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0.8); }
+  50% { box-shadow: 0 0 25px 4px rgba(244, 63, 94, 0.6); }
+  100% { box-shadow: none; }
+}
+

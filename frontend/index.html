@@ -11,7 +11,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
   
   <!-- App Stylesheet -->
-  <link rel="stylesheet" href="/frontend/index.css?v=20260913_quality_v8">
+  <link rel="stylesheet" href="/frontend/index.css?v=20260919_popover_final">
+  <link rel="stylesheet" href="/frontend/effects.css?v=20260919_v2">
 
   <!-- Immediate Global Fallback for Thumbnail Errors -->
   <script>
@@ -35,7 +36,7 @@
         '<circle cx="256" cy="256" r="140" fill="none" stroke="rgba(6,182,212,0.25)" stroke-width="2" stroke-dasharray="6,6"/>' +
         '<line x1="256" y1="80" x2="256" y2="432" stroke="rgba(6,182,212,0.3)" stroke-width="1.5"/>' +
         '<line x1="80" y1="256" x2="432" y2="256" stroke="rgba(6,182,212,0.3)" stroke-width="1.5"/>' +
-        '<text x="256" y="240" font-family="monospace" font-size="28" fill="#38bdf8" text-anchor="middle" font-weight="bold">🛰️ SENTINEL-2</text>' +
+        '<text x="256" y="240" font-family="monospace" font-size="28" fill="#38bdf8" text-anchor="middle" font-weight="bold">SENTINEL-2</text>' +
         '<text x="256" y="275" font-family="monospace" font-size="14" fill="#94a3b8" text-anchor="middle">512x512 MULTI-SPECTRAL</text>' +
         '<text x="256" y="300" font-family="monospace" font-size="12" fill="#06b6d4" text-anchor="middle">' + cleanId + '</text>' +
       '</svg>';
@@ -48,7 +49,9 @@
   <!-- Top Aerospace Navigation Bar -->
   <header>
     <div class="logo-section">
-      <div class="logo-badge">🛰️</div>
+      <div class="logo-badge" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25)); border: 1px solid var(--accent-cyan); border-radius: 8px; width: 36px; height: 36px;">
+        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+      </div>
       <div>
         <div class="logo-title">CANOPUS &bull; EO SEMANTIC ANALYSIS</div>
         <div class="logo-subtitle">MULTI-TEMPORAL SENTINEL-2 &bull; DEFENSE DGIS</div>
@@ -58,26 +61,32 @@
     <!-- Navigation Pages -->
     <nav class="nav-links">
       <a href="/" class="nav-item active" id="nav-map" style="text-decoration: none;">
-        <span>🗺️</span> Map & Coverage
+        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map & Coverage
       </a>
       <a href="/retrieval.html" class="nav-item" id="nav-retrieval" style="text-decoration: none;">
-        <span>🔍</span> Semantic Retrieval
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
       </a>
       <a href="/change.html" class="nav-item" id="nav-change" style="text-decoration: none;">
-        <span>🔄</span> Change Detection
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
       </a>
       <a href="/clustering.html" class="nav-item" id="nav-clustering" style="text-decoration: none;">
-        <span>📊</span> Clustering
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
       </a>
       <a href="/review.html" class="nav-item" id="nav-review" style="text-decoration: none;">
-        <span>📝</span> Review Tool
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
       </a>
     </nav>
 
     <!-- Header Right Stats & Ingest Action -->
     <div class="header-status">
+      <button class="cursor-toggle-btn" id="cursorToggleBtn" onclick="toggleTacticalCursor()" title="Toggle Satellite Cursor (Alt+C)" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.3); color: #38bdf8; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg> <span>TAC CURSOR</span>
+      </button>
+      <button class="audio-toggle-btn" id="audioToggleBtn" onclick="toggleTacticalAudio()" title="Toggle Tactical Sound (Alt+M)" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(100,116,139,0.3); color: #64748b; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> <span>TAC AUDIO [MUTE]</span>
+      </button>
       <button class="ingest-aoi-nav-btn" onclick="openIngestModal()">
-        <span>📥</span> Ingest New AOI
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Ingest New AOI
       </button>
       <span class="tag-badge">RemoteCLIP ViT-B-32</span>
       <span class="tag-badge">Qdrant Vector DB</span>
@@ -100,12 +109,12 @@
       <!-- Prominent Fast-Travel & Coordinate Teleport Command Bar -->
       <div class="map-fast-travel-bar">
         <div class="fast-travel-header">
-          <div class="fast-travel-badge">🚀 COORDINATE TELEPORT & FAST TRAVEL</div>
+          <div class="fast-travel-badge">COORDINATE TELEPORT & FAST TRAVEL</div>
           <span class="fast-travel-hint" id="teleportFormatHintTop">Lat, Lon (e.g. 34.455, 73.315) or [minLat, minLon, maxLat, maxLon]</span>
         </div>
         <div class="fast-travel-input-row">
           <div class="fast-travel-input-wrap">
-            <span class="fast-travel-icon">📍</span>
+            <span class="fast-travel-icon"><svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg></span>
             <input 
               type="text" 
               id="teleportCoordInputTop" 
@@ -115,31 +124,31 @@
             />
           </div>
           <button class="map-btn primary fast-travel-btn" onclick="executeFastTravel()">
-            <span>⚡ Teleport</span>
+            <span>Teleport</span>
           </button>
           <select id="teleportPresetSelectTop" class="fast-travel-preset-select" onchange="teleportToPreset(this.value)">
-            <option value="">⚡ Strategic Bases...</option>
-            <optgroup label="🇺🇸 United States">
+            <option value="">Strategic Bases...</option>
+            <optgroup label="United States [US]">
               <option value="36.9450,-76.3250,15,Naval Station Norfolk (VA)">Naval Station Norfolk (VA)</option>
               <option value="32.7000,-117.1800,15,San Diego Naval Base (CA)">San Diego Harbor (CA)</option>
               <option value="28.5721,-80.6480,14,Kennedy Space Center (FL)">Kennedy Space Center (FL)</option>
             </optgroup>
-            <optgroup label="🇮🇳 India">
+            <optgroup label="India [IN]">
               <option value="18.9200,72.8400,15,Mumbai Port & Naval Dockyard">Mumbai Western Naval Command</option>
               <option value="17.6800,83.2800,15,Visakhapatnam Harbor">Visakhapatnam Eastern Naval Command</option>
               <option value="9.9650,76.2750,15,Kochi Naval Base">Kochi Southern Naval Command</option>
             </optgroup>
-            <optgroup label="🇵🇰 Pakistan">
+            <optgroup label="Pakistan [PK]">
               <option value="34.4550,73.3150,15,Balakot Training Complex">Balakot JEM Training Complex</option>
               <option value="24.8400,66.9700,15,Karachi Naval Dockyard">Karachi Naval Dockyard & Base</option>
               <option value="25.1200,62.3200,14,Gwadar Deep Water Port">Gwadar Deep Sea Port</option>
             </optgroup>
-            <optgroup label="🇨🇳 China">
+            <optgroup label="China [CN]">
               <option value="36.0800,120.3200,14,Qingdao Port Area (Shandong)">Qingdao PLA North Sea Fleet</option>
               <option value="18.2200,109.5800,14,Yulin Submarine Base (Hainan)">Yulin Submarine Base (Hainan)</option>
               <option value="29.9800,122.2000,14,Zhoushan Shipyard (Zhejiang)">Zhoushan Naval Base (Zhejiang)</option>
             </optgroup>
-            <optgroup label="🇦🇪 Middle East">
+            <optgroup label="Middle East [ME]">
               <option value="25.1124,55.1390,14,Dubai Palm Jumeirah">Dubai Palm Jumeirah</option>
             </optgroup>
           </select>
@@ -151,24 +160,24 @@
         <div class="map-control-card">
           <h4>INGESTED COVERAGE REGIONS</h4>
           <select id="regionSelect" class="region-select" onchange="onSelectRegion(this.value)">
-            <option value="all">🌐 All Ingested Sectors</option>
+            <option value="all">All Ingested Sectors</option>
           </select>
 
           <div class="map-btn-group" style="margin-top: 10px;">
-            <button class="map-btn primary" onclick="openIngestModal()">📥 Ingest AOI</button>
-            <button class="map-btn" onclick="fitAllAois()">🎯 Fit All AOIs</button>
-            <button class="map-btn" onclick="startLeafletDraw()">✏️ Draw AOI</button>
-            <button class="map-btn" onclick="loadCoverageRegions()">🔄 Refresh</button>
+            <button class="map-btn primary" onclick="openIngestModal()">Ingest AOI</button>
+            <button class="map-btn" onclick="fitAllAois()">Fit All AOIs</button>
+            <button class="map-btn" onclick="startLeafletDraw()">Draw AOI</button>
+            <button class="map-btn" onclick="loadCoverageRegions()">Refresh</button>
           </div>
 
           <!-- Basemap Switcher -->
           <div style="margin-top: 12px;">
             <h4 style="margin-bottom: 6px;">BASEMAP LAYER</h4>
             <div class="basemap-switcher">
-              <button class="basemap-option active" id="bm-satellite" onclick="switchBasemap('satellite')">🛰️ Satellite</button>
-              <button class="basemap-option" id="bm-hybrid" onclick="switchBasemap('hybrid')">🗺️ Hybrid</button>
-              <button class="basemap-option" id="bm-dark" onclick="switchBasemap('dark')">🌌 Dark</button>
-              <button class="basemap-option" id="bm-osm" onclick="switchBasemap('osm')">🌐 OSM</button>
+              <button class="basemap-option active" id="bm-satellite" onclick="switchBasemap('satellite')">Satellite</button>
+              <button class="basemap-option" id="bm-hybrid" onclick="switchBasemap('hybrid')">Hybrid</button>
+              <button class="basemap-option" id="bm-dark" onclick="switchBasemap('dark')">Dark Canvas</button>
+              <button class="basemap-option" id="bm-osm" onclick="switchBasemap('osm')">OpenStreetMap</button>
             </div>
           </div>
 
@@ -176,7 +185,7 @@
           <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
               <h4 style="margin: 0; display: flex; align-items: center; gap: 5px;">
-                <span>🚀</span> COORDINATE TELEPORT
+                COORDINATE TELEPORT
               </h4>
               <span style="font-size: 10px; color: var(--accent-cyan); font-family: monospace;" id="teleportFormatHint">Lat, Lon</span>
             </div>
@@ -190,36 +199,36 @@
                 onkeydown="if(event.key === 'Enter') executeTeleport()"
               />
               <button class="map-btn primary" onclick="executeTeleport()" style="white-space: nowrap; padding: 6px 14px; font-weight: 600;">
-                Fly 🚀
+                Teleport
               </button>
             </div>
 
             <!-- Quick Teleport Strategic Presets Dropdown -->
             <div>
               <select id="teleportPresetSelect" class="region-select" onchange="teleportToPreset(this.value)" style="font-size: 11px; padding: 7px 10px;">
-                <option value="">⚡ Strategic Location Presets...</option>
-                <optgroup label="🇺🇸 United States">
+                <option value="">Strategic Location Presets...</option>
+                <optgroup label="United States [US]">
                   <option value="36.9450,-76.3250,15,Norfolk Naval Station (VA)">Naval Station Norfolk (VA)</option>
                   <option value="32.7000,-117.1800,15,San Diego Harbor (CA)">San Diego Harbor / Coronado (CA)</option>
                   <option value="28.5721,-80.6480,14,Kennedy Space Center (FL)">Kennedy Space Center (FL)</option>
                 </optgroup>
-                <optgroup label="🇨🇳 China">
+                <optgroup label="China [CN]">
                   <option value="36.0800,120.3200,14,Qingdao Port (Shandong)">Qingdao Port Area (Shandong)</option>
                   <option value="29.9800,122.2000,14,Zhoushan Shipyard (Zhejiang)">Zhoushan Shipyard (Zhejiang)</option>
                   <option value="18.2200,109.5800,14,Yulin Harbor (Hainan)">Yulin Naval Base (Hainan)</option>
                 </optgroup>
-                <optgroup label="🇮🇳 India">
+                <optgroup label="India [IN]">
                   <option value="18.9200,72.8400,15,Mumbai Port & Naval Dockyard">Mumbai Port & Naval Dockyard</option>
                   <option value="17.6800,83.2800,15,Visakhapatnam Harbor">Visakhapatnam Harbor</option>
                   <option value="9.9650,76.2750,15,Kochi Naval Base">Kochi Port & Naval Base</option>
                   <option value="15.3800,73.8300,15,Goa Naval Base (INS Hansa)">Goa INS Hansa Air Station</option>
                 </optgroup>
-                <optgroup label="🇵🇰 Pakistan & Regional">
+                <optgroup label="Pakistan & Regional [PK]">
                   <option value="34.4550,73.3150,15,Balakot / Jaba Hilltop">Balakot / Jaba Hilltop</option>
                   <option value="24.8600,66.9800,14,Karachi Port">Karachi Port Area</option>
                   <option value="25.1200,62.3300,14,Gwadar Port">Gwadar Deep Water Port</option>
                 </optgroup>
-                <optgroup label="🌐 Global Strategic">
+                <optgroup label="Global Strategic">
                   <option value="25.2048,55.2708,14,Dubai Coast & Port">Dubai Coast & Port (UAE)</option>
                   <option value="1.2600,103.8000,14,Singapore Strait">Singapore Strait Maritime Hub</option>
                   <option value="29.9300,32.5500,14,Suez Canal Entrance">Suez Canal Entrance (Egypt)</option>
@@ -244,9 +253,9 @@
 
       <!-- Live Mouse Coordinates HUD -->
       <div id="mouseCoordsHud" class="mouse-coords-hud">
-        <span class="hud-coord-item">📍 <span id="hudLatLon">Lat: --.----° | Lon: --.----°</span></span>
+        <span class="hud-coord-item"><svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg> <span id="hudLatLon">Lat: --.----° | Lon: --.----°</span></span>
         <span class="hud-coord-sep">|</span>
-        <span class="hud-coord-item">🔍 Zoom: <span id="hudZoom">5</span></span>
+        <span class="hud-coord-item"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Zoom: <span id="hudZoom">5</span></span>
       </div>
     </div>
 
@@ -261,7 +270,9 @@
           
           <!-- Welcome Greeting & Example Prompts -->
           <div class="chat-message assistant">
-            <div class="chat-avatar">🛰️</div>
+            <div class="chat-avatar" style="display: flex; align-items: center; justify-content: center;">
+              <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+            </div>
             <div class="chat-bubble">
               <div class="chat-bubble-header">
                 <span class="assistant-name">Canopus Neural Search</span>
@@ -275,22 +286,22 @@
               <div class="quick-prompts-title">Try searching for:</div>
               <div class="quick-prompts-grid">
                 <button class="quick-prompt-chip" onclick="applyQuickPrompt('Airstrip runway with visible hangars and aircraft parking')">
-                  ✈️ Airstrips & Hangars
+                  Airstrips & Hangars
                 </button>
                 <button class="quick-prompt-chip" onclick="applyQuickPrompt('River bend with bridge infrastructure and transport corridors')">
-                  🌊 River Bend & Bridges
+                  River Bend & Bridges
                 </button>
                 <button class="quick-prompt-chip" onclick="applyQuickPrompt('Industrial construction site with heavy storage yards')">
-                  🏗️ Industrial Construction
+                  Industrial Construction
                 </button>
                 <button class="quick-prompt-chip" onclick="applyQuickPrompt('Dense agricultural crop fields with irrigation patterns')">
-                  🌾 Agricultural Crop Fields
+                  Agricultural Crop Fields
                 </button>
                 <button class="quick-prompt-chip" onclick="applyQuickPrompt('Dense urban residential buildings and road networks')">
-                  🏙️ Urban Built-Up Settlement
+                  Urban Built-Up Settlement
                 </button>
                 <button class="quick-prompt-chip" onclick="applyQuickPrompt('Open barren land with vehicle movement tracks')">
-                  🚜 Open Barren Land Tracks
+                  Open Barren Land Tracks
                 </button>
               </div>
             </div>
@@ -303,49 +314,60 @@
           
           <!-- Image Attachment Preview Chip (if attached) -->
           <div class="image-attachment-chip" id="searchImageAttachmentPreview" style="display: none;">
-            <span id="attachedImageName">📷 reference_image.jpg</span>
+            <span id="attachedImageName">reference_image.jpg</span>
             <button class="remove-attachment-btn" onclick="clearAttachedSearchImage()">&times;</button>
           </div>
 
           <!-- Filter Configuration Popover Panel -->
           <div class="search-filter-popover" id="searchFilterPopover" style="display: none;">
             <div class="popover-header">
-              <h4>🎯 Retrieval Filters</h4>
-              <button class="popover-close-btn" onclick="toggleSearchFilterPopover()">&times;</button>
+              <h4>
+                <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                Retrieval & Collection Filters
+              </h4>
+              <button class="popover-close-btn" onclick="toggleSearchFilterPopover()" title="Close Filters">
+                <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
             </div>
             <div class="popover-grid">
               <div class="form-group">
-                <label>Top Results (top_k): <span id="topKValueLabel" style="color: var(--accent-cyan);">5</span></label>
+                <label>Top Results (top_k): <span id="topKValueLabel" style="color: var(--accent-cyan); font-weight: 700;">5</span></label>
                 <input type="range" id="filterTopK" min="1" max="20" value="5" oninput="document.getElementById('topKValueLabel').innerText = this.value">
               </div>
               <div class="form-group">
                 <label>Sensor Constraint</label>
                 <select id="filterSensor" onchange="syncDirectSensor(this.value)">
-                  <option value="">Any Sensor (All)</option>
-                  <option value="Sentinel-2" selected>🛰️ Sentinel-2 (10m Multi-Spectral)</option>
-                  <option value="Maxar">🔍 Maxar High-Res (0.5m Optical)</option>
+                  <option value="Sentinel-2" selected>Sentinel-2 (10m Multi-Spectral)</option>
+                  <option value="Maxar">Maxar High-Res (0.5m Optical)</option>
+                  <option value="">All Sensors (Combined Multi-Sensor)</option>
                 </select>
               </div>
               <div class="form-group">
-                <label>Start Date (From)</label>
+                <label>Acquisition Date From</label>
                 <input type="date" id="filterStartDate">
               </div>
               <div class="form-group">
-                <label>End Date (To)</label>
+                <label>Acquisition Date To</label>
                 <input type="date" id="filterEndDate">
               </div>
               <div class="form-group">
-                <label>Min Quality Confidence (0.0 - 1.0 or %)</label>
-                <input type="number" id="filterMinQuality" min="0.0" max="100.0" step="0.05" placeholder="e.g. 0.8 or 80" value="0.0">
+                <label>Min Quality (0.0 - 1.0)</label>
+                <input type="number" id="filterMinQuality" min="0.0" max="100.0" step="0.05" placeholder="e.g. 0.8" value="0.0">
               </div>
               <div class="form-group">
                 <label>Max Cloud Cover (%)</label>
                 <input type="number" id="filterMaxCloud" min="0" max="100" value="100">
               </div>
             </div>
-            <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
-              <button class="map-btn" style="padding: 4px 12px; font-size: 11px;" onclick="resetSearchFilters()">Reset Filters</button>
-              <button class="map-btn primary" style="padding: 4px 14px; font-size: 11px;" onclick="toggleSearchFilterPopover()">Apply</button>
+            <div class="popover-actions">
+              <button class="map-btn" style="padding: 6px 14px; font-size: 11.5px;" onclick="resetSearchFilters()">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Reset</span>
+              </button>
+              <button class="map-btn primary" style="padding: 6px 18px; font-size: 11.5px;" onclick="toggleSearchFilterPopover()">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Apply Filters</span>
+              </button>
             </div>
           </div>
 
@@ -354,20 +376,20 @@
             
             <!-- Filter Drawer Trigger Button -->
             <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleSearchFilterPopover()" title="Adjust search filters (top_k, date, sensor)">
-              <span>⚙️</span>
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
               <span class="filter-badge" id="filterCountBadge" style="display: none;">0</span>
             </button>
 
             <!-- Direct Dataset / Sensor Switcher -->
             <select id="directSensorSelect" class="filter-select" style="background: rgba(15,23,42,0.9); border: 1px solid var(--border-color); color: var(--accent-cyan); font-size: 11px; font-weight: 600; border-radius: 6px; padding: 6px 8px; cursor: pointer;" onchange="onDirectSensorChange(this.value)">
-              <option value="Sentinel-2" selected>🛰️ Sentinel-2 (10m)</option>
-              <option value="Maxar">🔍 Maxar (0.5m)</option>
+              <option value="Sentinel-2" selected>Sentinel-2 (10m)</option>
+              <option value="Maxar">Maxar (0.5m)</option>
             </select>
 
             <!-- Image File Upload Trigger -->
             <input type="file" id="searchImageFileInput" accept="image/*,.tif,.tiff" style="display: none;" onchange="onSearchImageSelected(event)">
             <button class="image-upload-trigger-btn" onclick="document.getElementById('searchImageFileInput').click()" title="Search by Reference Image">
-              <span>📷</span>
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             </button>
 
             <!-- Text Prompt Input -->
@@ -380,9 +402,9 @@
             >
 
             <!-- Submit Button -->
-            <button class="retrieval-submit-btn" id="submitSearchBtn" onclick="submitSemanticSearch()">
+            <button class="retrieval-submit-btn radar-submit-btn" id="submitSearchBtn" onclick="submitSemanticSearch()">
               <span>Search</span>
-              <span>⚡</span>
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             </button>
 
           </div>
@@ -392,61 +414,100 @@
     </div>
 
     <!-- ============================================================
-         3. CHANGE DETECTION VIEW (COMING SOON)
+         3. CHANGE DETECTION VIEW (OPERATIONAL STUDIO)
          ============================================================ -->
     <div class="view-panel" id="view-change">
       <div class="coming-soon-wrapper">
         <div class="coming-soon-card">
-          <div class="coming-soon-icon">🔄</div>
-          <h2>Multi-Temporal Change Detection</h2>
+          <div class="coming-soon-icon">
+            <svg class="ui-icon icon-cyan" width="36" height="36" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+            <span class="status-pill status-confirmed">STUDIO OPERATIONAL</span>
+            <span class="status-pill status-pending">NASA-IBM PRITHVI-EO-2.0</span>
+          </div>
+          <h2>Multi-Temporal Change Detection Studio</h2>
           <p>
-            Bi-temporal and multi-year structural change analysis comparing historical ($T_1$) vs recent ($T_2$) Sentinel-2 observation canvases with automated spectral difference indexing.
+            Bi-temporal and multi-year structural change analysis comparing baseline historical observations against contemporary satellite rasters with automated spectral difference indexing and split wipe-reveal comparator.
           </p>
           <div class="badge-cluster">
-            <span class="feature-tag">Bi-Temporal Canvas Alignment</span>
+            <span class="feature-tag">Interactive Split Wipe Slider</span>
             <span class="feature-tag">NDVI Vegetation Dynamics</span>
             <span class="feature-tag">NDBI Urban Construction Tracking</span>
             <span class="feature-tag">NDWI Surface Water Alterations</span>
+            <span class="feature-tag">Prithvi Step Detection</span>
+          </div>
+          <div style="margin-top: 20px;">
+            <a href="/change.html" class="map-btn primary" style="padding: 10px 24px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(6,182,212,0.4);">
+              <span>Launch Change Detection Studio</span>
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
           </div>
         </div>
       </div>
     </div>
 
     <!-- ============================================================
-         4. CLUSTERING VIEW (COMING SOON)
+         4. CLUSTERING VIEW (OPERATIONAL WORKBENCH)
          ============================================================ -->
     <div class="view-panel" id="view-clustering">
       <div class="coming-soon-wrapper">
         <div class="coming-soon-card">
-          <div class="coming-soon-icon">📊</div>
-          <h2>Terrain & Feature Clustering</h2>
+          <div class="coming-soon-icon">
+            <svg class="ui-icon icon-cyan" width="36" height="36" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+            <span class="status-pill status-confirmed">WORKBENCH OPERATIONAL</span>
+            <span class="status-pill status-pending">K-MEANS + MEDOID BEACONS</span>
+          </div>
+          <h2>Terrain & Feature Clustering Workbench</h2>
           <p>
-            Unsupervised semantic grouping of land-use patterns across ingested sectors using high-dimensional vector clustering.
+            Unsupervised semantic grouping of land-use patterns across ingested sectors using high-dimensional vector clustering, canonical medoid beacon exemplars, and spectral signature profiling.
           </p>
           <div class="badge-cluster">
             <span class="feature-tag">k-Means Vector Partitioning</span>
+            <span class="feature-tag">Canonical Medoid Discovery</span>
             <span class="feature-tag">Spectral Signature Profiling</span>
             <span class="feature-tag">Defense Terrain Classification</span>
+          </div>
+          <div style="margin-top: 20px;">
+            <a href="/clustering.html" class="map-btn primary" style="padding: 10px 24px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(6,182,212,0.4);">
+              <span>Launch Clustering Workbench</span>
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
           </div>
         </div>
       </div>
     </div>
 
     <!-- ============================================================
-         5. REVIEW TOOL VIEW (COMING SOON)
+         5. REVIEW TOOL VIEW (OPERATIONAL CONSOLE)
          ============================================================ -->
     <div class="view-panel" id="view-review">
       <div class="coming-soon-wrapper">
         <div class="coming-soon-card">
-          <div class="coming-soon-icon">📝</div>
-          <h2>Analyst Review & Verification Tool</h2>
+          <div class="coming-soon-icon">
+            <svg class="ui-icon icon-cyan" width="36" height="36" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+            <span class="status-pill status-confirmed">CONSOLE OPERATIONAL</span>
+            <span class="status-pill status-pending">TACTILE STAMP VERIFICATION</span>
+          </div>
+          <h2>Analyst Review & Verification Console</h2>
           <p>
-            Quality assessment workbench allowing military intelligence analysts to verify detected semantic anomalies, flag cloud contamination, and curate evaluation benchmarks.
+            Quality assessment and intelligence evaluation workbench allowing defense analysts to record tactile decisions, confirm change events, eliminate false alarms, and audit human-in-the-loop decisions.
           </p>
           <div class="badge-cluster">
+            <span class="feature-tag">Holographic Stamp Verdicts</span>
+            <span class="feature-tag">Change Event Verification</span>
             <span class="feature-tag">Quality Score Auditing</span>
-            <span class="feature-tag">Cloud Contamination Mask Override</span>
-            <span class="feature-tag">GeoTIFF Export</span>
+            <span class="feature-tag">GeoTIFF & PDF Export</span>
+          </div>
+          <div style="margin-top: 20px;">
+            <a href="/review.html" class="map-btn primary" style="padding: 10px 24px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(6,182,212,0.4);">
+              <span>Launch Analyst Review Console</span>
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
           </div>
         </div>
       </div>
@@ -460,7 +521,7 @@
   <div class="modal-backdrop" id="ingestModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h3>📥 Ingest Area of Interest (AOI)</h3>
+        <h3>Ingest Area of Interest (AOI)</h3>
         <button class="modal-close-btn" onclick="closeIngestModal()">&times;</button>
       </div>
 
@@ -468,10 +529,10 @@
         <!-- Entry Point Tabs -->
         <div class="modal-tabs">
           <button class="modal-tab-btn active" id="tabAoiBtn" onclick="switchIngestMode('aoi')">
-            🛰️ Entry Point A (STAC AOI / Draw)
+            Entry Point A (STAC AOI / Draw)
           </button>
           <button class="modal-tab-btn" id="tabFileBtn" onclick="switchIngestMode('file')">
-            📁 Entry Point B (Offline GeoTIFF)
+            Entry Point B (Offline GeoTIFF)
           </button>
         </div>
 
@@ -491,7 +552,7 @@
                 style="border: 2px solid var(--accent-blue); background: rgba(56,189,248,0.12); border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;"
               >
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 22px;">🛰️</span>
+                  <svg class="ui-icon icon-cyan" width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
                   <div>
                     <div style="font-weight: 700; font-size: 13px; color: #fff;">Sentinel-2 Multi-Spectral</div>
                     <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">10m GSD &bull; 13 Spectral Bands &bull; Cloud Mask &bull; NDVI/NDWI/NDBI</div>
@@ -506,7 +567,7 @@
                 style="border: 2px solid var(--border-color); background: rgba(255,255,255,0.02); border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;"
               >
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 22px;">🔍</span>
+                  <svg class="ui-icon icon-cyan" width="22" height="22" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                   <div>
                     <div style="font-weight: 700; font-size: 13px; color: #fff;">Maxar High-Res Optical</div>
                     <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">0.3m–0.5m Sub-Meter &bull; Wayback 2020–2026 Archive &bull; True Color RGB &bull; VARI</div>
@@ -523,7 +584,7 @@
           <!-- Drawing & GeoJSON Controls -->
           <div style="display: flex; gap: 10px;">
             <button class="map-btn primary" style="flex: 1; padding: 10px;" onclick="triggerDrawFromModal()">
-              ✏️ Draw Region on Map
+              Draw Region on Map
             </button>
           </div>
 
@@ -603,7 +664,9 @@
             <label class="form-label">Upload GeoTIFF File(s):</label>
             <div id="fileDropZone" style="border: 2px dashed var(--border-color); border-radius: var(--radius-sm); padding: 18px; text-align: center; background: rgba(255,255,255,0.02); cursor: pointer; transition: border-color 0.2s;" onclick="document.getElementById('geoTiffFilesInput').click()">
               <input type="file" id="geoTiffFilesInput" multiple accept=".tif,.tiff,.jp2" style="display: none;" onchange="handleGeoTiffFilesSelected(this.files)" />
-              <div style="font-size: 24px; margin-bottom: 6px;">📂</div>
+              <div style="margin-bottom: 6px;">
+                <svg class="ui-icon icon-cyan" width="28" height="28" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              </div>
               <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Click or drag GeoTIFF files here</div>
               <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Supports single multi-band .tif or multiple per-band .tif files (e.g. Landsat B2-B6)</div>
             </div>
@@ -655,7 +718,7 @@
              ========================================== -->
         <div class="progress-card" id="ingestProgressCard" style="display: none;">
           <div class="progress-header">
-            <span id="ingestStepLabel" style="color: var(--accent-cyan); font-weight: 600;">⚡ Initializing Ingestion...</span>
+            <span id="ingestStepLabel" style="color: var(--accent-cyan); font-weight: 600;">Initializing Ingestion...</span>
             <span id="ingestTimer">0s</span>
           </div>
           <div class="progress-track">
@@ -674,7 +737,7 @@
         <div class="modal-actions">
           <button class="map-btn" onclick="closeIngestModal()">Cancel</button>
           <button class="map-btn primary" id="submitIngestBtn" style="padding: 10px 24px; font-weight: 600;" onclick="startIngestion()">
-            🚀 Start Ingestion Pipeline
+            Start Ingestion Pipeline
           </button>
         </div>
       </div>
@@ -688,7 +751,7 @@
     <div class="modal-card inspect-modal-card">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 20px;">🔍</span>
+          <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           <div>
             <h3 id="inspectTileTitle" style="font-size: 16px; font-weight: 700;">Tile Inspection & Lineage</h3>
             <span id="inspectTileSubtitle" style="font-size: 12px; color: var(--text-muted);">Sentinel-2 L2A &bull; 512x512 GeoTIFF</span>
@@ -712,10 +775,10 @@
 
           <div class="inspect-action-buttons">
             <button class="map-btn primary" id="inspectOpenMapBtn" onclick="inspectOpenInMapClicked()">
-              🗺️ Open in Map View
+              Open in Map View
             </button>
             <a id="inspectDownloadTifBtn" href="#" download class="map-btn" style="text-decoration: none; text-align: center;">
-              💾 Download GeoTIFF (.tif)
+              Download GeoTIFF (.tif)
             </a>
           </div>
         </div>
@@ -797,6 +860,12 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
   
   <!-- App JS -->
-  <script src="/frontend/app.js?v=20260913_quality_v8"></script>
+  <script src="/frontend/app.js?v=20260919_app_final"></script>
+  <!-- Ambient Effects & Starfield -->
+  <script src="/frontend/effects.js?v=20260919_v2"></script>
+  <!-- Tactical Audio Synthesizer -->
+  <script src="/frontend/audio.js?v=20260919_v1"></script>
+  <!-- Tactical Satellite Cursor Engine -->
+  <script src="/frontend/cursor.js?v=20260919_v2"></script>
 </body>
 </html>
