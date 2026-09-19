@@ -1,3 +1,5 @@
+name: infra
+
 services:
 
   # --- Postgres + PostGIS -----------------------------------------------
@@ -55,6 +57,7 @@ services:
 
   # --- Canopus Backend API & Leaflet Web UI ---------------------------
   backend:
+    image: infra-backend:latest
     build:
       context: .
       dockerfile: infra/docker/Dockerfile
@@ -89,6 +92,7 @@ services:
       - ./models:/app/models
       - ./frontend:/app/frontend
       - ./backend:/app/backend
+      - ./scripts:/app/scripts
 
 volumes:
   postgres_data:

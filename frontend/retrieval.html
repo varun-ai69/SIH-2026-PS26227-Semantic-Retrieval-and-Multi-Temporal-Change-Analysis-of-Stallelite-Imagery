@@ -10,14 +10,27 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   
   <!-- App Stylesheet with cache buster -->
-  <link rel="stylesheet" href="/frontend/index.css?v=20260913_toggle_v10">
+  <link rel="stylesheet" href="/frontend/index.css?v=20260919_popover_final">
+  <link rel="stylesheet" href="/frontend/effects.css?v=20260919_v2">
   
   <style>
-    /* Absolute Universal SVG and Icon Reset */
+    /* Scope UI Icon SVG styling cleanly so tactical cursor, badges, and fallback SVGs retain fills & gradients */
     * {
       box-sizing: border-box;
     }
-    svg {
+    svg.ui-icon,
+    .nav-item svg,
+    .sensor-pill svg,
+    .filter-toggle-btn svg,
+    .image-upload-trigger-btn svg,
+    .retrieval-submit-btn svg,
+    .quick-prompt-chip svg,
+    .chat-sidebar-header svg,
+    .chat-search-box svg,
+    .chat-history-empty svg,
+    .user-identity-badge svg,
+    .floating-sidebar-btn svg,
+    .header-status svg {
       fill: none !important;
       stroke: currentColor !important;
       stroke-width: 2 !important;
@@ -29,12 +42,21 @@
       max-height: 24px !important;
       display: inline-block !important;
     }
-    svg * {
+    svg.ui-icon *,
+    .nav-item svg *,
+    .sensor-pill svg *,
+    .filter-toggle-btn svg *,
+    .image-upload-trigger-btn svg *,
+    .retrieval-submit-btn svg *,
+    .quick-prompt-chip svg * {
       fill: none !important;
     }
-    svg path, svg circle, svg line, svg rect, svg polygon, svg polyline {
-      fill: none !important;
-      stroke: currentColor !important;
+    /* Explicitly protect tactical cursor and graphics */
+    #tactical-cursor-root svg,
+    #tactical-cursor-root svg *,
+    .satellite-svg,
+    .satellite-svg * {
+      box-sizing: content-box !important;
     }
     .ui-icon {
       display: inline-block !important;
@@ -249,6 +271,12 @@
 
     <!-- Header Right Stats -->
     <div class="header-status">
+      <button class="cursor-toggle-btn" id="cursorToggleBtn" onclick="toggleTacticalCursor()" title="Toggle Satellite Cursor (Alt+C)" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.3); color: #38bdf8; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg> <span>TAC CURSOR</span>
+      </button>
+      <button class="audio-toggle-btn" id="audioToggleBtn" onclick="toggleTacticalAudio()" title="Toggle Tactical Sound (Alt+M)" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(100,116,139,0.3); color: #64748b; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> <span>TAC AUDIO [MUTE]</span>
+      </button>
       <a href="/" class="ingest-aoi-nav-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
         <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> Map Explorer
       </a>
@@ -378,11 +406,13 @@
         <!-- Filter Configuration Popover Panel -->
         <div class="search-filter-popover" id="searchFilterPopover" style="display: none;">
           <div class="popover-header">
-            <h4 style="display: flex; align-items: center; gap: 8px;">
+            <h4>
               <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
               Retrieval & Collection Filters
             </h4>
-            <button class="popover-close-btn" onclick="toggleSearchFilterPopover()">&times;</button>
+            <button class="popover-close-btn" onclick="toggleSearchFilterPopover()" title="Close Filters">
+              <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
           </div>
           <div class="popover-grid">
             <div class="form-group">
@@ -406,17 +436,23 @@
               <input type="date" id="filterEndDate">
             </div>
             <div class="form-group">
-              <label>Min Quality Confidence (0.0 - 1.0 or %)</label>
-              <input type="number" id="filterMinQuality" min="0.0" max="100.0" step="0.05" placeholder="e.g. 0.8 or 80" value="0.0">
+              <label>Min Quality (0.0 - 1.0)</label>
+              <input type="number" id="filterMinQuality" min="0.0" max="100.0" step="0.05" placeholder="e.g. 0.8" value="0.0">
             </div>
             <div class="form-group">
               <label>Max Cloud Cover (%)</label>
               <input type="number" id="filterMaxCloud" min="0" max="100" value="100">
             </div>
           </div>
-          <div style="margin-top: 12px; display: flex; justify-content: flex-end; gap: 8px;">
-            <button class="map-btn" style="padding: 6px 14px; font-size: 11px;" onclick="resetSearchFilters()">Reset</button>
-            <button class="map-btn primary" style="padding: 6px 16px; font-size: 11px;" onclick="toggleSearchFilterPopover()">Apply Filters</button>
+          <div class="popover-actions">
+            <button class="map-btn" style="padding: 6px 14px; font-size: 11.5px;" onclick="resetSearchFilters()">
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              <span>Reset</span>
+            </button>
+            <button class="map-btn primary" style="padding: 6px 18px; font-size: 11.5px;" onclick="toggleSearchFilterPopover()">
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Apply Filters</span>
+            </button>
           </div>
         </div>
 
@@ -467,7 +503,7 @@
           >
 
           <!-- Submit Button -->
-          <button class="retrieval-submit-btn" id="submitSearchBtn" onclick="submitSemanticSearch()">
+          <button class="retrieval-submit-btn radar-submit-btn" id="submitSearchBtn" onclick="submitSemanticSearch()">
             <span>Search</span>
             <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
@@ -525,13 +561,13 @@
             <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; font-family: monospace;">Analyst Verification (Accept / Reject)</div>
             <div style="display: flex; gap: 8px;">
               <button id="inspectAcceptBtn" class="map-btn" style="flex: 1; background: rgba(16,185,129,0.2); border-color: #10b981; color: #34d399; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" onclick="quickModalFeedback(true)">
-                <span>👍</span> Accept (Target)
+                <svg class="ui-icon icon-emerald" width="14" height="14" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Accept (Target)
               </button>
               <button id="inspectRejectBtn" class="map-btn" style="flex: 1; background: rgba(244,63,94,0.2); border-color: #f43f5e; color: #fb7185; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" onclick="quickModalFeedback(false)">
-                <span>👎</span> Reject (Noise)
+                <svg class="ui-icon icon-rose" width="14" height="14" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject (Noise)
               </button>
             </div>
-            <a href="/review.html" style="font-size: 11px; color: #94a3b8; text-align: center; text-decoration: underline; margin-top: 2px;">Open Full Analyst Review Workbench ↗</a>
+            <a href="/review.html" style="font-size: 11px; color: #94a3b8; text-align: center; text-decoration: underline; margin-top: 2px; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">Open Full Analyst Review Workbench <svg class="ui-icon icon-cyan" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
           </div>
         </div>
 
@@ -614,6 +650,12 @@
   <!-- Leaflet JS & Shared App JS with cache buster -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="/frontend/app.js?v=20260913_toggle_v10"></script>
+  <script src="/frontend/app.js?v=20260919_app_final"></script>
+  <!-- Ambient Effects & Starfield -->
+  <script src="/frontend/effects.js?v=20260919_v2"></script>
+  <!-- Tactical Audio Synthesizer -->
+  <script src="/frontend/audio.js?v=20260919_v1"></script>
+  <!-- Tactical Satellite Cursor Engine -->
+  <script src="/frontend/cursor.js?v=20260919_v2"></script>
 </body>
 </html>

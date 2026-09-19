@@ -1,0 +1,18 @@
+{
+  "type": "Feature",
+  "properties": {
+    "name": "Noida International Airport Jewar (Uttar Pradesh, India)"
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [77.60, 28.16],
+        [77.65, 28.16],
+        [77.65, 28.20],
+        [77.60, 28.20],
+        [77.60, 28.16]
+      ]
+    ]
+  }
+}

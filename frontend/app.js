@@ -219,6 +219,19 @@ window.teleportToPreset = function(presetStr) {
 window.teleportToPoint = function(lat, lon, zoom = 15, label = '') {
   if (!map) return;
 
+  // Hyperspace warp animation on map container & tactical toast
+  try {
+    const mapContainer = map.getContainer();
+    if (mapContainer) {
+      mapContainer.classList.add('hyperspace-warp');
+      setTimeout(() => mapContainer.classList.remove('hyperspace-warp'), 450);
+    }
+    if (window.showTacticalToast) {
+      window.showTacticalToast(`COORDINATES LOCKED // ORBIT TRANSIT: [${lat.toFixed(4)}°, ${lon.toFixed(4)}°]`);
+    }
+    window.tacticalAudio?.playLockOnChirp?.();
+  } catch (err) {}
+
   // Fly animation
   map.flyTo([lat, lon], zoom, {
     animate: true,
@@ -241,16 +254,16 @@ window.teleportToPoint = function(lat, lon, zoom = 15, label = '') {
 
   const popupContent = `
     <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #fff; min-width: 200px; padding: 4px;">
-      <div style="font-weight: 700; color: #38bdf8; margin-bottom: 4px; font-size: 13px;">🚀 ${label || 'Target Location'}</div>
+      <div style="font-weight: 700; color: #38bdf8; margin-bottom: 4px; font-size: 13px;">${label || 'Target Location'}</div>
       <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94a3b8; margin-bottom: 10px;">
         Lat: ${lat.toFixed(5)}°<br>Lon: ${lon.toFixed(5)}°
       </div>
       <div style="display: flex; flex-direction: column; gap: 6px;">
         <button onclick="prepareIngestFromPoint(${lat}, ${lon})" style="background: #06b6d4; color: #000; border: none; padding: 6px 10px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 11px;">
-          📥 Ingest This Location (5km AOI)
+          Ingest This Location (5km AOI)
         </button>
         <button onclick="clearTeleportMarker()" style="background: rgba(255,255,255,0.1); color: #cbd5e1; border: 1px solid rgba(255,255,255,0.2); padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px;">
-          ❌ Clear Marker
+          Clear Marker
         </button>
       </div>
     </div>
@@ -284,13 +297,13 @@ window.teleportToBbox = function(bbox) {
 
   activeTeleportBox.bindPopup(`
     <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #fff; min-width: 220px; padding: 4px;">
-      <div style="font-weight: 700; color: #38bdf8; margin-bottom: 4px;">📦 Target Bounding Box</div>
+      <div style="font-weight: 700; color: #38bdf8; margin-bottom: 4px;">Target Bounding Box</div>
       <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #94a3b8; margin-bottom: 8px;">
         SW: ${minLat.toFixed(4)}°, ${minLon.toFixed(4)}°<br>
         NE: ${maxLat.toFixed(4)}°, ${maxLon.toFixed(4)}°
       </div>
       <button onclick="prepareIngestFromBbox(${minLon}, ${minLat}, ${maxLon}, ${maxLat})" style="background: #06b6d4; color: #000; border: none; padding: 6px 10px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 11px; width: 100%;">
-        📥 Ingest This Bounding Box
+        Ingest This Bounding Box
       </button>
     </div>
   `).openPopup();
@@ -325,7 +338,7 @@ window.prepareIngestFromBbox = function(minLon, minLat, maxLon, maxLat) {
     ]]
   };
 
-  const geoInput = document.getElementById('aoiGeoJson');
+  const geoInput = document.getElementById('geojsonInput');
   if (geoInput) {
     geoInput.value = JSON.stringify(geojsonPoly, null, 2);
   }
@@ -356,6 +369,7 @@ window.switchBasemap = function(type) {
   map.removeLayer(currentBasemap);
   currentBasemap = basemapLayers[type];
   currentBasemap.addTo(map);
+  window.tacticalAudio?.playTacticalClick?.();
 };
 
 // ============================================================
@@ -374,13 +388,18 @@ window.loadCoverageRegions = async function() {
     // Populate Region Dropdown
     const select = document.getElementById('regionSelect');
     if (select) {
-      select.innerHTML = '<option value="all">ð All Ingested Sectors</option>';
+      select.innerHTML = '<option value="all">[ALL] Ingested Sectors</option>';
     }
 
     // Update Header Tile Counter
     const archiveCountEl = document.getElementById('archiveTileCount');
     if (archiveCountEl) {
-      archiveCountEl.innerText = `${coverageData.total_tiles || 0} TILES ONLINE`;
+      const targetCount = coverageData.total_tiles || 0;
+      if (window.animateNumberCount) {
+        window.animateNumberCount(archiveCountEl, 0, targetCount, 850, ' TILES ONLINE');
+      } else {
+        archiveCountEl.innerText = `${targetCount} TILES ONLINE`;
+      }
     }
 
     if (!coverageData.features || coverageData.features.length === 0) {
@@ -398,19 +417,20 @@ window.loadCoverageRegions = async function() {
       if (select) {
         const opt = document.createElement('option');
         opt.value = props.region_id;
-        opt.innerText = `ð ${props.region_name} (${props.tile_count} Tiles)`;
+        opt.innerText = `[${props.region_id || 'AOI'}] ${props.region_name} (${props.tile_count} Tiles)`;
         select.appendChild(opt);
       }
 
-      // Render GeoJSON Polygon
+      // Render GeoJSON Polygon with Tactical Laser Border
       const geoLayer = L.geoJSON(feat.geometry, {
         style: {
+          className: 'tactical-laser-polygon',
           color: color,
           weight: 2.5,
-          opacity: 0.9,
+          opacity: 0.95,
           fillColor: color,
           fillOpacity: 0.18,
-          dashArray: '4, 4'
+          dashArray: '6, 6'
         }
       });
 
@@ -422,7 +442,7 @@ window.loadCoverageRegions = async function() {
 
       // Click Popup
       geoLayer.bindPopup(`
-        <div class="popup-title">ð°ï¸ ${props.region_name}</div>
+        <div class="popup-title"><span class="status-pill status-confirmed">SECTOR</span> ${props.region_name}</div>
         <div class="popup-stat"><strong>Region ID:</strong> ${props.region_id}</div>
         <div class="popup-stat"><strong>Embedded Tiles:</strong> ${props.tile_count}</div>
         <div class="popup-stat"><strong>Database Status:</strong> <span style="color: #34d399; font-weight: 600;">${props.status.toUpperCase()}</span></div>
@@ -492,7 +512,7 @@ function setupLeafletDraw() {
       regionIdInput.value = `region_${center.lat.toFixed(2)}_${center.lng.toFixed(2)}`;
     }
     if (regionNameInput && !regionNameInput.value) {
-      regionNameInput.value = `Sector (${center.lat.toFixed(2)}Â°N, ${center.lng.toFixed(2)}Â°E)`;
+      regionNameInput.value = `Sector (${center.lat.toFixed(2)}°N, ${center.lng.toFixed(2)}°E)`;
     }
 
     // Open Ingest Modal for Confirmation
@@ -551,7 +571,7 @@ window.setIngestionSensor = function(sensor) {
     if (maxarGroup) maxarGroup.style.display = 'block';
     if (bucketGroup) bucketGroup.style.display = 'none';
     if (descEl) {
-      descEl.innerHTML = `<strong>Maxar High-Resolution Optical Ingestion:</strong> Fetches sub-meter orthorectified imagery from the Maxar/Esri Wayback archive (2020â2026), slices 512Ã512 georeferenced GeoTIFFs, computes the VARI index, and stores embeddings in dedicated Qdrant collection <code>maxar_tile_embeddings</code>.`;
+      descEl.innerHTML = `<strong>Maxar High-Resolution Optical Ingestion:</strong> Fetches sub-meter orthorectified imagery from the Maxar/Esri Wayback archive (2020-2026), slices 512x512 georeferenced GeoTIFFs, computes the VARI index, and stores embeddings in dedicated Qdrant collection <code>maxar_tile_embeddings</code>.`;
     }
     setMaxarEpochPreset('2020_2026');
   } else {
@@ -567,7 +587,7 @@ window.setIngestionSensor = function(sensor) {
     if (maxarGroup) maxarGroup.style.display = 'none';
     if (bucketGroup) bucketGroup.style.display = 'block';
     if (descEl) {
-      descEl.innerHTML = `Define an AOI polygon and choose the historical timeline (e.g. 1â10 years). The pipeline fetches all covering Sentinel-2 scenes, cleans cloud/shadow masks, normalizes, slices 512x512 tiles, computes indices (NDVI/NDWI/NDBI), and embeds into Qdrant & PostgreSQL.`;
+      descEl.innerHTML = `Define an AOI polygon and choose the historical timeline (e.g. 1-10 years). The pipeline fetches all covering Sentinel-2 scenes, cleans cloud/shadow masks, normalizes, slices 512x512 tiles, computes indices (NDVI/NDWI/NDBI), and embeds into Qdrant & PostgreSQL.`;
     }
     setTimelineYears(2);
   }
@@ -642,7 +662,7 @@ window.handleGeoTiffFilesSelected = function(files) {
   if (summaryEl) {
     summaryEl.style.display = 'block';
     const names = selectedGeoTiffFiles.map(f => f.name).join(', ');
-    summaryEl.innerHTML = `â <strong>${selectedGeoTiffFiles.length} file(s) selected:</strong> ${names}`;
+    summaryEl.innerHTML = `<span class="status-pill status-confirmed">[READY]</span> <strong>${selectedGeoTiffFiles.length} file(s) selected:</strong> ${names}`;
   }
 };
 
@@ -710,8 +730,8 @@ function animateProgressBar() {
 
   const isMaxar = currentIngestionSensor === 'maxar';
   label.innerText = isMaxar 
-    ? 'ð 1/4: Connecting to Maxar Wayback Archive & Selecting Epochs...' 
-    : 'â¡ 1/5: Querying STAC Catalog & Selecting Granules...';
+    ? '[PHASE 1/4] Connecting to Maxar Wayback Archive & Selecting Epochs...' 
+    : '[PHASE 1/5] Querying STAC Catalog & Selecting Granules...';
   subtext.innerText = isMaxar
     ? 'Selecting 2020 baseline and contemporary sub-meter orthorectified releases...'
     : 'Scanning AWS Earth Search STAC for cloud-free Sentinel-2 scenes...';
@@ -720,15 +740,15 @@ function animateProgressBar() {
   timer.innerText = '0s';
 
   const steps = isMaxar ? [
-    { pct: 25, label: 'ð°ï¸ 2/4: Streaming High-Res Maxar WMTS Tiles & Stitching...', sub: 'Fetching sub-meter orthorectified image canvas across epochs...' },
-    { pct: 50, label: 'âï¸ 3/4: Slicing 512Ã512 Georeferenced Tiles & Computing VARI...', sub: 'Generating EPSG:4326 GeoTIFFs with Visible Atmospherically Resistant Index...' },
-    { pct: 75, label: 'ð§  4/4: RemoteCLIP ViT-B-32 Vector Embeddings & Indexing...', sub: 'Embedding optical features into Qdrant maxar_tile_embeddings & PostgreSQL...' },
-    { pct: 90, label: 'ð¾ Finalizing Database Registration & Map Coverage...', sub: 'Writing georeferenced sector polygons to PostgreSQL...' }
+    { pct: 25, label: '[PHASE 2/4] Streaming High-Res Maxar WMTS Tiles & Stitching...', sub: 'Fetching sub-meter orthorectified image canvas across epochs...' },
+    { pct: 50, label: '[PHASE 3/4] Slicing 512x512 Georeferenced Tiles & Computing VARI...', sub: 'Generating EPSG:4326 GeoTIFFs with Visible Atmospherically Resistant Index...' },
+    { pct: 75, label: '[PHASE 4/4] RemoteCLIP ViT-B-32 Vector Embeddings & Indexing...', sub: 'Embedding optical features into Qdrant maxar_tile_embeddings & PostgreSQL...' },
+    { pct: 90, label: '[FINALIZE] Database Registration & Map Coverage...', sub: 'Writing georeferenced sector polygons to PostgreSQL...' }
   ] : [
-    { pct: 25, label: 'ð°ï¸ 2/5: Streaming Cloud-Optimized GeoTIFFs (B2, B3, B4, B8, B11)...', sub: 'Reprojecting rasters to EPSG:4326 working canvas...' },
-    { pct: 50, label: 'âï¸ 3/5: Computing Cloud & Shadow Masks + 2-98% Normalization...', sub: 'Filtering bad pixels and scaling dynamic range across 5 bands...' },
-    { pct: 70, label: 'âï¸ 4/5: Slicing 512x512 Tiles & Calculating NDVI, NDWI, NDBI...', sub: 'Computing multi-spectral vegetation, water, and built-up indices...' },
-    { pct: 90, label: 'ð§  5/5: Generating RemoteCLIP ViT-B-32 Vector Embeddings...', sub: 'Batch upserting 512-dim vectors into Qdrant and metadata into PostgreSQL...' }
+    { pct: 25, label: '[PHASE 2/5] Streaming Cloud-Optimized GeoTIFFs (B2, B3, B4, B8, B11)...', sub: 'Reprojecting rasters to EPSG:4326 working canvas...' },
+    { pct: 50, label: '[PHASE 3/5] Computing Cloud & Shadow Masks + 2-98% Normalization...', sub: 'Filtering bad pixels and scaling dynamic range across 5 bands...' },
+    { pct: 70, label: '[PHASE 4/5] Slicing 512x512 Tiles & Calculating NDVI, NDWI, NDBI...', sub: 'Computing multi-spectral vegetation, water, and built-up indices...' },
+    { pct: 90, label: '[PHASE 5/5] Generating RemoteCLIP ViT-B-32 Vector Embeddings...', sub: 'Batch upserting 512-dim vectors into Qdrant and metadata into PostgreSQL...' }
   ];
 
   let stepIdx = 0;
@@ -756,12 +776,12 @@ function stopProgressBar(success, message) {
 
   if (success) {
     bar.style.width = '100%';
-    label.innerText = 'â Ingestion Pipeline Complete!';
+    label.innerText = '[STATUS: OK] Ingestion Pipeline Complete!';
     label.style.color = '#34d399';
     alertBox.style.display = 'block';
     alertBox.innerHTML = `<strong>SUCCESS:</strong> ${message}`;
   } else {
-    label.innerText = 'â Ingestion Failed';
+    label.innerText = '[STATUS: ERR] Ingestion Failed';
     label.style.color = '#f43f5e';
     alertBox.style.display = 'block';
     alertBox.style.background = 'rgba(244, 63, 94, 0.15)';
@@ -814,7 +834,7 @@ window.startIngestion = async function() {
 
         console.log("[Canopus] Submitting Maxar async job:", maxarPayload);
 
-        // Step 1: Submit  returns job_id INSTANTLY (no timeout risk)
+        // Step 1: Submit - returns job_id INSTANTLY (no timeout risk)
         const submitRes = await fetch(`${API_BASE}/api/v1/ingest/maxar`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -837,10 +857,10 @@ window.startIngestion = async function() {
 
         // Step 2: Poll every 3 seconds for job completion
         const progressStages = [
-          { minPct: 0,  label: '??? 1/4: Connecting to Maxar Wayback Archive...', sub: 'Resolving release IDs for selected epochs...' },
-          { minPct: 10, label: '??? 2/4: Streaming WMTS Tiles & Stitching Canvas...', sub: 'Downloading sub-meter optical imagery from Esri Wayback...' },
-          { minPct: 30, label: '?? 3/4: Slicing 512×512 GeoTIFF Tiles...', sub: 'Polygon intersection & VARI index computation...' },
-          { minPct: 60, label: '?? 4/4: RemoteCLIP Embeddings ? Qdrant & PostgreSQL...', sub: 'Indexing tile vectors into maxar_tile_embeddings...' },
+          { minPct: 0,  label: '[PHASE 1/4] Connecting to Maxar Wayback Archive...', sub: 'Resolving release IDs for selected epochs...' },
+          { minPct: 10, label: '[PHASE 2/4] Streaming WMTS Tiles & Stitching Canvas...', sub: 'Downloading sub-meter optical imagery from Esri Wayback...' },
+          { minPct: 30, label: '[PHASE 3/4] Slicing 512x512 GeoTIFF Tiles...', sub: 'Polygon intersection & VARI index computation...' },
+          { minPct: 60, label: '[PHASE 4/4] RemoteCLIP Embeddings -> Qdrant & PostgreSQL...', sub: 'Indexing tile vectors into maxar_tile_embeddings...' },
         ];
 
         const finalResult = await new Promise((resolve, reject) => {
@@ -861,7 +881,7 @@ window.startIngestion = async function() {
               fakeProgress = Math.min(fakeProgress, 95); // cap at 95 until done
               const bar = document.getElementById('ingestProgressBar');
               const labelEl = document.getElementById('ingestStepLabel');
-              const subEl = document.getElementById('ingestSubLabel');
+              const subEl = document.getElementById('ingestSubtext');
               if (bar) bar.style.width = fakeProgress + '%';
 
               // Pick UI stage label
@@ -896,7 +916,7 @@ window.startIngestion = async function() {
 
         const epochsCount = (finalResult.epochs_processed || []).length;
         stopProgressBar(true,
-          `? Maxar Complete! ${finalResult.total_tiles_generated} sub-meter tiles, ` +
+          `[SUCCESS] Maxar Ingestion Complete! ${finalResult.total_tiles_generated} sub-meter tiles, ` +
           `${epochsCount} epoch(s), ${finalResult.elapsed_seconds?.toFixed(1)}s. ` +
           `Indexed in 'maxar_tile_embeddings'.`
         );
@@ -1042,6 +1062,7 @@ let mapTileHighlightLayer = null;
 let activeSensorFilter = 'Sentinel-2';
 
 window.selectSensorFilter = function(sensorName) {
+  if (window.playTacticalClick) window.playTacticalClick();
   activeSensorFilter = (sensorName !== undefined && sensorName !== null) ? sensorName : '';
   
   // Update Pills visual styling
@@ -1074,6 +1095,7 @@ window.onDirectSensorChange = function(val) {
 };
 
 window.toggleSearchFilterPopover = function() {
+  if (window.playTacticalClick) window.playTacticalClick();
   const popover = document.getElementById('searchFilterPopover');
   if (!popover) return;
   const isHidden = popover.style.display === 'none' || popover.style.display === '';
@@ -1081,6 +1103,7 @@ window.toggleSearchFilterPopover = function() {
 };
 
 window.resetSearchFilters = function() {
+  if (window.playTacticalClick) window.playTacticalClick();
   const topK = document.getElementById('filterTopK');
   if (topK) topK.value = 5;
   const topKLabel = document.getElementById('topKValueLabel');
@@ -1124,6 +1147,7 @@ window.clearAttachedSearchImage = function() {
 window.applyQuickPrompt = function(promptText) {
   const input = document.getElementById('searchPromptInput');
   if (input) {
+    if (window.playTacticalLockChirp) window.playTacticalLockChirp();
     input.value = promptText;
     submitSemanticSearch();
   }
@@ -1163,6 +1187,7 @@ window.toggleChatSidebar = function() {
   const floatBtn = document.getElementById('floatingSidebarBtn');
   if (!sidebar) return;
 
+  if (window.playTacticalClick) window.playTacticalClick();
   const isCollapsed = sidebar.classList.toggle('collapsed');
   if (wrapper) wrapper.classList.toggle('sidebar-collapsed', isCollapsed);
   if (floatBtn) {
@@ -1271,6 +1296,7 @@ window.filterConversationsList = function(q) {
 };
 
 window.startNewChat = function() {
+  if (window.playTacticalClick) window.playTacticalClick();
   currentConversationId = null;
   const feed = document.getElementById('retrievalChatFeed');
   if (feed && defaultWelcomeFeedHtml) {
@@ -1288,6 +1314,7 @@ window.startNewChat = function() {
 
 window.selectConversation = async function(conversationId) {
   if (!conversationId) return;
+  if (window.playTacticalLockChirp) window.playTacticalLockChirp();
   const uid = getCurrentUserId();
   const feed = document.getElementById('retrievalChatFeed');
   if (!feed) return;
@@ -1437,6 +1464,10 @@ window.submitSemanticSearch = async function() {
   const chatFeed = document.getElementById('retrievalChatFeed');
   if (!chatFeed) return;
 
+  const submitBtn = document.getElementById('submitSearchBtn');
+  if (submitBtn) submitBtn.classList.add('searching');
+  if (window.tacticalAudio) window.tacticalAudio.playLockOnChirp();
+
   // 1. Gather Filters
   let rawTopK = parseInt(document.getElementById('filterTopK')?.value || '5', 10);
   const topK = isNaN(rawTopK) ? 5 : Math.min(100, Math.max(1, rawTopK));
@@ -1543,6 +1574,7 @@ window.submitSemanticSearch = async function() {
     // Remove Loading Bubble
     const loadingElem = document.getElementById(loadingMsgId);
     if (loadingElem) loadingElem.remove();
+    if (submitBtn) submitBtn.classList.remove('searching');
 
     // Render Search Results into Visual Pipeline
     renderAssistantResultsBubble(responseData, queryTurnContext);
@@ -1610,6 +1642,7 @@ window.submitSemanticSearch = async function() {
     }
 
   } catch (err) {
+    if (submitBtn) submitBtn.classList.remove('searching');
     const loadingElem = document.getElementById(loadingMsgId);
     if (loadingElem) loadingElem.remove();
     renderAssistantErrorBubble(err.message);
@@ -1689,6 +1722,7 @@ function renderAssistantResultsBubble(response, queryInfo) {
   const chatFeed = document.getElementById('retrievalChatFeed');
   if (!chatFeed) return;
 
+  if (window.playTacticalLockChirp) window.playTacticalLockChirp();
   currentSearchResults = response.results || [];
   const execTime = response.execution_time_ms || 0;
   const totalFound = response.total_found || 0;
@@ -1735,15 +1769,16 @@ function renderAssistantResultsBubble(response, queryInfo) {
         if (!chipsHtml) chipsHtml = `<span class="spec-chip ndvi">10m Multi-Spectral</span>`;
       }
 
+      const isHighConfidence = scorePct >= 80;
       resultsGridHtml += `
-        <div class="result-card">
-          <div class="result-thumb-wrap">
+        <div class="result-card hud-bracketed ${isHighConfidence ? 'high-confidence-halo' : ''}">
+          <div class="result-thumb-wrap laser-scanner-wrap">
             <img class="result-thumb-img" src="${thumbUrl}" alt="${item.tile_id}" onerror="handleTileThumbError(this, '${item.tile_id}')">
             <div class="result-sensor-tag">
               <svg class="ui-icon icon-sm" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
               ${sensorLabel}
             </div>
-            <div class="result-score-badge">${scorePct}% Match</div>
+            <div class="result-score-badge ${isHighConfidence ? 'high-confidence-halo' : ''}">${scorePct}% Match</div>
           </div>
           <div class="result-body">
             <div class="result-title-row">
@@ -1816,6 +1851,14 @@ function renderAssistantResultsBubble(response, queryInfo) {
 
   chatFeed.appendChild(msg);
   chatFeed.scrollTop = chatFeed.scrollHeight;
+
+  const asstNameEl = msg.querySelector('.assistant-name');
+  if (asstNameEl && window.decodeScrambleText) {
+    window.decodeScrambleText(asstNameEl, 'Canopus Search Results', 380);
+  }
+  if (window.tacticalAudio) {
+    window.tacticalAudio.playSonarPing();
+  }
 }
 
 // Fallback image generator for missing/mock tile previews
@@ -1885,6 +1928,7 @@ function createTileSvgDataUri(tileId) {
 // ============================================================
 
 window.openTileInspect = function(tileId) {
+  if (window.playTacticalLockChirp) window.playTacticalLockChirp();
   // Comprehensive lookup across all tile stores
   let item = (window.__tileMap && window.__tileMap.get(tileId))
     || currentSearchResults.find(t => t.tile_id === tileId)
@@ -2082,6 +2126,7 @@ window.openTileInspect = function(tileId) {
 };
 
 window.closeTileInspect = function() {
+  if (window.playTacticalClick) window.playTacticalClick();
   const modal = document.getElementById('tileInspectModal');
   if (modal) modal.style.setProperty('display', 'none', 'important');
   currentInspectingTile = null;
@@ -2122,16 +2167,26 @@ window.quickModalFeedback = async function(isRelevant) {
           btnAccept.style.background = '#10b981';
           btnAccept.style.color = '#000';
           btnReject.style.opacity = '0.5';
+          if (window.playTacticalLockChirp) window.playTacticalLockChirp();
         } else {
           btnReject.style.background = '#f43f5e';
           btnReject.style.color = '#fff';
           btnAccept.style.opacity = '0.5';
+          if (window.playTacticalClick) window.playTacticalClick();
         }
       }
-      alert(`Tile #${tileId} successfully marked as ${isRelevant ? 'ACCEPTED (Relevant Target)' : 'REJECTED (False Alarm)'}!\nLogged into immutable Analyst Audit Trail.`);
+      if (window.showTacticalToast) {
+        window.showTacticalToast(`TILE #${tileId} // ${isRelevant ? 'ACCEPTED (TARGET VERIFIED)' : 'REJECTED (NOISE CLASSIFIED)'}`);
+      } else {
+        alert(`Tile #${tileId} marked as ${isRelevant ? 'ACCEPTED' : 'REJECTED'}.`);
+      }
     }
   } catch (err) {
-    alert('Failed to save feedback: ' + err.message);
+    if (window.showTacticalToast) {
+      window.showTacticalToast(`FEEDBACK ERROR // ${err.message}`);
+    } else {
+      alert('Failed to save feedback: ' + err.message);
+    }
   }
 };
 
@@ -2522,7 +2577,7 @@ window.renderDiscoveryPinsOnMap = function(tiles) {
 
     marker.bindPopup(`
       <div style="font-family: 'Inter', sans-serif; font-size: 12px; color: #fff; width: 240px; padding: 4px;">
-        <div style="font-weight: 700; color: #38bdf8; margin-bottom: 4px;">🎯 Match #${idx + 1} &bull; ${scoreVal}</div>
+        <div style="font-weight: 700; color: #38bdf8; margin-bottom: 4px;">Match #${idx + 1} &bull; ${scoreVal}</div>
         <img src="${thumbUrl}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 6px;" onerror="handleTileThumbError(this, '${item.tile_id}')">
         <div style="font-size: 11px; color: #cbd5e1; margin-bottom: 8px;">
           <strong>Tile:</strong> <code>${item.tile_id}</code><br>
@@ -2531,10 +2586,10 @@ window.renderDiscoveryPinsOnMap = function(tiles) {
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
           <button onclick="openTileInspect('${item.tile_id}')" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 5px 8px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 11px;">
-            🔍 Inspect
+            Inspect
           </button>
           <button onclick="discoverSimilarFromTile('${item.tile_id}')" style="background: #06b6d4; color: #000; border: none; padding: 5px 8px; border-radius: 4px; font-weight: 700; cursor: pointer; font-size: 11px;">
-            ⚡ Find Similar
+            Find Similar
           </button>
         </div>
       </div>
@@ -2602,7 +2657,7 @@ window.openTileInMap = function(tileId, centroidLat, centroidLon, geometryGeoJso
     }).addTo(map);
 
     mapTileHighlightLayer.bindPopup(`
-      <div class="popup-title">🎯 Retrieved Tile: ${tileId}</div>
+      <div class="popup-title">Retrieved Tile: ${tileId}</div>
       <div class="popup-stat">Centroid: ${centroidLat ? centroidLat.toFixed(4) : ''}° N, ${centroidLon ? centroidLon.toFixed(4) : ''}° E</div>
     `).openPopup();
 

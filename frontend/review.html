@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Canopus — Analyst Review & Verification Workbench</title>
-  <link rel="stylesheet" href="/frontend/index.css">
+  <link rel="stylesheet" href="/frontend/index.css?v=20260919_popover_final">
+  <link rel="stylesheet" href="/frontend/effects.css?v=20260919_v2">
   <style>
     /* ============================================================
        ANALYST REVIEW WORKBENCH THEME & STYLES
@@ -987,20 +988,38 @@
   <!-- Header -->
   <header>
     <div class="logo-section">
-      <div class="logo-badge">🛰️</div>
+      <div class="logo-badge" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25)); border: 1px solid var(--accent-cyan); border-radius: 8px; width: 36px; height: 36px;">
+        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+      </div>
       <div>
         <div class="logo-title">CANOPUS &bull; ANALYST REVIEW BENCH</div>
         <div class="logo-subtitle">HUMAN-IN-THE-LOOP VERIFICATION & PROVENANCE &bull; DEFENSE DGIS</div>
       </div>
     </div>
     <nav class="nav-links">
-      <a href="/" class="nav-item" id="nav-map" style="text-decoration: none;"><span>🗺️</span> Map & Coverage</a>
-      <a href="/retrieval.html" class="nav-item" id="nav-retrieval" style="text-decoration: none;"><span>🔍</span> Semantic Retrieval</a>
-      <a href="/change.html" class="nav-item" id="nav-change" style="text-decoration: none;"><span>🔄</span> Change Detection</a>
-      <a href="/clustering.html" class="nav-item" id="nav-clustering" style="text-decoration: none;"><span>📊</span> Clustering</a>
-      <a href="/review.html" class="nav-item active" id="nav-review" style="text-decoration: none;"><span>📝</span> Review Tool</a>
+      <a href="/" class="nav-item" id="nav-map" style="text-decoration: none;">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map & Coverage
+      </a>
+      <a href="/retrieval.html" class="nav-item" id="nav-retrieval" style="text-decoration: none;">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
+      </a>
+      <a href="/change.html" class="nav-item" id="nav-change" style="text-decoration: none;">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
+      </a>
+      <a href="/clustering.html" class="nav-item" id="nav-clustering" style="text-decoration: none;">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
+      </a>
+      <a href="/review.html" class="nav-item active" id="nav-review" style="text-decoration: none;">
+        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
+      </a>
     </nav>
     <div class="header-status">
+      <button class="cursor-toggle-btn" id="cursorToggleBtn" onclick="toggleTacticalCursor()" title="Toggle Satellite Cursor (Alt+C)" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.3); color: #38bdf8; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg> <span>TAC CURSOR</span>
+      </button>
+      <button class="audio-toggle-btn" id="audioToggleBtn" onclick="toggleTacticalAudio()" title="Toggle Tactical Sound (Alt+M)" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(100,116,139,0.3); color: #64748b; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> <span>TAC AUDIO [MUTE]</span>
+      </button>
       <div class="analyst-badge">
         <span class="analyst-pulse"></span>
         <span id="headerAnalystId">CAPT. VERMA (INTEL-01)</span>
@@ -1012,15 +1031,15 @@
   <div class="review-mode-bar">
     <div class="mode-tabs">
       <button class="mode-tab-btn active" id="tabBtnRetrieval" onclick="switchMode('retrieval')">
-        <span>🔍</span> Semantic Retrieval Review
+        Semantic Retrieval Review
         <span class="tab-badge" id="badgeRetrievalCount">0</span>
       </button>
       <button class="mode-tab-btn" id="tabBtnChange" onclick="switchMode('change')">
-        <span>🔄</span> Change Detection Review
+        Change Detection Review
         <span class="tab-badge" id="badgeChangeCount">0</span>
       </button>
       <button class="mode-tab-btn" id="tabBtnAudit" onclick="switchMode('audit')">
-        <span>📜</span> Unified Audit Log
+        Unified Audit Log
         <span class="tab-badge" id="badgeAuditCount">0</span>
       </button>
     </div>
@@ -1040,15 +1059,15 @@
         <div class="sidebar-header">
           <div class="sidebar-title">
             <span>Audited Queries</span>
-            <button class="btn-action btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="loadRetrievalQueries()">↻ Refresh</button>
+            <button class="btn-action btn-outline" style="padding: 4px 8px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;" onclick="loadRetrievalQueries()"><svg class="ui-icon icon-cyan" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh</button>
           </div>
           <!-- Query Type Segmented Switcher (Text vs Image) -->
           <div class="query-type-switcher">
             <button class="type-tab-btn active" id="tabTypeText" onclick="switchQueryType('text')">
-              <span>📝</span> Text Queries (<span id="txtCount">0</span>)
+              Text Queries (<span id="txtCount">0</span>)
             </button>
             <button class="type-tab-btn" id="tabTypeImage" onclick="switchQueryType('image')">
-              <span>🖼️</span> Image Queries (<span id="imgCount">0</span>)
+              Image Queries (<span id="imgCount">0</span>)
             </button>
           </div>
           <input type="text" id="querySearchFilter" class="search-box-input" placeholder="Filter queries or test new..." oninput="filterQueriesList()">
@@ -1071,10 +1090,10 @@
           </div>
           <div class="banner-actions">
             <button class="btn-action btn-cyan" id="btnRocchioRerank" onclick="triggerRocchioRerank()">
-              <span>⚡</span> Apply Rocchio Rerank
+              Apply Rocchio Rerank
             </button>
             <button class="btn-action btn-outline" id="btnExportDossier" onclick="exportRetrievalDossier()">
-              <span>📁</span> Export Target Dossier (GeoJSON)
+              Export Target Dossier (GeoJSON)
             </button>
           </div>
         </div>
@@ -1086,13 +1105,13 @@
               All Candidates (<span id="cntAll">0</span>)
             </button>
             <button class="subtab-btn accepted" id="btnFilterAccepted" onclick="setResultStatusFilter('accepted')">
-              <span>👍</span> Accepted Targets (<span id="cntAccepted">0</span>)
+              Accepted Targets (<span id="cntAccepted">0</span>)
             </button>
             <button class="subtab-btn rejected" id="btnFilterRejected" onclick="setResultStatusFilter('rejected')">
-              <span>👎</span> False Alarms (<span id="cntRejected">0</span>)
+              False Alarms (<span id="cntRejected">0</span>)
             </button>
             <button class="subtab-btn pending" id="btnFilterPending" onclick="setResultStatusFilter('pending')">
-              <span>⏳</span> Pending Review (<span id="cntPending">0</span>)
+              Pending Review (<span id="cntPending">0</span>)
             </button>
           </div>
         </div>
@@ -1115,7 +1134,7 @@
         <div class="sidebar-header">
           <div class="sidebar-title">
             <span>Change Detection Runs</span>
-            <button class="btn-action btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="loadChangeRuns()">↻ Refresh</button>
+            <button class="btn-action btn-outline" style="padding: 4px 8px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;" onclick="loadChangeRuns()"><svg class="ui-icon icon-cyan" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh</button>
           </div>
           <select id="changeRunSelect" class="search-box-input" onchange="onSelectChangeRun()">
             <option value="">Loading runs...</option>
@@ -1145,13 +1164,13 @@
           </div>
           <div class="banner-actions">
             <button class="btn-action" onclick="exportChangePDF()" style="background: linear-gradient(135deg, #ef4444, #991b1b); color: #fff; font-weight: 700; border: 1px solid #f87171; box-shadow: 0 0 14px rgba(239, 68, 68, 0.45);">
-              <span>📄</span> Export PDF Dossier
+              Export PDF Dossier
             </button>
             <button class="btn-action btn-cyan" onclick="exportConfirmedChangeGeoJSON()">
-              <span>📥</span> Export Confirmed GeoJSON
+              Export Confirmed GeoJSON
             </button>
             <button class="btn-action btn-outline" onclick="exportAllChangeGeoJSON()">
-              <span>🗺️</span> Export Full Run
+              Export Full Run
             </button>
           </div>
         </div>
@@ -1173,7 +1192,7 @@
             </div>
 
             <div class="change-delta-divider">
-              <span class="delta-pulse-arrow">➔</span>
+              <span class="delta-pulse-arrow"><svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
               <span class="status-pill status-pending" id="deltaTransitionPill">Analyzing</span>
             </div>
 
@@ -1190,7 +1209,7 @@
             </div>
 
             <div class="change-delta-divider">
-              <span class="delta-pulse-arrow">🎯</span>
+              <span class="delta-pulse-arrow"><svg class="ui-icon icon-emerald" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
               <span class="status-pill status-confirmed">Overlay</span>
             </div>
 
@@ -1254,13 +1273,13 @@
             </div>
             <div class="decision-btn-group">
               <button class="decision-btn confirm" id="btnConfirmChange" onclick="recordChangeVerdict('confirmed')">
-                <span>✅</span> Confirm Change
+                Confirm Change
               </button>
               <button class="decision-btn reject" id="btnRejectChange" onclick="recordChangeVerdict('rejected')">
-                <span>❌</span> Reject (False Alarm)
+                Reject (False Alarm)
               </button>
               <button class="decision-btn unsure" id="btnUnsureChange" onclick="recordChangeVerdict('unsure')">
-                <span>❓</span> Mark Inconclusive
+                Mark Inconclusive
               </button>
             </div>
             <textarea id="changeAnalystNote" class="decision-notes-input" placeholder="Enter intelligence remarks or justification for this decision..."></textarea>
@@ -1297,8 +1316,8 @@
             </div>
           </div>
           <div class="banner-actions">
-            <button class="btn-action btn-outline" onclick="loadAuditTimeline()">
-              <span>↻</span> Refresh Audit Log
+            <button class="btn-action btn-outline" style="display: inline-flex; align-items: center; gap: 6px;" onclick="loadAuditTimeline()">
+              <svg class="ui-icon icon-cyan" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh Audit Log
             </button>
           </div>
         </div>
@@ -1390,7 +1409,7 @@
           <rect width="256" height="256" fill="url(#g)"/>
           <rect width="256" height="256" fill="url(#grid)"/>
           <circle cx="128" cy="110" r="32" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 2"/>
-          <text x="128" y="116" font-family="monospace" font-size="22" fill="#38bdf8" text-anchor="middle">🛰️</text>
+          <text x="128" y="116" font-family="monospace" font-size="14" fill="#38bdf8" text-anchor="middle" font-weight="bold">S2-L2A</text>
           <text x="128" y="165" font-family="monospace" font-size="11" fill="#94a3b8" text-anchor="middle" font-weight="bold">SENTINEL-2 L2A</text>
           <text x="128" y="185" font-family="monospace" font-size="9" fill="#64748b" text-anchor="middle">${cleanId.substring(0, 26)}</text>
         </svg>
@@ -1400,6 +1419,7 @@
 
     // 1. Mode Switching
     function switchMode(mode) {
+      window.tacticalAudio?.playTacticalClick?.();
       activeMode = mode;
       document.querySelectorAll('.mode-tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
@@ -1421,6 +1441,7 @@
 
     // 2. Semantic Retrieval Section
     function switchQueryType(type) {
+      window.tacticalAudio?.playTacticalClick?.();
       currentQueryType = type;
       document.getElementById('tabTypeText').classList.toggle('active', type === 'text');
       document.getElementById('tabTypeImage').classList.toggle('active', type === 'image');
@@ -1465,18 +1486,20 @@
         const isActive = currentQuery === q.raw_query;
         const pos = q.positive_count || 0;
         const neg = q.negative_count || 0;
-        const queryIcon = q.query_type === 'image' ? '🖼️' : '📝';
+        const queryIcon = q.query_type === 'image'
+          ? '<svg class="ui-icon icon-cyan" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'
+          : '<svg class="ui-icon icon-amber" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
         const dateStr = q.last_searched ? new Date(q.last_searched).toLocaleDateString() : '--';
 
         return `
           <div class="list-item-card ${isActive ? 'active' : ''}" onclick="selectQuery('${escapeHtml(q.raw_query)}')">
             <div class="item-header">
-              <span class="item-title" title="${escapeHtml(q.raw_query)}">${queryIcon} ${escapeHtml(q.raw_query)}</span>
-              <span class="status-pill status-pending">${(q.query_type || 'text').toUpperCase()}</span>
+              <span class="item-title" title="${escapeHtml(q.raw_query)}">${escapeHtml(q.raw_query)}</span>
+              <span class="status-pill status-pending" style="display: inline-flex; align-items: center; gap: 4px;">${queryIcon} ${(q.query_type || 'text').toUpperCase()}</span>
             </div>
             <div class="item-stats-row">
-              <span class="status-pill status-confirmed">👍 ${pos}</span>
-              <span class="status-pill status-rejected">👎 ${neg}</span>
+              <span class="status-pill status-confirmed">HIT: ${pos}</span>
+              <span class="status-pill status-rejected">MISS: ${neg}</span>
               <span class="item-subtitle" style="margin-left: auto;">${dateStr}</span>
             </div>
           </div>
@@ -1491,6 +1514,7 @@
     }
 
     async function selectQuery(queryText) {
+      window.tacticalAudio?.playLockOnChirp?.();
       currentQuery = queryText;
       document.getElementById('activeQueryTitle').innerText = `Query: "${queryText}"`;
       renderQueriesList(allQueries);
@@ -1531,10 +1555,22 @@
       const rejected = currentQueryResults.filter(r => r.status === 'rejected').length;
       const pending = total - (accepted + rejected);
 
-      document.getElementById('cntAll').innerText = total;
-      document.getElementById('cntAccepted').innerText = accepted;
-      document.getElementById('cntRejected').innerText = rejected;
-      document.getElementById('cntPending').innerText = pending;
+      const prevTotal = parseInt(document.getElementById('cntAll')?.innerText) || 0;
+      const prevAccepted = parseInt(document.getElementById('cntAccepted')?.innerText) || 0;
+      const prevRejected = parseInt(document.getElementById('cntRejected')?.innerText) || 0;
+      const prevPending = parseInt(document.getElementById('cntPending')?.innerText) || 0;
+
+      if (window.animateNumberCount) {
+        window.animateNumberCount(document.getElementById('cntAll'), prevTotal, total, 400);
+        window.animateNumberCount(document.getElementById('cntAccepted'), prevAccepted, accepted, 400);
+        window.animateNumberCount(document.getElementById('cntRejected'), prevRejected, rejected, 400);
+        window.animateNumberCount(document.getElementById('cntPending'), prevPending, pending, 400);
+      } else {
+        document.getElementById('cntAll').innerText = total;
+        document.getElementById('cntAccepted').innerText = accepted;
+        document.getElementById('cntRejected').innerText = rejected;
+        document.getElementById('cntPending').innerText = pending;
+      }
 
       // Filter visible items
       let visible = currentQueryResults;
@@ -1554,7 +1590,12 @@
         const thumbUrl = resolveThumbnail(r.thumbnail_url || r.thumbnail_path, r.tile_id);
         const simPct = (r.score * 100).toFixed(1);
 
-        const statusBadgeText = isHit ? '✓ ACCEPTED' : (isMiss ? '✗ REJECTED' : '⏳ PENDING');
+        const statusBadgeIcon = isHit 
+          ? '<svg class="ui-icon icon-emerald" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' 
+          : (isMiss 
+            ? '<svg class="ui-icon icon-rose" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' 
+            : '<svg class="ui-icon icon-amber" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>');
+        const statusBadgeText = isHit ? 'ACCEPTED' : (isMiss ? 'REJECTED' : 'PENDING');
         const statusBadgeClass = isHit ? 'status-confirmed' : (isMiss ? 'status-rejected' : 'status-pending');
 
         return `
@@ -1565,7 +1606,7 @@
                 <span class="score-badge">${simPct}% MATCH</span>
               </div>
               <div class="tile-status-overlay">
-                <span class="status-pill ${statusBadgeClass}">${statusBadgeText}</span>
+                <span class="status-pill ${statusBadgeClass}" style="display: inline-flex; align-items: center; gap: 4px;">${statusBadgeIcon} ${statusBadgeText}</span>
               </div>
             </div>
             <div class="tile-card-body">
@@ -1586,10 +1627,10 @@
               <div class="analyst-tile-actions">
                 <div class="verdict-btn-row">
                   <button class="btn-verdict hit ${isHit ? 'active' : ''}" onclick="submitFeedback('${escapeHtml(r.tile_id)}', true, this)">
-                    <span>👍</span> Relevant (Accept)
+                    Relevant (Accept)
                   </button>
                   <button class="btn-verdict miss ${isMiss ? 'active' : ''}" onclick="submitFeedback('${escapeHtml(r.tile_id)}', false, this)">
-                    <span>👎</span> False Alarm (Reject)
+                    False Alarm (Reject)
                   </button>
                 </div>
                 <select class="tag-select-input" onchange="updateTileTag('${escapeHtml(r.tile_id)}', this.value)">
@@ -1612,6 +1653,40 @@
 
     async function submitFeedback(tileId, isRelevant, btnElem) {
       if (!currentQuery) return;
+
+      // Tactical Audio & Stamp Immediate Visual Feedback
+      if (isRelevant) {
+        window.tacticalAudio?.playTargetLock?.();
+      } else {
+        window.tacticalAudio?.playTacticalClick?.();
+      }
+
+      const cardElem = btnElem ? btnElem.closest('.tile-review-card') : null;
+      if (cardElem) {
+        cardElem.classList.remove('flash-confirmed', 'flash-rejected');
+        void cardElem.offsetWidth; // trigger reflow
+        cardElem.classList.add(isRelevant ? 'flash-confirmed' : 'flash-rejected');
+
+        const thumbWrap = cardElem.querySelector('.tile-thumb-container');
+        if (thumbWrap) {
+          const oldStamp = thumbWrap.querySelector('.tactile-stamp-badge');
+          if (oldStamp) oldStamp.remove();
+
+          const stamp = document.createElement('div');
+          stamp.className = `tactile-stamp-badge ${isRelevant ? 'stamp-confirmed' : 'stamp-rejected'}`;
+          stamp.innerHTML = isRelevant
+            ? '<svg class="ui-icon icon-emerald" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> VERIFIED HIT'
+            : '<svg class="ui-icon icon-rose" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> REJECTED NOISE';
+          thumbWrap.appendChild(stamp);
+
+          setTimeout(() => {
+            stamp.style.transition = 'opacity 0.5s ease';
+            stamp.style.opacity = '0';
+            setTimeout(() => stamp.remove(), 500);
+          }, 1500);
+        }
+      }
+
       try {
         const res = await fetch('/api/v1/review/retrieval/feedback', {
           method: 'POST',
@@ -1666,7 +1741,7 @@
     async function triggerRocchioRerank() {
       if (!currentQuery) return;
       const btn = document.getElementById('btnRocchioRerank');
-      btn.innerHTML = `<span>⏳</span> Reranking...`;
+      btn.innerHTML = `Reranking...`;
       try {
         const res = await fetch('/api/v1/review/retrieval/rerank', {
           method: 'POST',
@@ -1688,7 +1763,7 @@
       } catch (err) {
         alert('Rocchio reranking failed: ' + err.message);
       } finally {
-        btn.innerHTML = `<span>⚡</span> Apply Rocchio Rerank`;
+        btn.innerHTML = `Apply Rocchio Rerank`;
       }
     }
 
@@ -1726,6 +1801,7 @@
     }
 
     async function onSelectChangeRun() {
+      window.tacticalAudio?.playLockOnChirp?.();
       currentRunId = document.getElementById('changeRunSelect').value;
       if (!currentRunId) return;
 
@@ -1757,10 +1833,22 @@
       const rejected = currentCandidates.filter(c => c.decision === 'rejected').length;
       const pending = currentCandidates.filter(c => !c.decision || c.decision === 'pending').length;
 
-      document.getElementById('candCntAll').innerText = total;
-      document.getElementById('candCntConfirmed').innerText = confirmed;
-      document.getElementById('candCntRejected').innerText = rejected;
-      document.getElementById('candCntPending').innerText = pending;
+      const prevAll = parseInt(document.getElementById('candCntAll')?.innerText) || 0;
+      const prevConfirmed = parseInt(document.getElementById('candCntConfirmed')?.innerText) || 0;
+      const prevRejected = parseInt(document.getElementById('candCntRejected')?.innerText) || 0;
+      const prevPending = parseInt(document.getElementById('candCntPending')?.innerText) || 0;
+
+      if (window.animateNumberCount) {
+        window.animateNumberCount(document.getElementById('candCntAll'), prevAll, total, 400);
+        window.animateNumberCount(document.getElementById('candCntConfirmed'), prevConfirmed, confirmed, 400);
+        window.animateNumberCount(document.getElementById('candCntRejected'), prevRejected, rejected, 400);
+        window.animateNumberCount(document.getElementById('candCntPending'), prevPending, pending, 400);
+      } else {
+        document.getElementById('candCntAll').innerText = total;
+        document.getElementById('candCntConfirmed').innerText = confirmed;
+        document.getElementById('candCntRejected').innerText = rejected;
+        document.getElementById('candCntPending').innerText = pending;
+      }
     }
 
     function renderCandidateQueue(candidates) {
@@ -1801,6 +1889,7 @@
     }
 
     function filterCandidateStatus(status) {
+      window.tacticalAudio?.playTacticalClick?.();
       candidateFilter = status;
       document.getElementById('btnCandFilterAll').classList.toggle('active', status === 'all');
       document.getElementById('btnCandFilterConfirmed').classList.toggle('active', status === 'confirmed');
@@ -1810,6 +1899,7 @@
     }
 
     function selectCandidate(candId) {
+      window.tacticalAudio?.playLockOnChirp?.();
       currentCandidate = currentCandidates.find(c => c.candidate_id === candId);
       if (!currentCandidate) return;
 
@@ -1916,6 +2006,33 @@
       if (!currentRunId || !currentCandidate) return;
       const note = document.getElementById('changeAnalystNote').value;
 
+      // Tactical Audio feedback
+      if (decision === 'confirmed') {
+        window.tacticalAudio?.playTargetLock?.();
+      } else {
+        window.tacticalAudio?.playTacticalClick?.();
+      }
+
+      // Visual holographic stamp over evidence pane
+      const patchWrap = document.getElementById('patchOverlayWrapper');
+      if (patchWrap) {
+        const oldStamp = patchWrap.querySelector('.tactile-stamp-badge');
+        if (oldStamp) oldStamp.remove();
+
+        const stamp = document.createElement('div');
+        stamp.className = `tactile-stamp-badge ${decision === 'confirmed' ? 'stamp-confirmed' : 'stamp-rejected'}`;
+        stamp.innerHTML = decision === 'confirmed'
+          ? '<svg class="ui-icon icon-emerald" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> CONFIRMED // VERIFIED'
+          : '<svg class="ui-icon icon-rose" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> REJECTED // FALSE ALARM';
+        patchWrap.appendChild(stamp);
+
+        setTimeout(() => {
+          stamp.style.transition = 'opacity 0.6s ease';
+          stamp.style.opacity = '0';
+          setTimeout(() => stamp.remove(), 600);
+        }, 1800);
+      }
+
       try {
         const res = await fetch(`/api/v1/change/runs/${currentRunId}/decide`, {
           method: 'POST',
@@ -2006,8 +2123,8 @@
         tbody.innerHTML = logs.map(l => {
           const isChange = l.tool_type === 'change_detection';
           const toolBadge = isChange
-            ? `<span class="status-pill status-unsure">🔄 Change Analysis</span>`
-            : `<span class="status-pill status-confirmed">🔍 Semantic Retrieval</span>`;
+            ? `<span class="status-pill status-unsure">Change Analysis</span>`
+            : `<span class="status-pill status-confirmed">Semantic Retrieval</span>`;
 
           const verdictBadge = (l.verdict === 'confirmed' || l.verdict === 'confirmed_hit')
             ? `<span class="status-pill status-confirmed">${l.verdict}</span>`
@@ -2036,11 +2153,13 @@
     // Modal helpers
     function zoomImage(url) {
       if (!url) return;
+      window.tacticalAudio?.playTacticalClick?.();
       document.getElementById('zoomModalImg').src = url;
       document.getElementById('zoomModal').classList.add('active');
     }
 
     function closeZoom() {
+      window.tacticalAudio?.playTacticalClick?.();
       document.getElementById('zoomModal').classList.remove('active');
     }
 
@@ -2055,5 +2174,11 @@
       loadChangeRuns();
     });
   </script>
+  <!-- Ambient Effects & Starfield -->
+  <script src="/frontend/effects.js?v=20260919_v2"></script>
+  <!-- Tactical Audio Synthesizer -->
+  <script src="/frontend/audio.js?v=20260919_v1"></script>
+  <!-- Tactical Satellite Cursor Engine -->
+  <script src="/frontend/cursor.js?v=20260919_v2"></script>
 </body>
 </html>
