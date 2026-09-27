@@ -41,6 +41,7 @@ from qdrant_client.models import (
 )
 
 from backend.services.encoder import get_encoder, encode_query_text, encode_query_image
+from backend.services.calibrator import get_calibrator
 
 log = logging.getLogger("VectorSearch")
 
@@ -180,11 +181,16 @@ class SearchRequest(BaseModel):
     top_k: int = Field(5, ge=1, le=100, description="Number of top ranked results to retrieve")
     analyst_id: str = Field("demo_analyst", description="Analyst identity for audit logging")
     min_similarity: Optional[float] = Field(None, description="Minimum similarity threshold (0.0 to 1.0, e.g. 0.65 for 65%)")
+    calibrate: bool = Field(True, description="Enable QB-Norm DIS calibration using 512 RSICD Query Bank")
+    calibration_mode: str = Field("auto", description="'auto' (gated if top-1 is hub), 'always', or 'off'")
 
 
 class SearchResultItem(BaseModel):
     tile_id: str
-    score: float = Field(..., description="Cosine similarity score (0.0 to 1.0)")
+    score: float = Field(..., description="Calibrated similarity score (0.0 to 1.0)")
+    raw_score: Optional[float] = Field(None, description="Original raw cosine similarity before calibration")
+    is_hub: Optional[bool] = Field(False, description="Whether this candidate was identified as a generic hub")
+    calibrated: Optional[bool] = Field(False, description="Whether QB-Norm score calibration was applied")
     scene_id: Optional[str] = None
     site_key: Optional[str] = None
     acquisition_date: Optional[str] = None
@@ -204,6 +210,7 @@ class SearchResultItem(BaseModel):
 
 
 class SearchResponse(BaseModel):
+    search_log_id: Optional[str] = Field(default=None, description="Database UUID of logged search session")
     query_type: str = Field(..., description="'text' or 'image'")
     query: str = Field(..., description="Summary representation of search query")
     total_found: int = Field(..., description="Number of results returned")
@@ -353,11 +360,15 @@ class VectorSearchService:
         self,
         query_vector: List[float],
         top_k: int = 5,
-        filters: Optional[SearchFilter] = None
-    ) -> List[Tuple[str, float]]:
+        filters: Optional[SearchFilter] = None,
+        calibrate: bool = True,
+        calibration_mode: str = "auto",
+        return_details: bool = False
+    ) -> Union[List[Tuple[str, float]], Tuple[List[Tuple[str, float]], Dict[str, Dict[str, Any]]]]:
         """
-        Phase 2.2 Core kNN Search:
-        Executes filtered kNN search in Qdrant 'tile_embeddings'.
+        Phase 2.2 Core kNN Search with QB-Norm Calibration:
+        Executes filtered kNN search in Qdrant collections.
+        Applies QB-Norm Dynamic Inverted Softmax using 512 RSICD Query Bank.
         Returns rank-ordered list of (tile_id, similarity_score).
         """
         candidate_tile_ids = None
@@ -368,7 +379,7 @@ class VectorSearchService:
             )
             if candidate_tile_ids is not None and len(candidate_tile_ids) == 0:
                 log.info("AOI spatial filter resulted in 0 candidate tiles. Returning empty search results.")
-                return []
+                return ([], {}) if return_details else []
 
         q_filter = self.build_qdrant_filter(filters, candidate_tile_ids=candidate_tile_ids)
 
@@ -386,7 +397,7 @@ class VectorSearchService:
         else:
             collections_to_search = [COLLECTION_NAME, maxar_coll]
 
-        fetch_limit = max(top_k * 4, 25)
+        fetch_limit = max(top_k * 8, 60)
         all_points = []
         for coll in collections_to_search:
             try:
@@ -396,7 +407,8 @@ class VectorSearchService:
                         query=query_vector,
                         query_filter=q_filter,
                         limit=fetch_limit,
-                        with_payload=True
+                        with_payload=True,
+                        with_vectors=True
                     )
                     all_points.extend(query_response.points)
                 else:
@@ -405,7 +417,8 @@ class VectorSearchService:
                         query_vector=query_vector,
                         query_filter=q_filter,
                         limit=fetch_limit,
-                        with_payload=True
+                        with_payload=True,
+                        with_vectors=True
                     )
                     all_points.extend(pts)
             except Exception as e:
@@ -414,22 +427,86 @@ class VectorSearchService:
         # Sort combined candidate points by similarity score descending
         all_points.sort(key=lambda p: float(p.score), reverse=True)
 
-        results = []
+        candidate_ids: List[str] = []
+        candidate_vecs: List[List[float]] = []
+        raw_scores: List[float] = []
         seen_tile_ids = set()
+
         for p in all_points:
             tile_id = p.payload.get("tile_id") if p.payload else str(p.id)
+            if not tile_id or tile_id in seen_tile_ids:
+                continue
+            seen_tile_ids.add(tile_id)
             score = float(p.score)
-            if tile_id and tile_id not in seen_tile_ids:
-                seen_tile_ids.add(tile_id)
-                results.append((tile_id, score))
 
+            vec = p.vector
+            if isinstance(vec, dict):
+                vec = vec.get("image", None) or (list(vec.values())[0] if vec else None)
+
+            candidate_ids.append(tile_id)
+            raw_scores.append(score)
+            if vec is not None:
+                candidate_vecs.append(vec)
+
+        if not candidate_ids:
+            return ([], {}) if return_details else []
+
+        # QB-Norm Dynamic Inverted Softmax Calibration (Bogolin et al. CVPR 2022)
+        calibrator = get_calibrator()
+        can_calibrate = (
+            calibrate
+            and calibrator.is_ready
+            and len(candidate_vecs) == len(candidate_ids)
+            and len(candidate_ids) > 0
+        )
+
+        calibration_meta: Dict[str, Dict[str, Any]] = {}
+
+        if can_calibrate:
+            q_arr = np.array(query_vector, dtype=np.float32)
+            c_vecs_arr = np.array(candidate_vecs, dtype=np.float32)
+            r_scores_arr = np.array(raw_scores, dtype=np.float32)
+
+            ranked_ids, calib_scores, raw_sorted, hub_flags = calibrator.calibrate_candidates(
+                query_vec=q_arr,
+                candidate_ids=candidate_ids,
+                candidate_vecs=c_vecs_arr,
+                raw_scores=r_scores_arr,
+                mode=calibration_mode
+            )
+
+            results = list(zip(ranked_ids, [float(s) for s in calib_scores]))
+            calibration_meta = {
+                tid: {
+                    "raw_score": float(r),
+                    "calibrated_score": float(c),
+                    "is_hub": bool(h),
+                    "calibrated": True
+                }
+                for tid, c, r, h in zip(ranked_ids, calib_scores, raw_sorted, hub_flags)
+            }
+        else:
+            results = list(zip(candidate_ids, raw_scores))
+            calibration_meta = {
+                tid: {
+                    "raw_score": float(r),
+                    "calibrated_score": float(r),
+                    "is_hub": False,
+                    "calibrated": False
+                }
+                for tid, r in zip(candidate_ids, raw_scores)
+            }
+
+        if return_details:
+            return results, calibration_meta
         return results
 
     def hydrate_from_postgres(
         self,
         ranked_tile_pairs: List[Tuple[str, float]],
         top_k: int = 5,
-        deduplicate_spatial: bool = True
+        deduplicate_spatial: bool = True,
+        calibration_meta: Optional[Dict[str, Dict[str, Any]]] = None
     ) -> List[SearchResultItem]:
         """
         Phase 2.3: Batch-fetches tile metadata and geometry in a single SQL query
@@ -474,38 +551,74 @@ class VectorSearchService:
             # Map by tile_id for fast lookup
             rows_by_id = {r["tile_id"]: r for r in rows}
 
-            items = []
-            seen_site_keys = set()
-            seen_centroids = []
+            def _parse_acq_ts(row_data: Dict[str, Any]) -> float:
+                ad = row_data.get("acquisition_date")
+                if isinstance(ad, datetime):
+                    return ad.timestamp()
+                if isinstance(ad, str):
+                    try:
+                        return datetime.fromisoformat(ad.replace("Z", "+00:00")).timestamp()
+                    except Exception:
+                        pass
+                return 0.0
 
-            for t_id, score in ranked_tile_pairs:
-                r = rows_by_id.get(t_id)
-                if not r:
-                    # Skip orphan vectors not found in Postgres tiles table
-                    continue
+            if deduplicate_spatial:
+                # Group all candidate matches by physical ground spot (site_key or ~200m spatial proximity)
+                spot_groups: Dict[str, List[Tuple[str, float, Dict[str, Any], float]]] = {}
+                spot_centroids: List[Tuple[float, float, str]] = []  # (lat, lon, spot_key)
+                next_cluster_idx = 0
 
-                site_key = r.get("site_key")
-                c_lat = r.get("centroid_lat")
-                c_lon = r.get("centroid_lon")
-
-                # Spatial Deduplication: Skip near-identical overlapping granules
-                if deduplicate_spatial:
-                    if site_key and site_key in seen_site_keys:
+                for t_id, score in ranked_tile_pairs:
+                    r = rows_by_id.get(t_id)
+                    if not r:
                         continue
-                    if c_lat is not None and c_lon is not None:
-                        is_duplicate_spot = False
-                        for prev_lat, prev_lon in seen_centroids:
-                            # Within ~200m spatial radius
+
+                    site_key = r.get("site_key")
+                    c_lat = r.get("centroid_lat")
+                    c_lon = r.get("centroid_lon")
+                    ts = _parse_acq_ts(r)
+
+                    assigned_spot = None
+                    if site_key and site_key not in ("null", "None"):
+                        assigned_spot = f"site:{site_key}"
+                    elif c_lat is not None and c_lon is not None:
+                        for prev_lat, prev_lon, prev_spot in spot_centroids:
                             if abs(c_lat - prev_lat) < 0.002 and abs(c_lon - prev_lon) < 0.002:
-                                is_duplicate_spot = True
+                                assigned_spot = prev_spot
                                 break
-                        if is_duplicate_spot:
-                            continue
-                        seen_centroids.append((c_lat, c_lon))
 
-                    if site_key:
-                        seen_site_keys.add(site_key)
+                    if assigned_spot is None:
+                        assigned_spot = f"geo_cluster:{next_cluster_idx}"
+                        next_cluster_idx += 1
+                        if c_lat is not None and c_lon is not None:
+                            spot_centroids.append((c_lat, c_lon, assigned_spot))
 
+                    if assigned_spot not in spot_groups:
+                        spot_groups[assigned_spot] = []
+                    spot_groups[assigned_spot].append((t_id, score, r, ts))
+
+                # For each physical spot, select the LATEST observation (highest timestamp).
+                # If timestamps are identical, break tie with highest similarity score.
+                selected_spot_candidates: List[Tuple[str, float, Dict[str, Any]]] = []
+                for spot_id, group in spot_groups.items():
+                    group.sort(key=lambda x: (x[3], x[1]), reverse=True)
+                    best_candidate = group[0]
+                    # Retain the maximum similarity score across observations of this spot for ranking
+                    max_sim = max(x[1] for x in group)
+                    selected_spot_candidates.append((best_candidate[0], max_sim, best_candidate[2]))
+
+                # Rank the distinct physical spots by their similarity score descending
+                selected_spot_candidates.sort(key=lambda x: x[1], reverse=True)
+                candidates_to_process = selected_spot_candidates[:top_k]
+            else:
+                candidates_to_process = [
+                    (t_id, score, rows_by_id[t_id])
+                    for t_id, score in ranked_tile_pairs
+                    if t_id in rows_by_id
+                ][:top_k]
+
+            items = []
+            for t_id, score, r in candidates_to_process:
                 acq_str = r["acquisition_date"].isoformat() if isinstance(r["acquisition_date"], datetime) else str(r["acquisition_date"])
                 thumb_path = r.get("thumbnail_path")
                 file_path = r.get("file_path")
@@ -544,10 +657,18 @@ class VectorSearchService:
                     sensor=r.get("sensor")
                 )
 
+                meta = calibration_meta.get(t_id, {}) if calibration_meta else {}
+                raw_score = meta.get("raw_score", score)
+                is_hub = meta.get("is_hub", False)
+                is_calibrated = meta.get("calibrated", False)
+
                 items.append(
                     SearchResultItem(
                         tile_id=t_id,
                         score=round(score, 4),
+                        raw_score=round(raw_score, 4),
+                        is_hub=is_hub,
+                        calibrated=is_calibrated,
                         scene_id=r["scene_id"],
                         site_key=r["site_key"],
                         acquisition_date=acq_str,
@@ -567,16 +688,22 @@ class VectorSearchService:
                     )
                 )
 
-                if deduplicate_spatial and len(items) >= top_k:
-                    break
-
             return items
 
         except Exception as e:
             log.error(f"Failed to hydrate search results from PostgreSQL: {e}", exc_info=True)
             fallback_items = []
             for t_id, score in ranked_tile_pairs[:top_k]:
-                fallback_items.append(SearchResultItem(tile_id=t_id, score=round(score, 4)))
+                meta = calibration_meta.get(t_id, {}) if calibration_meta else {}
+                fallback_items.append(
+                    SearchResultItem(
+                        tile_id=t_id,
+                        score=round(score, 4),
+                        raw_score=round(meta.get("raw_score", score), 4),
+                        is_hub=meta.get("is_hub", False),
+                        calibrated=meta.get("calibrated", False)
+                    )
+                )
             return fallback_items
 
     def log_search(
@@ -585,12 +712,15 @@ class VectorSearchService:
         raw_query: str,
         query_type: str,
         filters: Optional[SearchFilter],
-        result_tile_ids: List[str]
+        result_tile_ids: List[str],
+        query_embedding: Optional[List[float]] = None
     ):
         """
         Phase 2.5: Logs search history into Postgres `search_log` table
         for future feedback-driven reranking and audit lineage.
+        Preserves the exact 512-D query_embedding vector for lossless Rocchio steering.
         """
+        search_log_id = None
         try:
             conn = self._get_pg_conn()
             filters_json = "{}"
@@ -603,14 +733,19 @@ class VectorSearchService:
                     filters_json = json.dumps(filters, default=str)
             with conn.cursor() as cur:
                 sql = """
-                INSERT INTO search_log (analyst_id, raw_query, query_type, filters, result_tile_ids)
-                VALUES (%s, %s, %s, %s, %s);
+                INSERT INTO search_log (analyst_id, raw_query, query_type, filters, result_tile_ids, query_embedding)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                RETURNING search_id;
                 """
-                cur.execute(sql, (analyst_id, raw_query, query_type, filters_json, result_tile_ids))
+                cur.execute(sql, (analyst_id, raw_query, query_type, filters_json, result_tile_ids, query_embedding))
+                row = cur.fetchone()
+                if row:
+                    search_log_id = str(row[0])
             conn.commit()
             conn.close()
         except Exception as e:
             log.warning(f"Could not log search to search_log table: {e}")
+        return search_log_id
 
     def search(self, request: SearchRequest) -> SearchResponse:
         """
@@ -631,25 +766,103 @@ class VectorSearchService:
             query_vec = encode_query_image(request.query_image_path)
         elif request.query_image_bytes:
             query_type = "image"
-            query_repr = "raw_image_bytes"
+            import re
+            clean_fn = request.query_filename or f"query_{int(time.time())}.png"
+            clean_base = re.sub(r'[^a-zA-Z0-9_\-\.]', '_', os.path.basename(clean_fn))
+            data_root = os.getenv("DATA_DIR", "data")
+            save_dir = os.path.join(data_root, "uploads")
+            os.makedirs(save_dir, exist_ok=True)
+            stored_name = f"{int(time.time())}_{clean_base}"
+            save_path = os.path.join(save_dir, stored_name)
+            try:
+                with open(save_path, "wb") as f:
+                    f.write(request.query_image_bytes)
+                query_repr = f"image:{stored_name}"
+            except Exception as e:
+                log.warning(f"Could not persist uploaded query image: {e}")
+                query_repr = f"image:{clean_base}"
             query_vec = encode_query_image(request.query_image_bytes)
         else:
             raise ValueError("Invalid SearchRequest: Must provide query_text, query_image_path, or query_image_bytes.")
 
-        # Step 2: Vector Search (Phase 2.2)
-        # Fetch extra candidates for image search so excluding the query image still fulfills top_k
-        fetch_k = request.top_k + (3 if query_type == "image" else 0)
-        ranked_pairs = self.search_vectors(
+        # Step 1.5: Automatic Rocchio Relevance Feedback Steering & Penalization
+        feedback_tiles = {}
+        try:
+            from backend.services.analyst_workflow import get_search_query_feedback
+            feedbacks = get_search_query_feedback(query_repr)
+            if not feedbacks and query_type == "image":
+                feedbacks = get_search_query_feedback("raw_image_bytes")
+            if feedbacks:
+                for fb in feedbacks:
+                    feedback_tiles[fb["tile_id"]] = fb["relevant"]
+
+                pos_tile_ids = [tid for tid, rel in feedback_tiles.items() if rel]
+                neg_tile_ids = [tid for tid, rel in feedback_tiles.items() if not rel]
+
+                if pos_tile_ids or neg_tile_ids:
+                    from qdrant_client.models import Filter, FieldCondition, MatchValue
+                    maxar_coll = os.getenv("QDRANT_MAXAR_COLLECTION", "maxar_tile_embeddings")
+                    pos_vecs = []
+                    neg_vecs = []
+
+                    def _get_vec(tid):
+                        for c in [COLLECTION_NAME, maxar_coll]:
+                            try:
+                                flt = Filter(must=[FieldCondition(key="tile_id", match=MatchValue(value=tid))])
+                                pts = self.qdrant.scroll(collection_name=c, scroll_filter=flt, with_vectors=True, limit=1)[0]
+                                if pts and pts[0].vector is not None:
+                                    return np.array(pts[0].vector, dtype=np.float32)
+                            except Exception:
+                                pass
+                        return None
+
+                    for tid in pos_tile_ids:
+                        v = _get_vec(tid)
+                        if v is not None:
+                            pos_vecs.append(v)
+                    for tid in neg_tile_ids:
+                        v = _get_vec(tid)
+                        if v is not None:
+                            neg_vecs.append(v)
+
+                    # Non-destructive Rocchio Feedback:
+                    # Steer towards confirmed targets without inverting the query on negatives
+                    q_mod = np.array(query_vec, dtype=np.float32)
+                    if pos_vecs:
+                        q_mod += 0.50 * np.mean(pos_vecs, axis=0)
+                        if neg_vecs:
+                            q_mod -= 0.15 * np.mean(neg_vecs, axis=0)
+                    elif neg_vecs:
+                        # Mild directional nudge away from noise cluster; preserves query manifold
+                        q_mod -= 0.08 * np.mean(neg_vecs, axis=0)
+
+                    norm = np.linalg.norm(q_mod)
+                    if norm > 1e-6:
+                        query_vec = (q_mod / norm).tolist()
+                        log.info(f"[Rocchio] Non-destructive steering for '{query_repr}': +{len(pos_vecs)} pos, -{len(neg_vecs)} neg")
+        except Exception as e:
+            log.warning(f"Rocchio feedback steering skipped: {e}")
+
+        # Step 2: Vector Search with RSICD 512 Query Bank Calibration
+        # Fetch generous candidate pool so analyst-rejected tiles are replaced with new matching candidates
+        neg_count = len([rel for rel in feedback_tiles.values() if not rel])
+        extra_k = max(neg_count * 3, 20) + (5 if query_type == "image" else 0)
+        fetch_k = max(request.top_k + extra_k, 35)
+        ranked_pairs, calib_meta = self.search_vectors(
             query_vector=query_vec,
             top_k=fetch_k,
-            filters=request.filters
+            filters=request.filters,
+            calibrate=request.calibrate,
+            calibration_mode=request.calibration_mode,
+            return_details=True
         )
 
         # Step 3: Hydrate & Describe Results (Phases 2.3 & 2.4)
         results = self.hydrate_from_postgres(
             ranked_tile_pairs=ranked_pairs,
             top_k=fetch_k,
-            deduplicate_spatial=True
+            deduplicate_spatial=True,
+            calibration_meta=calib_meta
         )
 
         # Self-match exclusion for image-to-image queries:
@@ -688,22 +901,47 @@ class VectorSearchService:
 
                 filtered_results.append(r)
 
-            cutoff = request.min_similarity if request.min_similarity is not None else 0.65
-            results = [r for r in filtered_results if r.score >= cutoff][:request.top_k]
+            results = filtered_results
+
+        # Algorithmic Feedback filtering:
+        # Target only the rejected tiles: drop them so fresh matching candidates from the vector space take their slots!
+        if feedback_tiles:
+            neg_ids = {tid for tid, rel in feedback_tiles.items() if not rel}
+            if neg_ids:
+                results = [r for r in results if r.tile_id not in neg_ids]
+
+        default_cutoff = 0.60 if query_type == "image" else 0.15
+        cutoff = request.min_similarity if request.min_similarity is not None else default_cutoff
+        passed_results = [r for r in results if r.score >= cutoff]
+        if not passed_results and results:
+            results = results[:request.top_k]
+        else:
+            results = passed_results[:request.top_k]
 
         # Step 4: Audit Logging (Phase 2.5)
         result_ids = [r.tile_id for r in results]
-        self.log_search(
+        query_emb_list = None
+        try:
+            if isinstance(query_vec, np.ndarray):
+                query_emb_list = [float(x) for x in query_vec.flatten()]
+            elif isinstance(query_vec, list):
+                query_emb_list = [float(x) for x in query_vec]
+        except Exception as e:
+            log.warning(f"Could not convert query_vec for storage: {e}")
+
+        logged_id = self.log_search(
             analyst_id=request.analyst_id,
             raw_query=query_repr,
             query_type=query_type,
             filters=request.filters,
-            result_tile_ids=result_ids
+            result_tile_ids=result_ids,
+            query_embedding=query_emb_list
         )
 
         elapsed_ms = (time.time() - t0) * 1000.0
 
         return SearchResponse(
+            search_log_id=logged_id,
             query_type=query_type,
             query=query_repr,
             total_found=len(results),
