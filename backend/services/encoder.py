@@ -39,13 +39,31 @@ class RemoteCLIPEncoder:
         device: Optional[str] = None
     ):
         if device is None:
-            env_dev = os.getenv("DEVICE")
-            if env_dev:
-                self.device = env_dev
+            env_dev = (os.getenv("DEVICE") or "auto").strip().lower()
+            if env_dev in ("cuda", "gpu"):
+                try:
+                    if torch.cuda.is_available():
+                        self.device = "cuda"
+                    else:
+                        logger.warning("DEVICE=cuda requested, but torch.cuda.is_available() is False. Falling back to CPU.")
+                        self.device = "cpu"
+                except Exception:
+                    self.device = "cpu"
+            elif env_dev == "cpu":
+                self.device = "cpu"
             else:
-                self.device = "cuda" if torch.cuda.is_available() else "cpu"
+                try:
+                    self.device = "cuda" if torch.cuda.is_available() else "cpu"
+                except Exception:
+                    self.device = "cpu"
         else:
-            self.device = device
+            if str(device).lower() in ("cuda", "gpu"):
+                try:
+                    self.device = "cuda" if torch.cuda.is_available() else "cpu"
+                except Exception:
+                    self.device = "cpu"
+            else:
+                self.device = device
 
         if checkpoint_path is None:
             env_path = os.getenv("REMOTECLIP_CHECKPOINT_PATH")
@@ -93,8 +111,16 @@ class RemoteCLIPEncoder:
         logger.info(f"Loading weights from {self.checkpoint_path}...")
         ckpt = torch.load(self.checkpoint_path, map_location="cpu", weights_only=True)
         self.model.load_state_dict(ckpt, strict=True)
-        self.model = self.model.to(self.device).eval()
-        logger.info("RemoteCLIP encoder initialized successfully!")
+        try:
+            self.model = self.model.to(self.device).eval()
+        except Exception as e:
+            if self.device != "cpu":
+                logger.warning(f"Failed to move RemoteCLIP to '{self.device}' ({e}). Falling back to CPU.")
+                self.device = "cpu"
+                self.model = self.model.to("cpu").eval()
+            else:
+                raise e
+        logger.info(f"RemoteCLIP encoder initialized successfully on device '{self.device}'!")
 
     def encode_text(
         self,

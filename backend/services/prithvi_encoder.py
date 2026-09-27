@@ -50,13 +50,31 @@ class PrithviEncoder:
         device: Optional[str] = None
     ):
         if device is None:
-            env_dev = os.getenv("DEVICE")
-            if env_dev:
-                self.device = torch.device(env_dev)
+            env_dev = (os.getenv("DEVICE") or "auto").strip().lower()
+            if env_dev in ("cuda", "gpu"):
+                try:
+                    if torch.cuda.is_available():
+                        self.device = torch.device("cuda")
+                    else:
+                        logger.warning("CUDA requested via DEVICE env for Prithvi, but torch.cuda.is_available() is False. Falling back to CPU.")
+                        self.device = torch.device("cpu")
+                except Exception:
+                    self.device = torch.device("cpu")
+            elif env_dev == "cpu":
+                self.device = torch.device("cpu")
             else:
-                self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                try:
+                    self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                except Exception:
+                    self.device = torch.device("cpu")
         else:
-            self.device = torch.device(device)
+            if str(device).lower() in ("cuda", "gpu"):
+                try:
+                    self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                except Exception:
+                    self.device = torch.device("cpu")
+            else:
+                self.device = torch.device(device)
 
         logger.info(f"Initializing Prithvi-EO-2.0-300M on device '{self.device}'...")
 
@@ -110,7 +128,15 @@ class PrithviEncoder:
         logger.info(f"Loading weights from {self.checkpoint_path}...")
         state_dict = torch.load(self.checkpoint_path, map_location="cpu", weights_only=True)
         self.model.load_state_dict(state_dict, strict=False)
-        self.model = self.model.to(self.device).eval()
+        try:
+            self.model = self.model.to(self.device).eval()
+        except Exception as e:
+            if str(self.device) != "cpu":
+                logger.warning(f"Failed to move Prithvi model to '{self.device}' ({e}). Falling back to CPU.")
+                self.device = torch.device("cpu")
+                self.model = self.model.to("cpu").eval()
+            else:
+                raise e
 
         # Fix device mismatch for upstream prithvi_mae when running on CUDA with 1 frame
         orig_interp = self.model.encoder.interpolate_pos_encoding
