@@ -24,6 +24,7 @@ from backend.ingestion.pipeline import (
     PipelineResult
 )
 from backend.maxar_ingestion.pipeline import run_maxar_ingestion_pipeline
+from backend.services.system_mode import is_offline_mode
 
 logger = logging.getLogger("ingest_router")
 router = APIRouter(prefix="/api/v1/ingest", tags=["Ingestion"])
@@ -143,6 +144,12 @@ def ingest_aoi(request: AOIIngestRequest):
     Entry Point A: Ingests an AOI polygon across the requested timeline.
     If sensor='maxar', launches async background job and returns job_id immediately.
     """
+    if is_offline_mode():
+        raise HTTPException(
+            status_code=403,
+            detail="Canopus is currently operating in Air-Gapped Offline Mode. External STAC / Sentinel-2 satellite discovery is disabled. Switch to Online Mode in the system settings to fetch remote imagery, or use local GeoTIFF file ingestion."
+        )
+
     try:
         today = date.today()
         if request.years_timeline and request.years_timeline > 0:
@@ -350,6 +357,12 @@ def ingest_maxar(request: MaxarIngestRequest):
     Returns job_id INSTANTLY — no browser timeout, works for any AOI size.
     Poll GET /api/v1/ingest/job/{job_id} for real-time progress.
     """
+    if is_offline_mode():
+        raise HTTPException(
+            status_code=403,
+            detail="Canopus is currently operating in Air-Gapped Offline Mode. External Maxar WMTS requests are disabled. Switch to Online Mode in the system settings to fetch remote imagery."
+        )
+
     derived_region = request.region_id or f"maxar_aoi_{uuid.uuid4().hex[:6]}"
     job_id = uuid.uuid4().hex[:12]
 
