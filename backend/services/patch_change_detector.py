@@ -37,6 +37,11 @@ try:
 except ImportError:
     rasterio = None
 
+try:
+    from skimage.registration import phase_cross_correlation
+except ImportError:
+    phase_cross_correlation = None
+
 from backend.services.prithvi_encoder import get_prithvi_encoder
 from backend.services.semantic_change_classifier import SemanticChangeClassifier
 
@@ -168,6 +173,105 @@ def load_multiband_and_mask(
     return multiband, rgb_preview, mask, meta
 
 
+def align_subpixel_misregistration(
+    mb_before: np.ndarray,
+    mb_after: np.ndarray,
+    mask_after: Optional[np.ndarray] = None,
+    band_descriptions_b: Optional[List[str]] = None,
+    band_descriptions_a: Optional[List[str]] = None,
+    max_shift: float = 3.0,
+    upsample_factor: int = 10
+) -> Tuple[np.ndarray, Optional[np.ndarray], Dict[str, Any]]:
+    """
+    Sub-pixel phase correlation alignment to eliminate satellite orbital misregistration (jitter).
+    Detects fractional pixel shifts between T1 and T2 using cross-power spectrum phase correlation,
+    then warps T2 using bicubic/spline sub-pixel shift. Suppresses artificial edge false alarms.
+    """
+    reg_meta = {
+        "applied": False,
+        "shift_y_pixels": 0.0,
+        "shift_x_pixels": 0.0,
+        "error": 0.0,
+        "status": "skipped"
+    }
+
+    if phase_cross_correlation is None:
+        reg_meta["status"] = "skimage_unavailable"
+        return mb_after, mask_after, reg_meta
+
+    try:
+        c, h, w = mb_before.shape
+        if mb_after.shape != mb_before.shape or h < 32 or w < 32:
+            reg_meta["status"] = "shape_mismatch"
+            return mb_after, mask_after, reg_meta
+
+        # Find best high-contrast terrestrial band (NIR or Red) for registration
+        ref_idx = 0
+        if band_descriptions_b:
+            for idx, d in enumerate(band_descriptions_b):
+                d_low = str(d).lower()
+                if "nir" in d_low or "b08" in d_low or "b8" in d_low:
+                    ref_idx = idx
+                    break
+                elif "red" in d_low or "b04" in d_low or "b4" in d_low:
+                    ref_idx = idx
+        elif c >= 4:
+            ref_idx = 3 if c > 3 else 2
+
+        ref_idx = min(ref_idx, c - 1)
+
+        # Central 70% crop to avoid border zero-padding and nodata edge artifacts
+        y0, y1 = int(0.15 * h), int(0.85 * h)
+        x0, x1 = int(0.15 * w), int(0.85 * w)
+
+        b_crop = mb_before[ref_idx, y0:y1, x0:x1].astype(np.float32)
+        a_crop = mb_after[ref_idx, y0:y1, x0:x1].astype(np.float32)
+
+        # Verify crops have valid texture variance
+        if np.std(b_crop) < 1e-4 or np.std(a_crop) < 1e-4:
+            reg_meta["status"] = "insufficient_texture"
+            return mb_after, mask_after, reg_meta
+
+        # Compute sub-pixel shift: shifts needed to align a_crop to b_crop
+        shifts, error, _ = phase_cross_correlation(
+            b_crop, a_crop, upsample_factor=upsample_factor
+        )
+        shift_y, shift_x = float(shifts[0]), float(shifts[1])
+        reg_meta["shift_y_pixels"] = round(shift_y, 3)
+        reg_meta["shift_x_pixels"] = round(shift_x, 3)
+        reg_meta["error"] = round(float(error), 4)
+
+        # Only correct realistic satellite orbital jitter (0.1px to max_shift px)
+        abs_shift = max(abs(shift_y), abs(shift_x))
+        if 0.1 <= abs_shift <= max_shift:
+            aligned_mb_after = np.zeros_like(mb_after)
+            for ch in range(c):
+                aligned_mb_after[ch] = scipy.ndimage.shift(
+                    mb_after[ch], (shift_y, shift_x), order=1, mode="nearest"
+                )
+
+            aligned_mask_after = mask_after
+            if mask_after is not None:
+                aligned_mask_after = scipy.ndimage.shift(
+                    mask_after, (shift_y, shift_x), order=0, mode="nearest"
+                )
+
+            reg_meta["applied"] = True
+            reg_meta["status"] = "aligned"
+            logger.info(
+                f"🛰️ Sub-pixel misregistration corrected: dy={shift_y:+.2f}px, dx={shift_x:+.2f}px"
+            )
+            return aligned_mb_after, aligned_mask_after, reg_meta
+        else:
+            reg_meta["status"] = "shift_out_of_bounds" if abs_shift > max_shift else "already_aligned"
+            return mb_after, mask_after, reg_meta
+
+    except Exception as e:
+        logger.warning(f"Sub-pixel misregistration correction encountered exception: {e}")
+        reg_meta["status"] = f"error: {str(e)}"
+        return mb_after, mask_after, reg_meta
+
+
 class PrithviPatchChangeDetector:
     """
     High-performance semantic patch change detector utilizing IBM-NASA Prithvi-EO-2.0-300M.
@@ -190,7 +294,9 @@ class PrithviPatchChangeDetector:
         min_cluster_size: int = 2,        # Minimum connected candidate patches (filters isolated noise)
         batch_size: int = 16,
         stability_threshold: float = 0.002, # Max delta across NDVI, NDWI, NDBI to consider stable (dropped only if virtually unchanged)
-        highlight_color: Tuple[int, int, int] = (239, 68, 68)  # Bold clean crimson/amber RGB (no blue grid, single color)
+        highlight_color: Tuple[int, int, int] = (239, 68, 68),  # Bold clean crimson/amber RGB (no blue grid, single color)
+        step_index: int = 1,
+        prior_step_clusters: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Executes patch change detection pipeline and generates visual overlays without full blue grids.
@@ -198,6 +304,17 @@ class PrithviPatchChangeDetector:
         # 1. Load multi-band arrays & previews
         mb_before, rgb_before, mask_before, meta_b = load_multiband_and_mask(before_tif, before_mask)
         mb_after, rgb_after, mask_after, meta_a = load_multiband_and_mask(after_tif, after_mask)
+
+        # 1b. Sub-Pixel Phase Correlation Registration (Eliminates Satellite Orbital Jitter)
+        mb_after, mask_after, reg_info = align_subpixel_misregistration(
+            mb_before=mb_before,
+            mb_after=mb_after,
+            mask_after=mask_after,
+            band_descriptions_b=meta_b.get("descriptions"),
+            band_descriptions_a=meta_a.get("descriptions")
+        )
+        if reg_info.get("applied"):
+            rgb_after = _to_rgb_preview(mb_after, meta_a.get("descriptions"))
 
         W, H = rgb_before.size
         patch_w = W // grid_size
@@ -366,9 +483,23 @@ class PrithviPatchChangeDetector:
                 confirmed_candidates = classified
             except Exception as e:
                 logger.error(f"RemoteCLIP change typing fallback to spectral consensus: {e}", exc_info=True)
-                cluster_semantics = SemanticChangeClassifier.aggregate_cluster_consensus(confirmed_candidates)
-
             candidates = confirmed_candidates
+
+            # Attach Tactical Spatial Morphology Dynamics (NetSight Alignment: Appearance, Expansion, Contraction, Disappearance)
+            try:
+                from backend.services.tactical_morphology import classify_tactical_dynamic
+                for cid, c_data in cluster_semantics.items():
+                    c_data["tactical_dynamic"] = classify_tactical_dynamic(
+                        cluster=c_data,
+                        prior_cluster=prior_step_clusters.get(str(cid)) or prior_step_clusters.get(cid) if prior_step_clusters else None,
+                        step_index=step_index
+                    )
+                for cand in candidates:
+                    cid = cand.get("cluster_id")
+                    if cid in cluster_semantics:
+                        cand["tactical_dynamic"] = cluster_semantics[cid].get("tactical_dynamic")
+            except Exception as te:
+                logger.warning(f"Tactical dynamic classification warning: {te}")
         else:
             candidates = []
             isolated_noise = []
@@ -479,9 +610,9 @@ class PrithviPatchChangeDetector:
                 "left_mad": round(left_mad, 4),
                 "full_mad": round(full_mad, 4),
                 "z_threshold": z_threshold,
-                "min_cluster_size": min_cluster_size,
-                "total_clusters_found": len(cluster_semantics) if cluster_semantics else num_clusters
+                "total_clusters_found": len(cluster_semantics) if cluster_semantics else (clean_cid - 1 if 'clean_cid' in locals() else 0)
             },
+            "misregistration_correction": reg_info,
             "num_candidates": len(candidates),
             "num_isolated_noise": len(isolated_noise),
             "num_spectral_stable_dropped": len(dropped_stable),
