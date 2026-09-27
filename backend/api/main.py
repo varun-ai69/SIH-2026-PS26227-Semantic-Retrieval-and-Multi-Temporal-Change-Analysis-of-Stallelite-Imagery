@@ -117,6 +117,31 @@ def health():
     }
 
 
+# ============================================================
+# SYSTEM MODE & AIR-GAPPED OFFLINE MANAGEMENT
+# ============================================================
+from pydantic import BaseModel, Field
+from backend.services.system_mode import (
+    is_offline_mode,
+    set_offline_mode,
+    get_system_mode_status
+)
+
+class SystemModeUpdateRequest(BaseModel):
+    offline_mode: bool = Field(..., description="True for Air-Gapped Offline Mode, False for Online Ingestion Mode")
+
+@app.get("/api/v1/system/mode", tags=["System"])
+def get_system_mode():
+    """Retrieve current operational network mode (Online vs Air-Gapped Offline)."""
+    return get_system_mode_status()
+
+@app.post("/api/v1/system/mode", tags=["System"])
+def update_system_mode(req: SystemModeUpdateRequest):
+    """Toggle between Online Ingestion Mode and strict Air-Gapped Offline Mode at runtime."""
+    set_offline_mode(req.offline_mode)
+    return get_system_mode_status()
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
