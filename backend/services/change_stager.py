@@ -33,6 +33,7 @@ from backend.ingestion.db_writer import get_pg_connection
 from backend.services.quality_auditor import quality_engine
 from backend.services.temporal_splitter import get_temporal_splitter
 from backend.services.patch_change_detector import get_patch_change_detector
+from backend.services.tactical_morphology import synthesize_whole_window_narrative
 
 logger = logging.getLogger("change_stager")
 
@@ -315,15 +316,13 @@ def stage_tile_temporal_series(
     base_staging_dir.mkdir(parents=True, exist_ok=True)
 
     # ============================================================
-    # 5. STAGE STRICTLY AND ONLY THE 2 MILESTONE TILES (T1, T2)
+    # 5. STAGE ALL CLEAN VALIDATED EPOCHS
     # ============================================================
     staged_epochs: List[Dict[str, Any]] = []
-    milestone_targets = [
-        ("T1", "baseline_before", sel_before, rec_before),
-        ("T2", "onset_after", sel_after, rec_after)
-    ]
 
-    for tag, role, sel_info, row in milestone_targets:
+    for i, sel_info in enumerate(selected_tiles):
+        row = sel_info["raw_record"]
+        tag = f"T{i + 1}"
         acq_date_str = str(row["acquisition_date"])[:10]
         epoch_folder_name = f"{tag}_{acq_date_str}"
         epoch_dir = base_staging_dir / epoch_folder_name
@@ -346,7 +345,7 @@ def stage_tile_temporal_series(
 
         staged_epoch = {
             "epoch": tag,
-            "role": role,
+            "role": "baseline" if i == 0 else ("onset" if i == split_res["split_index"] else "evolution"),
             "tile_id": row["tile_id"],
             "scene_id": row["scene_id"],
             "acquisition_date": str(row["acquisition_date"]),
@@ -374,20 +373,157 @@ def stage_tile_temporal_series(
         }
         staged_epochs.append(staged_epoch)
 
-    # 6. Compute spectral deltas between milestone T1 and T2
-    deltas = {}
-    if len(staged_epochs) == 2:
-        t_pre = staged_epochs[0]
-        t_post = staged_epochs[1]
+    # ============================================================
+    # 6. MULTI-STEP TRANSITION QUEUE
+    #    When clean epochs >= 5: Evaluate Inception (Split) + Consecutive Post-Split Epochs
+    #    When clean epochs < 5:  Direct Milestone Comparison (First vs Last)
+    # ============================================================
+    transition_pairs = []
+    if len(clean_records) >= 5:
+        s_idx = split_res["split_index"]
+        # Step 1: Change Onset Inception Breakpoint
+        transition_pairs.append((
+            clean_records[s_idx - 1],
+            clean_records[s_idx],
+            "Onset Breakpoint",
+            s_idx - 1,
+            s_idx
+        ))
+        # Step 2..M: Post-Split Chronological Evolution
+        for k in range(s_idx, len(clean_records) - 1):
+            transition_pairs.append((
+                clean_records[k],
+                clean_records[k + 1],
+                "Post-Onset Evolution",
+                k,
+                k + 1
+            ))
+    else:
+        transition_pairs.append((
+            clean_records[0],
+            clean_records[-1],
+            "Direct Milestone Transition",
+            0,
+            len(clean_records) - 1
+        ))
 
-        if t_pre["mean_ndvi"] is not None and t_post["mean_ndvi"] is not None:
-            deltas["delta_ndvi"] = round(t_post["mean_ndvi"] - t_pre["mean_ndvi"], 4)
-        if t_pre["mean_ndwi"] is not None and t_post["mean_ndwi"] is not None:
-            deltas["delta_ndwi"] = round(t_post["mean_ndwi"] - t_pre["mean_ndwi"], 4)
-        if t_pre["mean_ndbi"] is not None and t_post["mean_ndbi"] is not None:
-            deltas["delta_ndbi"] = round(t_post["mean_ndbi"] - t_pre["mean_ndbi"], 4)
+    # ============================================================
+    # 7. EXECUTE PRITHVI PATCH DETECTOR ACROSS ALL TRANSITION STEPS
+    # ============================================================
+    detector = get_patch_change_detector()
+    steps_output: List[Dict[str, Any]] = []
+    prior_step_clusters: Optional[Dict[str, Any]] = None
 
-    # 7. Assemble Quality Audit Summary
+    for step_num, (rec_b, rec_a, role, idx_b, idx_a) in enumerate(transition_pairs, start=1):
+        date_b = str(rec_b["acquisition_date"])[:10]
+        date_a = str(rec_a["acquisition_date"])[:10]
+        step_dir_name = f"step_{step_num}_{date_b}_to_{date_a}"
+        step_folder = base_staging_dir / step_dir_name
+        step_folder.mkdir(parents=True, exist_ok=True)
+
+        t_b_tif = resolve_file_path(rec_b.get("file_path"))
+        t_a_tif = resolve_file_path(rec_a.get("file_path"))
+        t_b_mask = resolve_file_path(rec_b.get("bad_mask_path"))
+        t_a_mask = resolve_file_path(rec_a.get("bad_mask_path"))
+
+        try:
+            logger.info(f"Running detection on Step {step_num} ({date_b} -> {date_a}) [{role}]...")
+            step_report = detector.run_detection(
+                before_tif=str(t_b_tif),
+                after_tif=str(t_a_tif),
+                before_mask=str(t_b_mask) if t_b_mask and t_b_mask.is_file() else None,
+                after_mask=str(t_a_mask) if t_a_mask and t_a_mask.is_file() else None,
+                output_dir=str(step_folder),
+                grid_size=8,
+                quality_thresh=0.20,
+                z_threshold=2.0,
+                min_dist=0.01,
+                min_cluster_size=2,
+                step_index=step_num,
+                prior_step_clusters=prior_step_clusters
+            )
+        except Exception as pe:
+            logger.error(f"Error on Step {step_num}: {pe}", exc_info=True)
+            step_report = {
+                "status": "failed",
+                "error": str(pe),
+                "num_candidates": 0,
+                "candidates": [],
+                "cluster_semantics": {},
+                "files": {}
+            }
+
+        step_clusters_dict = step_report.get("cluster_semantics", {})
+        prior_step_clusters = step_clusters_dict
+
+        # Normalize cluster objects: add unified field aliases so UI + narrative work correctly
+        step_clusters = []
+        for cid_key, c in step_clusters_dict.items():
+            # Ensure cluster_id is always present
+            c.setdefault("cluster_id", int(str(cid_key)) if str(cid_key).isdigit() else cid_key)
+            # Unified transition label
+            if not c.get("transition_type"):
+                c["transition_type"] = c.get("cluster_transition") or c.get("transition_label") or c.get("predicted_type") or "Land-Cover Transition"
+            # Unified area field (clip_change_typer emits area_m2; tactical_morphology + narrative expect area_sq_m)
+            if not c.get("area_sq_m"):
+                c["area_sq_m"] = float(c.get("area_m2") or (c.get("num_patches", 0) * 4096.0))
+            step_clusters.append(c)
+
+        # Step spectral deltas
+        s_deltas = {}
+        if rec_b.get("mean_ndvi") is not None and rec_a.get("mean_ndvi") is not None:
+            s_deltas["delta_ndvi"] = round(float(rec_a["mean_ndvi"]) - float(rec_b["mean_ndvi"]), 4)
+        if rec_b.get("mean_ndwi") is not None and rec_a.get("mean_ndwi") is not None:
+            s_deltas["delta_ndwi"] = round(float(rec_a["mean_ndwi"]) - float(rec_b["mean_ndwi"]), 4)
+        if rec_b.get("mean_ndbi") is not None and rec_a.get("mean_ndbi") is not None:
+            s_deltas["delta_ndbi"] = round(float(rec_a["mean_ndbi"]) - float(rec_b["mean_ndbi"]), 4)
+
+        steps_output.append({
+            "step_index": step_num,
+            "role": role,
+            "date_before": date_b,
+            "date_after": date_a,
+            "epoch_before_label": f"T{idx_b + 1} ({date_b})",
+            "epoch_after_label": f"T{idx_a + 1} ({date_a})",
+            "tile_id_before": rec_b["tile_id"],
+            "tile_id_after": rec_a["tile_id"],
+            "spectral_deltas": s_deltas,
+            "num_candidates": step_report.get("num_candidates", 0),
+            "candidates": step_report.get("candidates", []),
+            "clusters": step_clusters,
+            "patch_change_analysis": step_report,
+            "files": step_report.get("files", {})
+        })
+
+    # Backward compatibility: copy Step 1 files to root of staging directory
+    if steps_output:
+        s1_folder = base_staging_dir / f"step_1_{steps_output[0]['date_before']}_to_{steps_output[0]['date_after']}"
+        for fname in ["before_thumb.jpg", "after_thumb.jpg", "change_overlay.jpg", "change_side_by_side.jpg", "patch_change_results.json"]:
+            s_file = s1_folder / fname
+            if s_file.is_file():
+                shutil.copy2(s_file, base_staging_dir / fname)
+
+    # 8. Synthesize Whole-Window Executive Narrative
+    global_deltas = {}
+    if len(clean_records) >= 2:
+        r0 = clean_records[0]
+        r_last = clean_records[-1]
+        if r0.get("mean_ndvi") is not None and r_last.get("mean_ndvi") is not None:
+            global_deltas["delta_ndvi"] = round(float(r_last["mean_ndvi"]) - float(r0["mean_ndvi"]), 4)
+        if r0.get("mean_ndwi") is not None and r_last.get("mean_ndwi") is not None:
+            global_deltas["delta_ndwi"] = round(float(r_last["mean_ndwi"]) - float(r0["mean_ndwi"]), 4)
+        if r0.get("mean_ndbi") is not None and r_last.get("mean_ndbi") is not None:
+            global_deltas["delta_ndbi"] = round(float(r_last["mean_ndbi"]) - float(r0["mean_ndbi"]), 4)
+
+    whole_window_narrative = synthesize_whole_window_narrative(
+        site_key=site_key,
+        total_clean_epochs=len(clean_records),
+        dates=[str(r["acquisition_date"])[:10] for r in clean_records],
+        steps=steps_output,
+        spectral_deltas_global=global_deltas
+    )
+
+    # 9. Assemble Quality & Splitting Audits
     manifest_passed = [
         {
             "tile_id": s["tile_id"],
@@ -423,7 +559,6 @@ def stage_tile_temporal_series(
         "dropped_tiles": manifest_dropped
     }
 
-    # 8. Assemble Splitting Engine Audit
     splitting_audit = {
         "method": split_res["method"],
         "device": split_res.get("device", "cpu"),
@@ -437,56 +572,23 @@ def stage_tile_temporal_series(
         "all_candidates": split_res.get("all_split_scores", [])
     }
 
-    # 9. CONTINUOUS PIPELINE: Execute Prithvi Patch Change Detection on the 2 Milestone Tiles
-    patch_change_report = None
-    if len(staged_epochs) == 2:
-        try:
-            logger.info(f"Executing Prithvi Patch Change Detection on milestone tiles for site {site_key}...")
-            detector = get_patch_change_detector()
-            t1_epoch = staged_epochs[0]
-            t2_epoch = staged_epochs[1]
-
-            t1_tif = base_staging_dir / f"{t1_epoch['epoch']}_{t1_epoch['date_short']}" / "tile.tif"
-            t2_tif = base_staging_dir / f"{t2_epoch['epoch']}_{t2_epoch['date_short']}" / "tile.tif"
-            t1_mask = base_staging_dir / f"{t1_epoch['epoch']}_{t1_epoch['date_short']}" / "mask.tif"
-            t2_mask = base_staging_dir / f"{t2_epoch['epoch']}_{t2_epoch['date_short']}" / "mask.tif"
-
-            patch_change_report = detector.run_detection(
-                before_tif=str(t1_tif),
-                after_tif=str(t2_tif),
-                before_mask=str(t1_mask) if t1_mask.is_file() else None,
-                after_mask=str(t2_mask) if t2_mask.is_file() else None,
-                output_dir=str(base_staging_dir),
-                grid_size=8,
-                quality_thresh=0.20,
-                z_threshold=2.0,
-                min_dist=0.01,
-                min_cluster_size=2
-            )
-            logger.info(f"Patch change detection complete: {patch_change_report.get('num_candidates', 0)} candidate patches confirmed.")
-        except Exception as pe:
-            logger.error(f"Error running patch change detection on {site_key}: {pe}", exc_info=True)
-            patch_change_report = {
-                "status": "failed",
-                "error": str(pe),
-                "num_candidates": 0,
-                "candidates": []
-            }
-
     # 10. Write manifest.json
     manifest_data = {
-        "manifest_version": "2.2.0",
+        "manifest_version": "2.3.0",
         "generated_at": datetime.utcnow().isoformat() + "Z",
         "site_key": site_key,
         "centroid": [float(target["centroid_lat"]), float(target["centroid_lon"])],
         "staging_dir": str(base_staging_dir.relative_to(REPO_ROOT)).replace("\\", "/"),
         "quality_audit": quality_audit_summary,
         "splitting_audit": splitting_audit,
-        "patch_change_analysis": patch_change_report,
         "total_staged_epochs": len(staged_epochs),
         "epochs": staged_epochs,
-        "spectral_deltas": deltas,
-        "downstream_ready": len(staged_epochs) == 2
+        "total_steps": len(steps_output),
+        "steps": steps_output,
+        "whole_window_narrative": whole_window_narrative,
+        "spectral_deltas": global_deltas,
+        "patch_change_analysis": steps_output[0]["patch_change_analysis"] if steps_output else None,
+        "downstream_ready": len(steps_output) > 0
     }
 
     manifest_path = base_staging_dir / "manifest.json"
@@ -506,10 +608,10 @@ def stage_tile_temporal_series(
             manifest_path=rel_manifest,
             quality_audit=quality_audit_summary,
             splitting_audit=splitting_audit,
-            patch_change_analysis=patch_change_report,
+            patch_change_analysis=steps_output[0]["patch_change_analysis"] if steps_output else None,
             all_sibling_records=sibling_rows,
             staged_epochs=staged_epochs,
-            spectral_deltas=deltas
+            spectral_deltas=global_deltas
         )
         logger.info(f"Pipeline run {run_id} persisted in PostgreSQL/PostGIS.")
     except Exception as db_err:
@@ -518,13 +620,16 @@ def stage_tile_temporal_series(
     return {
         "status": "success",
         "run_id": run_id,
-        "message": f"Optimal change transition identified ({split_res['onset_bracket']}) and patch change detection executed.",
+        "message": f"Identified {len(steps_output)} multi-temporal transition step(s) for site {site_key}.",
         "site_key": site_key,
         "staging_dir": str(base_staging_dir.relative_to(REPO_ROOT)).replace("\\", "/"),
         "quality_audit": quality_audit_summary,
         "splitting_audit": splitting_audit,
-        "patch_change_analysis": patch_change_report,
+        "patch_change_analysis": steps_output[0]["patch_change_analysis"] if steps_output else None,
         "epochs": staged_epochs,
-        "spectral_deltas": deltas,
+        "total_steps": len(steps_output),
+        "steps": steps_output,
+        "whole_window_narrative": whole_window_narrative,
+        "spectral_deltas": global_deltas,
         "manifest_path": str(manifest_path.relative_to(REPO_ROOT)).replace("\\", "/")
     }
