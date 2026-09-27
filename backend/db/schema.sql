@@ -134,6 +134,7 @@ CREATE TABLE IF NOT EXISTS search_log (
   query_type            TEXT,      -- 'text' or 'image'
   filters                 JSONB,   -- AOI/date/sensor filters applied, null if none
   result_tile_ids           TEXT[],
+  query_embedding           REAL[],  -- 512-D float array preserving exact vector
   searched_at                 TIMESTAMP DEFAULT now()
 );
 
@@ -328,6 +329,7 @@ CREATE INDEX IF NOT EXISTS idx_analyst_decisions_decision ON analyst_decisions (
 CREATE TABLE IF NOT EXISTS search_feedback (
     feedback_id     UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     analyst_id      VARCHAR(100) NOT NULL DEFAULT 'ANALYST-DEF-01',
+    search_id       INT,
     query_text      TEXT NOT NULL,
     tile_id         TEXT REFERENCES tiles(tile_id) ON DELETE CASCADE,
     relevant        BOOLEAN NOT NULL, -- true = Relevant / Hit, false = Irrelevant / False Alarm
@@ -338,6 +340,7 @@ CREATE TABLE IF NOT EXISTS search_feedback (
 );
 
 CREATE INDEX IF NOT EXISTS idx_search_feedback_query ON search_feedback (query_text, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_search_feedback_search_id ON search_feedback (search_id);
 CREATE INDEX IF NOT EXISTS idx_search_feedback_tile ON search_feedback (tile_id);
 CREATE INDEX IF NOT EXISTS idx_search_feedback_analyst ON search_feedback (analyst_id);
 CREATE INDEX IF NOT EXISTS idx_search_feedback_recorded ON search_feedback (recorded_at DESC);
