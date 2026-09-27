@@ -10,8 +10,8 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   
   <!-- App Stylesheet with cache buster -->
-  <link rel="stylesheet" href="/frontend/index.css?v=20260919_popover_final">
-  <link rel="stylesheet" href="/frontend/effects.css?v=20260919_v2">
+  <link rel="stylesheet" href="/frontend/index.css?v=20260928_minimal_v4">
+  <link rel="stylesheet" href="/frontend/effects.css?v=20260928_v4">
   
   <style>
     /* Scope UI Icon SVG styling cleanly so tactical cursor, badges, and fallback SVGs retain fills & gradients */
@@ -235,53 +235,63 @@
 
   <!-- Top Aerospace Navigation Bar -->
   <header>
-    <div class="logo-section" style="display: flex; align-items: center; gap: 12px;">
-      <!-- Top Persistent Sidebar Toggle Button -->
-      <button class="header-sidebar-toggle-btn" id="headerSidebarToggleBtn" onclick="toggleChatSidebar()" title="Toggle History Sidebar (Collapse / Expand)">
-        <svg class="ui-icon icon-cyan" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m14 9-3 3 3 3"/></svg>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button class="header-sidebar-toggle-btn" id="headerSidebarToggleBtn" onclick="toggleChatSidebar()" title="Toggle History Sidebar (Alt+S)" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.35); color: #38bdf8; width: 36px; height: 36px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; flex-shrink: 0;">
+        <svg class="ui-icon icon-cyan" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m14 9-3 3 3 3"/></svg>
       </button>
 
-      <div class="logo-badge" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25)); border: 1px solid var(--accent-cyan); border-radius: 8px; width: 36px; height: 36px;">
-        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
-      </div>
-      <div>
-        <div class="logo-title">CANOPUS &bull; EO SEMANTIC RETRIEVAL</div>
-        <div class="logo-subtitle">MULTIMODAL REMOTECLIP ViT-B-32 &bull; DEFENSE DGIS</div>
-      </div>
+      <a href="/" class="logo-section">
+        <div class="logo-badge">
+          <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span class="logo-title">CANOPUS</span>
+          <span class="logo-divider">/</span>
+          <span class="logo-module-tag">SEMANTIC RETRIEVAL</span>
+        </div>
+      </a>
     </div>
 
     <!-- Multi-Page Navigation -->
     <nav class="nav-links">
-      <a href="/" class="nav-item" id="nav-map" style="text-decoration: none;">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map & Coverage
+      <a href="/" class="nav-item" id="nav-map">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map &amp; Coverage
       </a>
-      <a href="/retrieval.html" class="nav-item active" id="nav-retrieval" style="text-decoration: none;">
+      <a href="/retrieval.html" class="nav-item active" id="nav-retrieval">
         <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
       </a>
-      <a href="/change.html" class="nav-item" id="nav-change" style="text-decoration: none;">
+      <a href="/change.html" class="nav-item" id="nav-change">
         <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
       </a>
-      <a href="/clustering.html" class="nav-item" id="nav-clustering" style="text-decoration: none;">
+      <a href="/clustering.html" class="nav-item" id="nav-clustering">
         <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
       </a>
-      <a href="/review.html" class="nav-item" id="nav-review" style="text-decoration: none;">
+      <a href="/review.html" class="nav-item" id="nav-review">
         <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
       </a>
     </nav>
 
     <!-- Header Right Stats -->
     <div class="header-status">
-      <button class="cursor-toggle-btn" id="cursorToggleBtn" onclick="toggleTacticalCursor()" title="Toggle Satellite Cursor (Alt+C)" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.3); color: #38bdf8; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
-        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg> <span>TAC CURSOR</span>
-      </button>
-      <button class="audio-toggle-btn" id="audioToggleBtn" onclick="toggleTacticalAudio()" title="Toggle Tactical Sound (Alt+M)" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(100,116,139,0.3); color: #64748b; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
-        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> <span>TAC AUDIO [MUTE]</span>
-      </button>
-      <a href="/" class="ingest-aoi-nav-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> Map Explorer
+      <!-- Live UTC Mission Clock -->
+      <div class="mission-clock-pill" title="Synchronized Satellite Orbital Time (UTC)">
+        <svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="mission-clock-time" id="liveUtcClock">00:00:00 UTC</span>
+      </div>
+
+      <!-- Air-Gapped Offline / Online Sovereign Network Mode Pill -->
+      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()" title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
+        <div class="mode-dot"></div>
+        <span>ONLINE</span>
+      </div>
+
+      <a href="/?openIngest=1" class="ingest-aoi-nav-btn" style="text-decoration: none;">
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Ingest New AOI
       </a>
-      <span class="tag-badge">RemoteCLIP ViT-B-32</span>
-      <span class="tag-badge">Qdrant Vector DB</span>
+      <div class="status-pill" id="archiveStatusPill">
+        <div class="status-dot"></div>
+        <span id="archiveTileCount">ONLINE</span>
+      </div>
     </div>
   </header>
 
@@ -650,12 +660,14 @@
   <!-- Leaflet JS & Shared App JS with cache buster -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="/frontend/app.js?v=20260919_app_final"></script>
+  <script src="/frontend/app.js?v=20260928_app_v6"></script>
   <!-- Ambient Effects & Starfield -->
-  <script src="/frontend/effects.js?v=20260919_v2"></script>
+  <script src="/frontend/effects.js?v=20260928_live_clock_v6"></script>
+  <!-- Air-Gapped Offline / Online Sovereign Network Manager -->
+  <script src="/frontend/offline.js?v=20260928_offline_v6"></script>
   <!-- Tactical Audio Synthesizer -->
-  <script src="/frontend/audio.js?v=20260919_v1"></script>
+  <script src="/frontend/audio.js?v=20260928_v6"></script>
   <!-- Tactical Satellite Cursor Engine -->
-  <script src="/frontend/cursor.js?v=20260919_v2"></script>
+  <script src="/frontend/cursor.js?v=20260928_v6"></script>
 </body>
 </html>

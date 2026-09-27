@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Canopus — Discovery & Clustering Workbench (PS 2.2.4)</title>
-  <link rel="stylesheet" href="/frontend/index.css?v=20260919_popover_final">
-  <link rel="stylesheet" href="/frontend/effects.css?v=20260919_v2">
+  <link rel="stylesheet" href="/frontend/index.css?v=20260928_minimal_v4">
+  <link rel="stylesheet" href="/frontend/effects.css?v=20260928_v4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -247,6 +247,96 @@
       color: #38bdf8;
       box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
     }
+
+    /* Date & Timeline Grouping Controls */
+    .timeline-date-group-header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      margin: 20px 0 8px 0;
+      background: linear-gradient(90deg, rgba(6, 182, 212, 0.18) 0%, rgba(13, 18, 31, 0.75) 75%, transparent 100%);
+      border-left: 4px solid #06b6d4;
+      border-radius: 0 10px 10px 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .timeline-date-title {
+      font-size: 13px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.5px;
+    }
+    .timeline-badge-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .timeline-date-count {
+      font-size: 11px;
+      background: rgba(6, 182, 212, 0.2);
+      color: #67e8f9;
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .timeline-date-sensor {
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+    .date-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      padding: 5px 12px;
+      font-size: 11px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .date-pill:hover, .date-pill.active {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.25));
+      border-color: #06b6d4;
+      color: #38bdf8;
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
+    }
+    .date-pill.active {
+      font-weight: 700;
+      border-color: #38bdf8;
+    }
+    .view-mode-pill {
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      padding: 5px 12px;
+      font-size: 11px;
+      cursor: pointer;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .view-mode-pill.active {
+      background: #06b6d4 !important;
+      color: #070a12 !important;
+      font-weight: 700;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+    }
   </style>
 
   <!-- Immediate Global Fallback for Thumbnail Errors -->
@@ -280,53 +370,58 @@
   </script>
 </head>
 <body>
-  <!-- Global Application Header -->
-  <header>
-    <div class="logo-section" style="display: flex; align-items: center; gap: 12px;">
-      <div class="logo-badge" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25)); border: 1px solid var(--accent-cyan); border-radius: 8px; width: 36px; height: 36px;">
+  <!-- Global Application Header -->  <header>
+    <a href="/" class="logo-section">
+      <div class="logo-badge">
         <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
       </div>
-      <div>
-        <div class="logo-title">CANOPUS &bull; DISCOVERY & CLUSTERING</div>
-        <div class="logo-subtitle">GLOBAL ARCHIVE PARTITIONING &bull; PS 2.2.4 &bull; DEFENSE DGIS</div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="logo-title">CANOPUS</span>
+        <span class="logo-divider">/</span>
+        <span class="logo-module-tag">CLUSTERING &amp; DISCOVERY</span>
       </div>
-    </div>
+    </a>
 
     <!-- Multi-Page Navigation -->
     <nav class="nav-links">
-      <a href="/" class="nav-item" id="nav-map" style="text-decoration: none;">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map & Coverage
+      <a href="/" class="nav-item" id="nav-map">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map &amp; Coverage
       </a>
-      <a href="/retrieval.html" class="nav-item" id="nav-retrieval" style="text-decoration: none;">
+      <a href="/retrieval.html" class="nav-item" id="nav-retrieval">
         <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
       </a>
-      <a href="/change.html" class="nav-item" id="nav-change" style="text-decoration: none;">
+      <a href="/change.html" class="nav-item" id="nav-change">
         <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
       </a>
-      <a href="/clustering.html" class="nav-item active" id="nav-clustering" style="text-decoration: none;">
+      <a href="/clustering.html" class="nav-item active" id="nav-clustering">
         <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
       </a>
-      <a href="/review.html" class="nav-item" id="nav-review" style="text-decoration: none;">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
+      <a href="/review.html" class="nav-item" id="nav-review">
+        <svg class="ui-icon width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
       </a>
     </nav>
 
     <!-- Header Right Stats -->
     <div class="header-status">
-      <button class="cursor-toggle-btn" id="cursorToggleBtn" onclick="toggleTacticalCursor()" title="Toggle Satellite Cursor (Alt+C)" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.3); color: #38bdf8; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
-        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg> <span>TAC CURSOR</span>
-      </button>
-      <button class="audio-toggle-btn" id="audioToggleBtn" onclick="toggleTacticalAudio()" title="Toggle Tactical Sound (Alt+M)" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(100,116,139,0.3); color: #64748b; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
-        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> <span>TAC AUDIO [MUTE]</span>
-      </button>
-      <button class="map-btn primary" id="recomputeClusterBtn" onclick="triggerClusteringRecompute()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
-        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Recompute Clusters
-      </button>
-      <a href="/" class="ingest-aoi-nav-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> Map Explorer
+      <!-- Live UTC Mission Clock -->
+      <div class="mission-clock-pill" title="Synchronized Satellite Orbital Time (UTC)">
+        <svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="mission-clock-time" id="liveUtcClock">00:00:00 UTC</span>
+      </div>
+
+      <!-- Air-Gapped Offline / Online Sovereign Network Mode Pill -->
+      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()" title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
+        <div class="mode-dot"></div>
+        <span>ONLINE</span>
+      </div>
+
+      <a href="/?openIngest=1" class="ingest-aoi-nav-btn" style="text-decoration: none;">
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Ingest New AOI
       </a>
-      <span class="tag-badge">HDBSCAN</span>
-      <span class="tag-badge">Qdrant Vector DB</span>
+      <div class="status-pill" id="archiveStatusPill">
+        <div class="status-dot"></div>
+        <span id="archiveTileCount">ONLINE</span>
+      </div>
     </div>
   </header>
 
@@ -379,6 +474,9 @@
               Groups visually and semantically coherent tiles across multiple geographic regions without spatial boundary restrictions.
             </p>
           </div>
+          <button class="map-btn primary" id="recomputeClusterBtn" onclick="triggerClusteringRecompute()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px;">
+            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Recompute Clusters
+          </button>
         </div>
 
         <!-- Cluster Filter & Search Toolbar -->
@@ -398,6 +496,9 @@
             </button>
             <button class="cluster-pill" onclick="filterClustersByCategory('arid', this)">
               <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg> Arid & Transition
+            </button>
+            <button class="cluster-pill" onclick="filterClustersByCategory('industr', this)">
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg> Industrial & Logistics
             </button>
           </div>
           <div style="display: flex; gap: 10px; align-items: center;">
@@ -441,6 +542,29 @@
                 <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> View Entire Cluster on Map
               </button>
             </div>
+          </div>
+        </div>
+
+        <!-- Date / Timeline Toolbar & Group Filter -->
+        <div id="clusterTimelineToolbar" style="background: rgba(13, 18, 31, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-lg); padding: 12px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;" id="clusterDatePills">
+            <!-- Dynamic Date Filter Pills Injected Here -->
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="view-mode-toggle" style="display: flex; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; padding: 2px;">
+              <button id="viewGroupedBtn" class="view-mode-pill active" onclick="setClusterViewMode('grouped')" title="Group cards by acquisition date">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Timeline Groups
+              </button>
+              <button id="viewFlatBtn" class="view-mode-pill" onclick="setClusterViewMode('flat')" title="Flat list of all cards sorted chronologically">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                Flat Grid
+              </button>
+            </div>
+            <select id="clusterDateSortSelect" onchange="changeClusterDateSort(this.value)" style="background: rgba(15,23,42,0.8); border: 1px solid var(--border-color); color: #38bdf8; border-radius: 6px; padding: 5px 8px; font-size: 11px; font-family: monospace; outline: none; cursor: pointer;">
+              <option value="desc">Date: Latest First (2025 &rarr; 2021)</option>
+              <option value="asc">Date: Oldest First (2021 &rarr; 2025)</option>
+            </select>
           </div>
         </div>
 
@@ -537,6 +661,8 @@
       </div>
     </div>
   </div>
+
+
 
   <script src="/frontend/app.js?v=20260919_app_final"></script>
   <script>
@@ -695,22 +821,15 @@
         if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const data = await res.json();
         if (window.showTacticalToast) {
-          window.showTacticalToast(`CLUSTERING COMPLETE // ${data.clusters_count} CLUSTERS DISCOVERED (${data.total_points} TILES)`);
-        } else {
-          alert(`Clustering Complete!\n\nDiscovered: ${data.clusters_count} clusters across ${data.total_points} tiles in ${data.elapsed_seconds}s.`);
+          window.showTacticalToast(`CLUSTERING COMPLETE // ${data.clusters_count} CLUSTERS`);
         }
-        window.tacticalAudio?.playLockOnChirp?.();
         await loadClustersWorkbench();
       } catch (err) {
-        if (window.showTacticalToast) {
-          window.showTacticalToast(`CLUSTERING FAILED // ${err.message}`);
-        } else {
-          alert(`Clustering job failed: ${err.message}`);
-        }
+        alert(`Clustering job failed: ${err.message}`);
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = `<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Recompute Clusters`;
+          btn.innerHTML = `<svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Recompute Clusters`;
         }
       }
     }
@@ -756,63 +875,211 @@
           }
         });
 
-        if (!currentClusterTiles || currentClusterTiles.length === 0) {
-          tilesGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: var(--text-muted);">No member tiles found in this cluster.</div>`;
-          return;
-        }
-
-        tilesGrid.innerHTML = currentClusterTiles.map((item, idx) => {
-          const thumbUrl = getTileThumbnailUrl(item);
-          const dateStr = item.acquisition_date ? item.acquisition_date.split('T')[0] : 'Unknown Date';
-          const isMedoid = item.tile_id === cluster.representative_tile_id;
-
-          const ndviVal = item.mean_ndvi !== null && item.mean_ndvi !== undefined ? item.mean_ndvi.toFixed(2) : '-';
-          const ndwiVal = item.mean_ndwi !== null && item.mean_ndwi !== undefined ? item.mean_ndwi.toFixed(2) : '-';
-          const ndbiVal = item.mean_ndbi !== null && item.mean_ndbi !== undefined ? item.mean_ndbi.toFixed(2) : '-';
-
-          return `
-            <div class="result-card hud-bracketed ${isMedoid ? 'high-confidence-halo' : ''}" style="${isMedoid ? 'border-color: #06b6d4; box-shadow: 0 0 16px rgba(6,182,212,0.3);' : ''}">
-              <div class="result-thumb-wrap laser-scanner-wrap">
-                <img class="result-thumb-img" src="${thumbUrl}" alt="${item.tile_id}" onerror="handleTileThumbError(this, '${item.tile_id}')">
-                ${isMedoid ? '<div class="medoid-beacon-ring"></div><div class="result-score-badge" style="background: #06b6d4; color: #000; font-weight: 800;">MEDOID</div>' : `<div class="result-score-badge">#${idx + 1}</div>`}
-              </div>
-              <div class="result-body">
-                <div class="result-title-row">
-                  <span class="result-tile-id">${item.tile_id}</span>
-                  <span class="result-date" style="display: inline-flex; align-items: center; gap: 4px;">
-                    <svg class="ui-icon icon-sm" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                    ${dateStr}
-                  </span>
-                </div>
-                <div class="result-spot-desc">
-                  ${escapeHtml(item.spot_description || 'Cluster member tile.')}
-                </div>
-                <div class="result-spectral-chips">
-                  <span class="spec-chip ndvi">NDVI ${ndviVal}</span>
-                  <span class="spec-chip ndwi">NDWI ${ndwiVal}</span>
-                  <span class="spec-chip ndbi">NDBI ${ndbiVal}</span>
-                </div>
-                <div class="result-card-actions">
-                  <button class="result-action-btn" onclick="openTileInspect('${item.tile_id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
-                    <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    Inspect
-                  </button>
-                  <button class="result-action-btn" onclick="openTileInMap('${item.tile_id}', ${item.centroid_lat || 'null'}, ${item.centroid_lon || 'null'}, ${JSON.stringify(item.geometry_geojson || null).replace(/"/g, '&quot;')})" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
-                    <svg class="ui-icon icon-sm" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-                    Map
-                  </button>
-                  <button class="result-action-btn" onclick="discoverSimilarFromTile('${item.tile_id}')" style="color: #38bdf8; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" title="Branch off into discovery from this tile">
-                    <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 12 21.5 2.5"/><circle cx="12" cy="12" r="2"/></svg>
-                    Find Similar
-                  </button>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
+        currentClusterDateFilter = 'all';
+        renderClusterDatePills();
+        renderClusterMemberTiles();
 
       } catch (err) {
         tilesGrid.innerHTML = `<div style="grid-column: 1 / -1; color: #f87171; text-align: center; padding: 20px;">Error loading member tiles: ${err.message}</div>`;
+      }
+    }
+
+    let currentClusterDateFilter = 'all';
+    let currentClusterViewMode = 'grouped'; // 'grouped' or 'flat'
+    let currentClusterDateSort = 'desc'; // 'desc' or 'asc'
+
+    function renderClusterDatePills() {
+      const container = document.getElementById('clusterDatePills');
+      if (!container) return;
+
+      if (!currentClusterTiles || currentClusterTiles.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      // Group counts by date
+      const dateCounts = {};
+      currentClusterTiles.forEach(t => {
+        const d = (t.acquisition_date || '').split('T')[0] || 'Unknown Date';
+        dateCounts[d] = (dateCounts[d] || 0) + 1;
+      });
+
+      // Sort dates
+      const sortedDates = Object.keys(dateCounts).sort((a, b) => {
+        if (a === 'Unknown Date') return 1;
+        if (b === 'Unknown Date') return -1;
+        return currentClusterDateSort === 'desc' ? b.localeCompare(a) : a.localeCompare(b);
+      });
+
+      let html = `
+        <button class="date-pill ${currentClusterDateFilter === 'all' ? 'active' : ''}" onclick="setClusterDateFilter('all', this)">
+          <span>All Dates</span>
+          <span style="opacity: 0.7;">(${currentClusterTiles.length})</span>
+        </button>
+      `;
+
+      sortedDates.forEach(d => {
+        const count = dateCounts[d];
+        const isActive = currentClusterDateFilter === d;
+        html += `
+          <button class="date-pill ${isActive ? 'active' : ''}" onclick="setClusterDateFilter('${d}', this)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>${d}</span>
+            <span style="opacity: 0.7;">(${count})</span>
+          </button>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function setClusterDateFilter(dateVal, btnEl) {
+      window.tacticalAudio?.playTacticalClick?.();
+      currentClusterDateFilter = dateVal;
+      document.querySelectorAll('#clusterDatePills .date-pill').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      renderClusterMemberTiles();
+    }
+
+    function setClusterViewMode(mode) {
+      window.tacticalAudio?.playTacticalClick?.();
+      currentClusterViewMode = mode;
+      document.getElementById('viewGroupedBtn')?.classList.toggle('active', mode === 'grouped');
+      document.getElementById('viewFlatBtn')?.classList.toggle('active', mode === 'flat');
+      renderClusterMemberTiles();
+    }
+
+    function changeClusterDateSort(sortDir) {
+      window.tacticalAudio?.playTacticalClick?.();
+      currentClusterDateSort = sortDir;
+      renderClusterDatePills();
+      renderClusterMemberTiles();
+    }
+
+    function renderTileCardHtml(item, idx, isMedoid) {
+      const thumbUrl = getTileThumbnailUrl(item);
+      const dateStr = item.acquisition_date ? item.acquisition_date.split('T')[0] : 'Unknown Date';
+
+      const ndviVal = item.mean_ndvi !== null && item.mean_ndvi !== undefined ? item.mean_ndvi.toFixed(2) : '-';
+      const ndwiVal = item.mean_ndwi !== null && item.mean_ndwi !== undefined ? item.mean_ndwi.toFixed(2) : '-';
+      const ndbiVal = item.mean_ndbi !== null && item.mean_ndbi !== undefined ? item.mean_ndbi.toFixed(2) : '-';
+
+      return `
+        <div class="result-card hud-bracketed ${isMedoid ? 'high-confidence-halo' : ''}" style="${isMedoid ? 'border-color: #06b6d4; box-shadow: 0 0 16px rgba(6,182,212,0.3);' : ''}">
+          <div class="result-thumb-wrap laser-scanner-wrap">
+            <img class="result-thumb-img" src="${thumbUrl}" alt="${item.tile_id}" onerror="handleTileThumbError(this, '${item.tile_id}')">
+            ${isMedoid ? '<div class="medoid-beacon-ring"></div><div class="result-score-badge" style="background: #06b6d4; color: #000; font-weight: 800;">MEDOID</div>' : `<div class="result-score-badge">#${idx + 1}</div>`}
+          </div>
+          <div class="result-body">
+            <div class="result-title-row">
+              <span class="result-tile-id">${item.tile_id}</span>
+              <span class="result-date" style="display: inline-flex; align-items: center; gap: 4px;">
+                <svg class="ui-icon icon-sm" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                ${dateStr}
+              </span>
+            </div>
+            <div class="result-spot-desc">
+              ${escapeHtml(item.spot_description || 'Cluster member tile.')}
+            </div>
+            <div class="result-spectral-chips">
+              <span class="spec-chip ndvi">NDVI ${ndviVal}</span>
+              <span class="spec-chip ndwi">NDWI ${ndwiVal}</span>
+              <span class="spec-chip ndbi">NDBI ${ndbiVal}</span>
+            </div>
+            <div class="result-card-actions">
+              <button class="result-action-btn" onclick="openTileInspect('${item.tile_id}')" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                Inspect
+              </button>
+              <button class="result-action-btn" onclick="openTileInMap('${item.tile_id}', ${item.centroid_lat || 'null'}, ${item.centroid_lon || 'null'}, ${JSON.stringify(item.geometry_geojson || null).replace(/"/g, '&quot;')})" style="display: inline-flex; align-items: center; justify-content: center; gap: 4px;">
+                <svg class="ui-icon icon-sm" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                Map
+              </button>
+              <button class="result-action-btn" onclick="discoverSimilarFromTile('${item.tile_id}')" style="color: #38bdf8; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" title="Branch off into discovery from this tile">
+                <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 12 21.5 2.5"/><circle cx="12" cy="12" r="2"/></svg>
+                Find Similar
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderClusterMemberTiles() {
+      const tilesGrid = document.getElementById('clusterTilesGrid');
+      if (!tilesGrid) return;
+
+      if (!currentClusterTiles || currentClusterTiles.length === 0) {
+        tilesGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: var(--text-muted);">No member tiles found in this cluster.</div>`;
+        return;
+      }
+
+      // 1. Filter by date if selected
+      let filtered = [...currentClusterTiles];
+      if (currentClusterDateFilter !== 'all') {
+        filtered = filtered.filter(t => (t.acquisition_date || '').split('T')[0] === currentClusterDateFilter);
+      }
+
+      // 2. Sort chronologically
+      filtered.sort((a, b) => {
+        const da = a.acquisition_date || '';
+        const db = b.acquisition_date || '';
+        return currentClusterDateSort === 'desc' ? db.localeCompare(da) : da.localeCompare(db);
+      });
+
+      if (filtered.length === 0) {
+        tilesGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted);">No tiles found for acquisition date ${escapeHtml(currentClusterDateFilter)}.</div>`;
+        return;
+      }
+
+      const cluster = currentSelectedCluster || {};
+
+      // 3. Render either Grouped by Date or Flat Grid
+      if (currentClusterViewMode === 'grouped' && currentClusterDateFilter === 'all') {
+        // Group by date
+        const groups = {};
+        filtered.forEach(t => {
+          const d = (t.acquisition_date || '').split('T')[0] || 'Unknown Date';
+          groups[d] = groups[d] || [];
+          groups[d].push(t);
+        });
+
+        const sortedDates = Object.keys(groups).sort((a, b) => {
+          if (a === 'Unknown Date') return 1;
+          if (b === 'Unknown Date') return -1;
+          return currentClusterDateSort === 'desc' ? b.localeCompare(a) : a.localeCompare(b);
+        });
+
+        let html = '';
+        let globalIdx = 0;
+        sortedDates.forEach(dateKey => {
+          const items = groups[dateKey];
+          const sensor = items[0]?.sensor || 'Sentinel-2 L2A';
+          html += `
+            <div class="timeline-date-group-header">
+              <div class="timeline-date-title">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                ACQUISITION TIMELINE: ${dateKey}
+              </div>
+              <div class="timeline-badge-group">
+                <span class="timeline-date-count">${items.length} OBSERVATION${items.length > 1 ? 'S' : ''}</span>
+                <span class="timeline-date-sensor">${escapeHtml(sensor)}</span>
+              </div>
+            </div>
+          `;
+          items.forEach(item => {
+            const isMedoid = item.tile_id === cluster.representative_tile_id;
+            html += renderTileCardHtml(item, globalIdx++, isMedoid);
+          });
+        });
+        tilesGrid.innerHTML = html;
+
+      } else {
+        // Flat Grid
+        tilesGrid.innerHTML = filtered.map((item, idx) => {
+          const isMedoid = item.tile_id === cluster.representative_tile_id;
+          return renderTileCardHtml(item, idx, isMedoid);
+        }).join('');
       }
     }
 
@@ -850,10 +1117,12 @@
     });
   </script>
   <!-- Ambient Effects & Starfield -->
-  <script src="/frontend/effects.js?v=20260919_v2"></script>
+  <script src="/frontend/effects.js?v=20260928_live_clock_v6"></script>
+  <!-- Air-Gapped Offline / Online Sovereign Network Manager -->
+  <script src="/frontend/offline.js?v=20260928_offline_v6"></script>
   <!-- Tactical Audio Synthesizer -->
-  <script src="/frontend/audio.js?v=20260919_v1"></script>
+  <script src="/frontend/audio.js?v=20260928_v6"></script>
   <!-- Tactical Satellite Cursor Engine -->
-  <script src="/frontend/cursor.js?v=20260919_v2"></script>
+  <script src="/frontend/cursor.js?v=20260928_v6"></script>
 </body>
 </html>

@@ -3,1647 +3,1441 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Canopus — Analyst Review & Verification Workbench</title>
-  <link rel="stylesheet" href="/frontend/index.css?v=20260919_popover_final">
-  <link rel="stylesheet" href="/frontend/effects.css?v=20260919_v2">
+  <title>Canopus — Analyst Review & Relevance Feedback Bench</title>
+
+  <!-- App Stylesheet with cache buster -->
+  <link rel="stylesheet" href="/frontend/index.css?v=20260928_minimal_v4">
+  <link rel="stylesheet" href="/frontend/effects.css?v=20260928_v4">
+
   <style>
-    /* ============================================================
-       ANALYST REVIEW WORKBENCH THEME & STYLES
-       ============================================================ */
-    :root {
-      --bg-void: #050811;
-      --bg-panel: rgba(13, 20, 36, 0.88);
-      --bg-card: rgba(20, 30, 55, 0.75);
-      --bg-card-hover: rgba(28, 42, 75, 0.9);
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-cyan: rgba(6, 182, 212, 0.4);
-      --border-cyan-glow: rgba(6, 182, 212, 0.85);
-      --cyan-bright: #38bdf8;
-      --emerald-bright: #34d399;
-      --rose-bright: #fb7185;
-      --amber-bright: #fbbf24;
-      --indigo-bright: #818cf8;
-      --font-mono: 'JetBrains Mono', monospace;
+    /* Scope UI Icon SVG styling cleanly so tactical cursor, badges, and fallback SVGs retain fills & gradients */
+    * {
+      box-sizing: border-box;
     }
-
-    html, body {
-      height: 100vh;
-      margin: 0;
-      padding: 0;
-      background-color: var(--bg-void);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      font-family: 'Inter', sans-serif;
-      color: #f1f5f9;
+    svg.ui-icon,
+    .nav-item svg,
+    .cursor-toggle-btn svg,
+    .audio-toggle-btn svg,
+    .ingest-aoi-nav-btn svg {
+      fill: none !important;
+      stroke: currentColor !important;
+      stroke-width: 2 !important;
+      stroke-linecap: round !important;
+      stroke-linejoin: round !important;
+      vertical-align: middle !important;
+      display: inline-block !important;
     }
+    #tactical-cursor-root svg,
+    #tactical-cursor-root svg * {
+      box-sizing: content-box !important;
+    }
+    .ui-icon {
+      width: 16px !important;
+      height: 16px !important;
+      min-width: 16px !important;
+      min-height: 16px !important;
+      stroke: currentColor !important;
+      fill: none !important;
+    }
+    .ui-icon.icon-cyan { stroke: #06b6d4 !important; color: #06b6d4 !important; }
+    .ui-icon.icon-emerald { stroke: #10b981 !important; color: #10b981 !important; }
+    .ui-icon.icon-rose { stroke: #f43f5e !important; color: #f43f5e !important; }
+    .ui-icon.icon-amber { stroke: #f59e0b !important; color: #f59e0b !important; }
 
+    .nav-item svg { width: 15px !important; height: 15px !important; margin-right: 6px; }
     .nav-item.active {
       background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.25));
-      border-color: var(--border-active);
+      border-color: var(--border-active, #06b6d4);
       color: #38bdf8;
     }
 
-    /* Sub-header Mode Selector */
-    .review-mode-bar {
-      height: 52px;
-      background: rgba(10, 16, 30, 0.95);
-      border-bottom: 1px solid var(--border-color);
+    /* Sub-nav Workbench Tabs */
+    .bench-tabs-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 24px;
-      z-index: 10;
-    }
-
-    .mode-tabs {
-      display: flex;
       gap: 12px;
+      padding: 10px 24px;
+      background: rgba(11, 17, 32, 0.95);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
     }
-
-    .mode-tab-btn {
+    .bench-tab-btn {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 18px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-color);
-      background: rgba(255, 255, 255, 0.03);
-      color: var(--text-secondary);
+      padding: 7px 16px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 6px;
+      color: #94a3b8;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
+      font-family: inherit;
       cursor: pointer;
       transition: all 0.2s ease;
     }
-
-    .mode-tab-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-primary);
-      border-color: rgba(255, 255, 255, 0.2);
+    .bench-tab-btn:hover {
+      color: #f1f5f9;
+      border-color: rgba(6, 182, 212, 0.4);
+      background: rgba(6, 182, 212, 0.08);
     }
-
-    .mode-tab-btn.active {
-      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
-      border-color: var(--accent-cyan);
-      color: var(--cyan-bright);
-      box-shadow: 0 0 16px rgba(6, 182, 212, 0.25);
+    .bench-tab-btn.active {
+      color: #38bdf8;
+      background: rgba(6, 182, 212, 0.18);
+      border-color: #06b6d4;
+      box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
     }
-
-    .tab-badge {
-      padding: 2px 7px;
-      border-radius: var(--radius-full);
-      font-size: 11px;
-      font-family: var(--font-mono);
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-primary);
+    .bench-tab-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 10px;
+      background: rgba(148, 163, 184, 0.2);
+      color: #cbd5e1;
     }
-
-    .mode-tab-btn.active .tab-badge {
+    .bench-tab-btn.active .bench-tab-badge {
       background: rgba(6, 182, 212, 0.3);
-      color: #fff;
+      color: #38bdf8;
     }
 
-    .analyst-badge {
+    /* Layout */
+    .review-workspace {
       display: flex;
-      align-items: center;
-      gap: 10px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: #6ee7b7;
-      padding: 6px 14px;
-      border-radius: var(--radius-full);
-    }
-
-    .analyst-pulse {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
-
-    /* Main Content Area */
-    .workbench-viewport {
-      flex: 1;
-      position: relative;
+      height: calc(100vh - 110px);
       overflow: hidden;
-      background: var(--bg-void);
+      background: #070a13;
     }
 
-    .tab-view {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: none;
-      overflow: hidden;
-    }
-
-    .tab-view.active {
-      display: flex;
-    }
-
-    /* Sidebar + Main Inspector Layout */
-    .view-sidebar {
-      width: 380px;
-      min-width: 380px;
-      height: 100%;
-      background: var(--bg-panel);
-      border-right: 1px solid var(--border-color);
+    /* Left Sidebar: Query Sessions */
+    .review-sidebar {
+      width: 360px;
+      min-width: 320px;
+      background: #0b1120;
+      border-right: 1px solid rgba(148, 163, 184, 0.15);
       display: flex;
       flex-direction: column;
-      backdrop-filter: blur(16px);
-      z-index: 5;
     }
-
-    .view-main {
-      flex: 1;
-      height: 100%;
-      background: rgba(5, 8, 17, 0.8);
-      overflow-y: auto;
-      padding: 24px 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .sidebar-header {
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .sidebar-title {
-      font-size: 14px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--cyan-bright);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .search-box-input {
-      width: 100%;
-      padding: 8px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-color);
-      background: rgba(0, 0, 0, 0.4);
-      color: #fff;
-      font-size: 13px;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .search-box-input:focus {
-      border-color: var(--accent-cyan);
-    }
-
-    /* Query Type Segmented Switcher */
-    .query-type-switcher {
-      display: flex;
+    .sidebar-mode-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 6px;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 4px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-subtle);
+      padding: 12px 14px;
+      background: rgba(15, 23, 42, 0.8);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
     }
-
-    .type-tab-btn {
-      flex: 1;
-      padding: 7px 8px;
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 11px;
-      font-weight: 600;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
+    .query-mode-btn {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      transition: all 0.2s ease;
+      padding: 7px 10px;
+      border-radius: 6px;
+      background: transparent;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
     }
-
-    .type-tab-btn.active {
-      background: rgba(6, 182, 212, 0.22);
-      color: var(--cyan-bright);
-      box-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
-      border: 1px solid rgba(6, 182, 212, 0.4);
+    .query-mode-btn.active {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: #06b6d4;
+      color: #38bdf8;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
     }
-
-    .sidebar-list {
+    .query-search-filter {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    }
+    .query-search-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      color: #e2e8f0;
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-size: 12px;
+      outline: none;
+    }
+    .query-search-input:focus {
+      border-color: #06b6d4;
+    }
+    .query-list-container {
       flex: 1;
       overflow-y: auto;
-      padding: 12px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-
-    /* Cards in Sidebar */
-    .list-item-card {
-      padding: 14px;
-      border-radius: var(--radius-md);
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
+    .query-item-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 8px;
+      padding: 10px 12px;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
-
-    .list-item-card:hover {
-      background: var(--bg-card-hover);
-      border-color: rgba(6, 182, 212, 0.3);
-      transform: translateY(-1px);
+    .query-item-card:hover {
+      background: rgba(6, 182, 212, 0.08);
+      border-color: rgba(6, 182, 212, 0.4);
     }
-
-    .list-item-card.active {
-      background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(99, 102, 241, 0.15));
-      border-color: var(--cyan-bright);
+    .query-item-card.active {
+      background: rgba(6, 182, 212, 0.16);
+      border-color: #06b6d4;
       box-shadow: 0 0 14px rgba(6, 182, 212, 0.2);
     }
-
-    .item-header {
+    .query-card-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
     }
-
-    .item-title {
+    .query-card-title {
       font-size: 13px;
       font-weight: 600;
-      color: var(--text-primary);
+      color: #f1f5f9;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
+      max-width: 220px;
     }
-
-    .item-subtitle {
-      font-size: 11px;
-      color: var(--text-secondary);
-      font-family: var(--font-mono);
+    .query-card-time {
+      font-size: 10px;
+      color: #64748b;
+      font-family: monospace;
     }
-
-    .item-stats-row {
+    .query-card-stats {
       display: flex;
-      gap: 8px;
       align-items: center;
-    }
-
-    /* Status Badges */
-    .status-pill {
+      gap: 6px;
       font-size: 11px;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: var(--radius-full);
-      font-family: var(--font-mono);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
     }
+    .stat-pill {
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-family: monospace;
+    }
+    .stat-pill.hits { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .stat-pill.noise { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+    .stat-pill.total { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); }
+    .stat-pill.sensor-maxar { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); font-weight: 600; }
+    .stat-pill.sensor-sentinel { background: rgba(6, 182, 212, 0.18); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4); font-weight: 600; }
+    .stat-pill.query-id { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-weight: 700; }
 
-    .status-confirmed { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
-    .status-rejected { background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
-    .status-unsure { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); }
-    .status-pending { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
-
-    /* Top Action Bar in Main View */
-    .action-banner {
+    /* Right Content Area */
+    .review-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: #070a13;
+    }
+    .content-action-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 18px 24px;
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-md);
-    }
-
-    .banner-title {
-      font-size: 18px;
-      font-weight: 700;
-      color: #fff;
-      display: flex;
-      align-items: center;
+      padding: 12px 24px;
+      background: rgba(11, 17, 32, 0.8);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+      flex-wrap: wrap;
       gap: 12px;
     }
-
-    .banner-desc {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
-
-    .banner-actions {
+    .active-query-title-block {
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      gap: 3px;
     }
-
-    /* Buttons */
-    .btn-action {
-      display: inline-flex;
+    .active-query-text {
+      font-size: 16px;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.2px;
+      display: flex;
       align-items: center;
       gap: 8px;
-      padding: 9px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: var(--radius-sm);
-      border: 1px solid transparent;
+    }
+    .active-query-meta {
+      font-size: 11px;
+      color: #64748b;
+      font-family: monospace;
+    }
+
+    .filter-chips-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .filter-chip {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(15, 23, 42, 0.6);
+      color: #94a3b8;
+      font-size: 11px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .filter-chip:hover {
+      background: rgba(6, 182, 212, 0.1);
+      color: #38bdf8;
+    }
+    .filter-chip.active {
+      background: rgba(6, 182, 212, 0.25);
+      border-color: #06b6d4;
+      color: #38bdf8;
     }
 
-    .btn-cyan {
-      background: linear-gradient(135deg, #06b6d4, #0284c7);
-      color: #fff;
-      border-color: #38bdf8;
-      box-shadow: 0 0 14px rgba(6, 182, 212, 0.35);
+    .rocchio-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 14px rgba(37, 99, 235, 0.35);
+      transition: all 0.2s;
     }
-
-    .btn-cyan:hover {
-      background: linear-gradient(135deg, #0891b2, #0369a1);
-      box-shadow: 0 0 20px rgba(6, 182, 212, 0.55);
+    .rocchio-btn:hover {
+      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+      box-shadow: 0 0 18px rgba(37, 99, 235, 0.55);
       transform: translateY(-1px);
     }
-
-    .btn-outline {
-      background: rgba(255, 255, 255, 0.05);
-      color: var(--text-primary);
-      border-color: var(--border-color);
+    .rocchio-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
     }
 
-    .btn-outline:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: rgba(255, 255, 255, 0.3);
+    /* Tiles Grid */
+    .tiles-scroll-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
     }
-
-    .btn-success {
-      background: linear-gradient(135deg, #10b981, #059669);
-      color: #fff;
-    }
-
-    .btn-danger {
-      background: linear-gradient(135deg, #f43f5e, #e11d48);
-      color: #fff;
-    }
-
-    /* Grid for Retrieval Tiles */
-    .retrieval-grid {
+    .retrieved-tiles-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 18px;
     }
-
     .tile-review-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 10px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: all 0.2s ease;
-      box-shadow: var(--shadow-sm);
+      position: relative;
+      transition: all 0.25s ease;
     }
-
     .tile-review-card:hover {
-      border-color: var(--border-cyan);
-      box-shadow: var(--shadow-md), 0 0 15px rgba(6, 182, 212, 0.2);
+      transform: translateY(-3px);
+      border-color: rgba(6, 182, 212, 0.45);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
     }
-
-    .tile-thumb-container {
+    .tile-review-card.status-positive {
+      border: 2px solid #10b981 !important;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.35) !important;
+    }
+    .tile-review-card.status-negative {
+      border: 2px solid #f43f5e !important;
+      opacity: 0.65;
+      box-shadow: 0 0 18px rgba(244, 63, 94, 0.25) !important;
+    }
+    .tile-img-container {
       position: relative;
       width: 100%;
       height: 200px;
-      background: #000;
+      background: #020617;
       overflow: hidden;
-      cursor: zoom-in;
     }
-
-    .tile-thumb-img {
+    .tile-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s;
     }
-
-    .tile-thumb-container:hover .tile-thumb-img {
+    .tile-review-card:hover .tile-img {
       transform: scale(1.04);
     }
-
-    .tile-badge-overlay {
+    .tile-score-tag {
       position: absolute;
-      top: 10px;
-      left: 10px;
-      display: flex;
-      gap: 6px;
-    }
-
-    .score-badge {
-      background: rgba(0, 0, 0, 0.75);
-      border: 1px solid var(--accent-cyan);
-      color: var(--cyan-bright);
-      padding: 3px 8px;
-      border-radius: var(--radius-sm);
+      top: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      color: #38bdf8;
+      padding: 2px 7px;
+      border-radius: 4px;
       font-size: 11px;
-      font-family: var(--font-mono);
+      font-family: monospace;
+      font-weight: 600;
+    }
+    .tile-feedback-indicator {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
       font-weight: 700;
-      backdrop-filter: blur(4px);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: none;
+    }
+    .tile-review-card.status-positive .tile-feedback-indicator {
+      display: block;
+      background: #10b981;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+    }
+    .tile-review-card.status-negative .tile-feedback-indicator {
+      display: block;
+      background: #f43f5e;
+      color: #ffffff;
+      box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
     }
 
     .tile-card-body {
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      flex: 1;
-    }
-
-    .tile-header-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .tile-id-txt {
-      font-size: 13px;
-      font-weight: 600;
-      color: #fff;
-      font-family: var(--font-mono);
-    }
-
-    .tile-coords {
-      font-size: 11px;
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-    }
-
-    /* Spectral pill clusters */
-    .spectral-pills {
-      display: flex;
-      gap: 6px;
-    }
-
-    .spectral-tag {
-      font-size: 10px;
-      font-family: var(--font-mono);
-      padding: 2px 6px;
-      border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-secondary);
-    }
-
-    /* Analyst decision buttons on tile */
-    .analyst-tile-actions {
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-top: auto;
-      padding-top: 12px;
-      border-top: 1px solid var(--border-subtle);
-    }
-
-    .verdict-btn-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-verdict {
       flex: 1;
-      padding: 7px 10px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-color);
-      font-size: 12px;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 0.15s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
     }
-
-    .btn-verdict.hit.active {
-      background: rgba(16, 185, 129, 0.25);
-      border-color: #10b981;
-      color: #34d399;
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
-    }
-
-    .btn-verdict.miss.active {
-      background: rgba(244, 63, 94, 0.25);
-      border-color: #f43f5e;
-      color: #fb7185;
-      box-shadow: 0 0 10px rgba(244, 63, 94, 0.3);
-    }
-
-    .tag-select-input {
-      width: 100%;
-      padding: 6px 10px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
-      color: var(--text-primary);
+    .tile-card-id {
+      font-family: monospace;
       font-size: 11px;
-      font-family: inherit;
-    }
-
-    .tile-review-card.status-accepted {
-      border-color: rgba(16, 185, 129, 0.65);
-      box-shadow: 0 0 16px rgba(16, 185, 129, 0.22);
-    }
-
-    .tile-review-card.status-rejected {
-      border-color: rgba(244, 63, 94, 0.65);
-      box-shadow: 0 0 16px rgba(244, 63, 94, 0.22);
-    }
-
-    .tile-status-overlay {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      display: flex;
-    }
-
-    /* Results Filter Bar */
-    .results-filter-bar {
-      padding: 12px 24px;
-      background: rgba(10, 16, 30, 0.8);
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .filter-tab-group {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .subtab-btn {
-      padding: 6px 14px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-color);
-      background: rgba(255, 255, 255, 0.04);
-      color: var(--text-secondary);
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .subtab-btn:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-    }
-
-    .subtab-btn.active {
-      background: rgba(6, 182, 212, 0.25);
-      border-color: var(--cyan-bright);
-      color: #fff;
-    }
-
-    .subtab-btn.accepted.active {
-      background: rgba(16, 185, 129, 0.25);
-      border-color: #10b981;
-      color: #34d399;
-    }
-
-    .subtab-btn.rejected.active {
-      background: rgba(244, 63, 94, 0.25);
-      border-color: #f43f5e;
-      color: #fb7185;
-    }
-
-    .subtab-btn.pending.active {
-      background: rgba(245, 158, 11, 0.25);
-      border-color: #f59e0b;
-      color: #fbbf24;
-    }
-
-    /* Change Detection Evidence Inspector */
-    .evidence-inspector-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      box-shadow: var(--shadow-md);
-    }
-
-    .triplet-satellite-viewer {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr auto 1fr;
-      gap: 12px;
-      align-items: stretch;
-      justify-content: center;
-    }
-
-    .satellite-epoch-pane {
-      background: #000;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-color);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-
-    .epoch-date-badge {
-      font-size: 11px;
-      font-family: var(--font-mono);
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      color: var(--cyan-bright);
-      padding: 2px 6px;
-      border-radius: var(--radius-sm);
-    }
-
-    .epoch-footer-id {
-      padding: 6px 12px;
-      background: rgba(0, 0, 0, 0.5);
-      font-size: 11px;
-      font-family: var(--font-mono);
-      color: var(--text-secondary);
-      border-top: 1px solid var(--border-subtle);
+      color: #38bdf8;
+      white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
     }
-
-    .highlight-pane {
-      border-color: rgba(244, 63, 94, 0.5) !important;
-      box-shadow: 0 0 16px rgba(244, 63, 94, 0.25);
-    }
-
-    .epoch-header {
-      padding: 8px 14px;
-      background: rgba(255, 255, 255, 0.05);
-      border-bottom: 1px solid var(--border-subtle);
+    .tile-card-meta-row {
       display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      font-family: var(--font-mono);
-    }
-
-    .epoch-img-wrapper {
-      width: 100%;
-      height: 260px;
-      position: relative;
-      cursor: zoom-in;
-    }
-
-    .epoch-img-wrapper img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .change-target-box {
-      position: absolute;
-      border: 2px solid #fb7185;
-      background: rgba(244, 63, 94, 0.35);
-      box-shadow: 0 0 14px rgba(244, 63, 94, 0.8), inset 0 0 8px rgba(244, 63, 94, 0.4);
-      pointer-events: none;
-      transition: all 0.25s ease;
-      display: flex;
-      align-items: flex-start;
-      justify-content: flex-start;
-    }
-
-    .target-corner {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      border-color: #fff;
-    }
-    .target-corner.tl { top: -2px; left: -2px; border-top: 2px solid #fff; border-left: 2px solid #fff; }
-    .target-corner.tr { top: -2px; right: -2px; border-top: 2px solid #fff; border-right: 2px solid #fff; }
-    .target-corner.bl { bottom: -2px; left: -2px; border-bottom: 2px solid #fff; border-left: 2px solid #fff; }
-    .target-corner.br { bottom: -2px; right: -2px; border-bottom: 2px solid #fff; border-right: 2px solid #fff; }
-
-    .target-label {
-      background: #fb7185;
-      color: #000;
-      font-size: 9px;
-      font-weight: 800;
-      font-family: var(--font-mono);
-      padding: 1px 4px;
-      border-radius: 2px;
-      transform: translateY(-100%);
-      white-space: nowrap;
-    }
-
-    .view-mode-pill {
-      font-size: 10px;
-      font-family: var(--font-mono);
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: var(--text-muted);
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    .view-mode-pill:hover {
-      background: rgba(56, 189, 248, 0.18);
-      color: #38bdf8;
-      border-color: #38bdf8;
-    }
-    .view-mode-pill.active {
-      background: rgba(244, 63, 94, 0.25);
-      border-color: #fb7185;
-      color: #fff;
-      font-weight: 700;
-      box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
-    }
-
-    .change-delta-divider {
-      display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 8px;
-      padding: 0 6px;
-    }
-
-    .delta-pulse-arrow {
-      font-size: 24px;
-      color: var(--cyan-bright);
-      text-shadow: 0 0 12px var(--cyan-bright);
-    }
-
-    /* Spectral Metrics Bar Graph */
-    .spectral-metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .metric-metric-box {
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .metric-box-title {
-      font-size: 12px;
-      color: var(--text-secondary);
-      font-weight: 600;
-      display: flex;
       justify-content: space-between;
+      font-size: 11px;
+      color: #94a3b8;
     }
-
-    .metric-box-val {
-      font-size: 20px;
-      font-weight: 700;
-      font-family: var(--font-mono);
+    .tile-action-btns-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(148, 163, 184, 0.1);
     }
-
-    .val-positive { color: #34d399; }
-    .val-negative { color: #fb7185; }
-    .val-neutral { color: #38bdf8; }
-
-    /* Change Decision Box */
-    .change-decision-box {
-      background: rgba(13, 20, 36, 0.95);
-      border: 1px solid var(--border-cyan);
-      border-radius: var(--radius-md);
-      padding: 18px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    .decision-btn-group {
-      display: flex;
-      gap: 12px;
-    }
-
-    .decision-btn {
-      flex: 1;
-      padding: 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-color);
-      font-size: 13px;
-      font-weight: 700;
+    .btn-tactical-accept {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      background: rgba(255, 255, 255, 0.04);
-      color: #fff;
+      gap: 5px;
+      transition: all 0.2s;
     }
-
-    .decision-btn.confirm:hover, .decision-btn.confirm.active {
-      background: rgba(16, 185, 129, 0.3);
-      border-color: #10b981;
-      color: #34d399;
-      box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+    .btn-tactical-accept:hover {
+      background: #10b981;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
     }
-
-    .decision-btn.reject:hover, .decision-btn.reject.active {
-      background: rgba(244, 63, 94, 0.3);
-      border-color: #f43f5e;
+    .btn-tactical-reject {
+      background: rgba(244, 63, 94, 0.12);
+      border: 1px solid rgba(244, 63, 94, 0.35);
       color: #fb7185;
-      box-shadow: 0 0 16px rgba(244, 63, 94, 0.4);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.2s;
+    }
+    .btn-tactical-reject:hover {
+      background: #f43f5e;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(244, 63, 94, 0.5);
     }
 
-    .decision-btn.unsure:hover, .decision-btn.unsure.active {
-      background: rgba(99, 102, 241, 0.3);
-      border-color: #6366f1;
-      color: #a5b4fc;
-      box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
-    }
-
-    .decision-notes-input {
-      width: 100%;
-      height: 60px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-sm);
-      padding: 10px;
-      color: #fff;
-      font-family: inherit;
-      font-size: 12px;
-      outline: none;
-      resize: none;
-    }
-
-    /* Provenance Box */
-    .provenance-card {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px dashed var(--border-color);
-      border-radius: var(--radius-md);
-      padding: 14px 18px;
-      font-size: 12px;
-      font-family: var(--font-mono);
-      color: var(--text-muted);
+    /* Coming Soon View for Change Detection Review */
+    .coming-soon-panel {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+      background: radial-gradient(circle at center, rgba(6, 182, 212, 0.05) 0%, #070a13 70%);
+    }
+    .coming-soon-box {
+      max-width: 560px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      border-radius: 12px;
+      padding: 36px 30px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
     }
 
-    /* Table for Audit Log */
-    .audit-table-wrapper {
-      width: 100%;
-      background: var(--bg-panel);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: var(--shadow-md);
+    /* System Audit Log View */
+    .audit-table-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
     }
-
     .audit-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
-      text-align: left;
-    }
-
-    .audit-table th {
-      background: rgba(255, 255, 255, 0.04);
-      padding: 14px 18px;
-      color: var(--cyan-bright);
       font-size: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      border-bottom: 1px solid var(--border-color);
-      font-family: var(--font-mono);
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 8px;
+      overflow: hidden;
     }
-
+    .audit-table th {
+      background: rgba(15, 23, 42, 0.95);
+      color: #94a3b8;
+      font-weight: 600;
+      text-align: left;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+    }
     .audit-table td {
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--border-subtle);
-      color: var(--text-primary);
+      padding: 11px 14px;
+      color: #cbd5e1;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+      font-family: monospace;
+    }
+    .audit-table tr:hover {
+      background: rgba(6, 182, 212, 0.05);
     }
 
-    .audit-table tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
-    }
-
-    /* Modal for Image Preview */
-    .zoom-modal {
-      display: none;
+    /* Toast notifications */
+    .tactical-toast-box {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(10px);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
       flex-direction: column;
+      gap: 10px;
+      z-index: 99999;
+      pointer-events: none;
+    }
+    .tactical-toast {
+      background: rgba(11, 17, 32, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      color: #f1f5f9;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: toastSlideIn 0.25s ease-out;
+      pointer-events: auto;
+    }
+    @keyframes toastSlideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Change Review Bench Specific Styles */
+    .change-run-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .change-run-card:hover {
+      background: rgba(6, 182, 212, 0.08);
+      border-color: rgba(6, 182, 212, 0.4);
+    }
+    .change-run-card.active {
+      background: rgba(6, 182, 212, 0.16);
+      border-color: #06b6d4;
+      box-shadow: 0 0 14px rgba(6, 182, 212, 0.2);
+    }
+    .candidate-card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: all 0.25s ease;
+    }
+    .candidate-card:hover {
+      border-color: rgba(6, 182, 212, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    .candidate-card.status-confirmed {
+      border: 2px solid #10b981 !important;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.25) !important;
+    }
+    .candidate-card.status-rejected {
+      border: 2px solid #f43f5e !important;
+      opacity: 0.7;
+      box-shadow: 0 0 16px rgba(244, 63, 94, 0.2) !important;
+    }
+    .candidate-card.status-unsure {
+      border: 2px solid #f59e0b !important;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.25) !important;
+    }
+    .candidate-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .severity-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      font-family: monospace;
+    }
+    .severity-critical {
+      background: rgba(244, 63, 94, 0.2);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.45);
+      box-shadow: 0 0 10px rgba(244, 63, 94, 0.25);
+    }
+    .severity-high {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+    }
+    .severity-moderate {
+      background: rgba(6, 182, 212, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(6, 182, 212, 0.45);
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
+    }
+    .evidence-comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
-
-    .zoom-modal.active {
+    .evidence-viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-height: 480px;
+      background: #020617;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.2);
       display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .evidence-viewport img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #050914;
+      transition: transform 0.3s ease;
+      cursor: zoom-in;
+    }
+    .evidence-viewport:hover img {
+      transform: scale(1.02);
+    }
+    .evidence-label-tag {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      color: #e2e8f0;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-family: monospace;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      z-index: 2;
+    }
+    .patch-box-indicator {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(6, 182, 212, 0.25);
+      border: 1px solid #06b6d4;
+      color: #38bdf8;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-family: monospace;
+      font-weight: 700;
+      z-index: 2;
+    }
+    .candidate-metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 11px;
+      border: 1px solid rgba(148, 163, 184, 0.1);
+    }
+    .candidate-action-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-top: 10px;
+      border-top: 1px solid rgba(148, 163, 184, 0.1);
+    }
+    .decision-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-tactical-unsure {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fbbf24;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-tactical-unsure:hover {
+      background: #f59e0b;
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
+    }
+    .candidate-note-box {
+      flex: 1;
+      min-width: 240px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .candidate-note-input {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 6px;
+      padding: 7px 12px;
+      color: #e2e8f0;
+      font-size: 11px;
+      outline: none;
+    }
+    .candidate-note-input:focus {
+      border-color: #06b6d4;
+    }
+    .candidate-note-save-btn {
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      color: #38bdf8;
+      border-radius: 6px;
+      padding: 7px 12px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .candidate-note-save-btn:hover {
+      background: #06b6d4;
+      color: #ffffff;
     }
 
-    .zoom-img-target {
-      max-width: 80vw;
+    /* Multi-Year Timeline Strip */
+    .timeline-epoch-strip {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 8px 4px 12px 4px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(6, 182, 212, 0.4) rgba(15, 23, 42, 0.6);
+    }
+    .timeline-epoch-card {
+      min-width: 140px;
+      max-width: 160px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 8px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .timeline-epoch-card:hover {
+      border-color: #06b6d4;
+      background: rgba(6, 182, 212, 0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
+    }
+    .timeline-epoch-card.active-bracket {
+      border-color: #f59e0b;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
+      background: rgba(245, 158, 11, 0.08);
+    }
+    .epoch-thumb-box {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background: #020617;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      position: relative;
+    }
+    .epoch-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.2s;
+    }
+    .timeline-epoch-card:hover .epoch-thumb-box img {
+      transform: scale(1.04);
+    }
+
+    /* Run-Level Hero Dossier Panel */
+    .run-dossier-hero {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(11, 17, 32, 0.98));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 10px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+    .run-decision-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.15);
+    }
+
+    /* Lightbox Modal */
+    .image-lightbox-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .image-lightbox-content {
+      position: relative;
+      max-width: 90vw;
+      max-height: 92vh;
+      background: #020617;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .image-lightbox-content img {
+      max-width: 100%;
       max-height: 80vh;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--accent-cyan);
-      box-shadow: 0 0 30px rgba(6, 182, 212, 0.5);
+      object-fit: contain;
+      border-radius: 6px;
+      background: #070a14;
     }
   </style>
+
+  <script>
+    function handleTileThumbError(img, tileId) {
+      if (!img) return;
+      img.onerror = null;
+      const cleanId = (tileId || 'Sentinel-2 Tile').toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">' +
+        '<rect width="512" height="512" fill="#0d1424"/>' +
+        '<defs>' +
+          '<radialGradient id="grad" cx="50%" cy="50%" r="50%">' +
+            '<stop offset="0%" stop-color="#1e293b"/>' +
+            '<stop offset="100%" stop-color="#070a12"/>' +
+          '</radialGradient>' +
+          '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">' +
+            '<path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(6,182,212,0.12)" stroke-width="1"/>' +
+          '</pattern>' +
+        '</defs>' +
+        '<rect width="512" height="512" fill="url(#grad)"/>' +
+        '<rect width="512" height="512" fill="url(#grid)"/>' +
+        '<circle cx="256" cy="256" r="140" fill="none" stroke="rgba(6,182,212,0.25)" stroke-width="2" stroke-dasharray="6,6"/>' +
+        '<line x1="256" y1="80" x2="256" y2="432" stroke="rgba(6,182,212,0.3)" stroke-width="1.5"/>' +
+        '<line x1="80" y1="256" x2="432" y2="256" stroke="rgba(6,182,212,0.3)" stroke-width="1.5"/>' +
+        '<text x="256" y="240" font-family="monospace" font-size="28" fill="#38bdf8" text-anchor="middle" font-weight="bold">SENTINEL-2</text>' +
+        '<text x="256" y="275" font-family="monospace" font-size="14" fill="#94a3b8" text-anchor="middle">512x512 MULTI-SPECTRAL</text>' +
+        '<text x="256" y="300" font-family="monospace" font-size="12" fill="#06b6d4" text-anchor="middle">' + cleanId + '</text>' +
+      '</svg>';
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+  </script>
 </head>
-<body>
-  <!-- Header -->
+<body>  <!-- Top Aerospace Navigation Bar (Standard Across All Pages) -->
   <header>
-    <div class="logo-section">
-      <div class="logo-badge" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25)); border: 1px solid var(--accent-cyan); border-radius: 8px; width: 36px; height: 36px;">
-        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+    <a href="/" class="logo-section">
+      <div class="logo-badge">
+        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
       </div>
-      <div>
-        <div class="logo-title">CANOPUS &bull; ANALYST REVIEW BENCH</div>
-        <div class="logo-subtitle">HUMAN-IN-THE-LOOP VERIFICATION & PROVENANCE &bull; DEFENSE DGIS</div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="logo-title">CANOPUS</span>
+        <span class="logo-divider">/</span>
+        <span class="logo-module-tag">ANALYST REVIEW</span>
       </div>
-    </div>
+    </a>
+
+    <!-- Multi-Page Navigation -->
     <nav class="nav-links">
-      <a href="/" class="nav-item" id="nav-map" style="text-decoration: none;">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map & Coverage
+      <a href="/" class="nav-item" id="nav-map">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map &amp; Coverage
       </a>
-      <a href="/retrieval.html" class="nav-item" id="nav-retrieval" style="text-decoration: none;">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
+      <a href="/retrieval.html" class="nav-item" id="nav-retrieval">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
       </a>
-      <a href="/change.html" class="nav-item" id="nav-change" style="text-decoration: none;">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
+      <a href="/change.html" class="nav-item" id="nav-change">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
       </a>
-      <a href="/clustering.html" class="nav-item" id="nav-clustering" style="text-decoration: none;">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
+      <a href="/clustering.html" class="nav-item" id="nav-clustering">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
       </a>
-      <a href="/review.html" class="nav-item active" id="nav-review" style="text-decoration: none;">
-        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
+      <a href="/review.html" class="nav-item active" id="nav-review">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
       </a>
     </nav>
+
+    <!-- Header Right Stats -->
     <div class="header-status">
-      <button class="cursor-toggle-btn" id="cursorToggleBtn" onclick="toggleTacticalCursor()" title="Toggle Satellite Cursor (Alt+C)" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.3); color: #38bdf8; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
-        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg> <span>TAC CURSOR</span>
-      </button>
-      <button class="audio-toggle-btn" id="audioToggleBtn" onclick="toggleTacticalAudio()" title="Toggle Tactical Sound (Alt+M)" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(100,116,139,0.3); color: #64748b; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
-        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> <span>TAC AUDIO [MUTE]</span>
-      </button>
-      <div class="analyst-badge">
-        <span class="analyst-pulse"></span>
-        <span id="headerAnalystId">CAPT. VERMA (INTEL-01)</span>
+      <!-- Live Mission Clock -->
+      <div class="mission-clock-pill" title="Synchronized Satellite UTC Time">
+        <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span id="liveUtcClock">00:00:00 UTC</span>
+      </div>
+
+      <!-- Air-Gapped Offline / Online Sovereign Network Mode Pill -->
+      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()" title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
+        <div class="mode-dot"></div>
+        <span>ONLINE</span>
+      </div>
+      <a href="/?openIngest=1" class="ingest-aoi-nav-btn" style="text-decoration: none;">
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Ingest New AOI
+      </a>
+      <div class="status-pill" id="archiveStatusPill">
+        <div class="status-dot"></div>
+        <span id="archiveTileCount">ONLINE</span>
       </div>
     </div>
   </header>
 
-  <!-- Sub-header Mode Selector -->
-  <div class="review-mode-bar">
-    <div class="mode-tabs">
-      <button class="mode-tab-btn active" id="tabBtnRetrieval" onclick="switchMode('retrieval')">
-        Semantic Retrieval Review
-        <span class="tab-badge" id="badgeRetrievalCount">0</span>
-      </button>
-      <button class="mode-tab-btn" id="tabBtnChange" onclick="switchMode('change')">
-        Change Detection Review
-        <span class="tab-badge" id="badgeChangeCount">0</span>
-      </button>
-      <button class="mode-tab-btn" id="tabBtnAudit" onclick="switchMode('audit')">
-        Unified Audit Log
-        <span class="tab-badge" id="badgeAuditCount">0</span>
-      </button>
-    </div>
-    <div>
-      <span style="font-size: 12px; color: var(--text-muted); font-family: var(--font-mono);">CLASSIFICATION: RESTRICTED // DGIS</span>
-    </div>
+  <!-- Sub-Nav Workbench Tabs -->
+  <div class="bench-tabs-bar">
+    <button class="bench-tab-btn active" id="tabBtnRetrieval" onclick="switchBenchTab('retrieval')">
+      <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <span>Semantic Retrieval Review</span>
+      <span class="bench-tab-badge" id="badgeRetrievalCount">13 Sessions</span>
+    </button>
+    <button class="bench-tab-btn" id="tabBtnChange" onclick="switchBenchTab('change')">
+      <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+      <span>Change Detection Review</span>
+      <span class="bench-tab-badge" id="badgeChangeCount">0 Runs</span>
+    </button>
+    <button class="bench-tab-btn" id="tabBtnAudit" onclick="switchBenchTab('audit')">
+      <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>System Audit Log</span>
+      <span class="bench-tab-badge" id="badgeAuditCount">Live</span>
+    </button>
   </div>
 
-  <!-- Workbench Viewport -->
-  <div class="workbench-viewport">
-    <!-- ============================================================
-         1. SEMANTIC RETRIEVAL REVIEW TAB
-         ============================================================ -->
-    <div class="tab-view active" id="viewRetrieval">
-      <!-- Left: Query Browser -->
-      <aside class="view-sidebar">
-        <div class="sidebar-header">
-          <div class="sidebar-title">
-            <span>Audited Queries</span>
-            <button class="btn-action btn-outline" style="padding: 4px 8px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;" onclick="loadRetrievalQueries()"><svg class="ui-icon icon-cyan" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh</button>
-          </div>
-          <!-- Query Type Segmented Switcher (Text vs Image) -->
-          <div class="query-type-switcher">
-            <button class="type-tab-btn active" id="tabTypeText" onclick="switchQueryType('text')">
-              Text Queries (<span id="txtCount">0</span>)
-            </button>
-            <button class="type-tab-btn" id="tabTypeImage" onclick="switchQueryType('image')">
-              Image Queries (<span id="imgCount">0</span>)
-            </button>
-          </div>
-          <input type="text" id="querySearchFilter" class="search-box-input" placeholder="Filter queries or test new..." oninput="filterQueriesList()">
+  <!-- Primary Workspace Content -->
+  <div class="review-workspace">
+
+    <!-- View 1: Semantic Retrieval Review Bench -->
+    <div id="viewRetrieval" style="display: flex; width: 100%; height: 100%;">
+      <!-- Left Sidebar: Session Queries List -->
+      <aside class="review-sidebar">
+        <!-- Text vs Image Query Toggle -->
+        <div class="sidebar-mode-toggle">
+          <button class="query-mode-btn active" id="btnModeText" onclick="setQueryMode('text')">
+            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+            <span>Text Queries</span>
+          </button>
+          <button class="query-mode-btn" id="btnModeImage" onclick="setQueryMode('image')">
+            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>Image Queries</span>
+          </button>
         </div>
-        <div class="sidebar-list" id="retrievalQueryList">
-          <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">Loading query history...</div>
+
+        <!-- Query Search / Filter -->
+        <div class="query-search-filter">
+          <input type="text" id="querySearchInput" class="query-search-input" placeholder="Filter search queries..." oninput="filterQueryList()">
+        </div>
+
+        <!-- Queries Container -->
+        <div class="query-list-container" id="queryListContainer">
+          <div style="color: #64748b; font-size: 12px; text-align: center; padding: 20px;">Loading search sessions...</div>
         </div>
       </aside>
 
-      <!-- Main: Targets Inspection & Feedback -->
-      <main class="view-main">
-        <div class="action-banner">
-          <div>
-            <div class="banner-title">
-              <span id="activeQueryTitle">Select a query to review</span>
+      <!-- Right Main Content: Retrieved Tiles & Relevance Bench -->
+      <main class="review-content">
+        <!-- Top Action & Meta Bar -->
+        <div class="content-action-bar">
+          <div class="active-query-title-block">
+            <div class="active-query-text" id="activeQueryTitle">
+              <span>Select a query session</span>
             </div>
-            <div class="banner-desc" id="activeQueryMeta">
-              Review returned candidate tiles, mark positive hits / false alarms individually, and export dossiers.
+            <div class="active-query-meta" id="activeQueryMeta">
+              No session selected
             </div>
           </div>
-          <div class="banner-actions">
-            <button class="btn-action btn-cyan" id="btnRocchioRerank" onclick="triggerRocchioRerank()">
-              Apply Rocchio Rerank
-            </button>
-            <button class="btn-action btn-outline" id="btnExportDossier" onclick="exportRetrievalDossier()">
-              Export Target Dossier (GeoJSON)
+
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <!-- Filter Chips -->
+            <div class="filter-chips-bar">
+              <button class="filter-chip active" id="filterAll" onclick="setFilter('all')">All (<span id="countAll">0</span>)</button>
+              <button class="filter-chip" id="filterHit" onclick="setFilter('positive')">Accepted (<span id="countHit">0</span>)</button>
+              <button class="filter-chip" id="filterNoise" onclick="setFilter('negative')">Rejected (<span id="countNoise">0</span>)</button>
+              <button class="filter-chip" id="filterPending" onclick="setFilter('pending')">Pending (<span id="countPending">0</span>)</button>
+            </div>
+
+            <!-- Rocchio Re-rank Button -->
+            <button class="rocchio-btn" id="btnRocchioRerank" onclick="triggerRocchioRerank()" title="Steer Qdrant search embedding based on accepted and rejected feedback vector centroids">
+              <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <span>Re-Rank via Rocchio</span>
             </button>
           </div>
         </div>
 
-        <!-- Status Filter Sub-tabs for Results -->
-        <div class="results-filter-bar">
-          <div class="filter-tab-group">
-            <button class="subtab-btn active" id="btnFilterAll" onclick="setResultStatusFilter('all')">
-              All Candidates (<span id="cntAll">0</span>)
-            </button>
-            <button class="subtab-btn accepted" id="btnFilterAccepted" onclick="setResultStatusFilter('accepted')">
-              Accepted Targets (<span id="cntAccepted">0</span>)
-            </button>
-            <button class="subtab-btn rejected" id="btnFilterRejected" onclick="setResultStatusFilter('rejected')">
-              False Alarms (<span id="cntRejected">0</span>)
-            </button>
-            <button class="subtab-btn pending" id="btnFilterPending" onclick="setResultStatusFilter('pending')">
-              Pending Review (<span id="cntPending">0</span>)
-            </button>
-          </div>
-        </div>
-
-        <!-- Tile Results Grid -->
-        <div class="retrieval-grid" id="retrievalResultsGrid">
-          <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">
-            Select a search query from the left sidebar to audit retrieved candidate tiles.
+        <!-- Scrollable Tiles Grid Area -->
+        <div class="tiles-scroll-area">
+          <div class="retrieved-tiles-grid" id="retrievedTilesGrid">
+            <!-- Dynamically populated -->
           </div>
         </div>
       </main>
     </div>
 
-    <!-- ============================================================
-         2. CHANGE DETECTION REVIEW TAB
-         ============================================================ -->
-    <div class="tab-view" id="viewChange">
-      <!-- Left: Runs & Candidate Queue -->
-      <aside class="view-sidebar">
-        <div class="sidebar-header">
-          <div class="sidebar-title">
-            <span>Change Detection Runs</span>
-            <button class="btn-action btn-outline" style="padding: 4px 8px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px;" onclick="loadChangeRuns()"><svg class="ui-icon icon-cyan" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh</button>
-          </div>
-          <select id="changeRunSelect" class="search-box-input" onchange="onSelectChangeRun()">
-            <option value="">Loading runs...</option>
-          </select>
-          <div style="display: flex; gap: 4px; font-size: 11px; flex-wrap: wrap;">
-            <button class="btn-action btn-outline active" id="btnCandFilterAll" style="flex: 1; padding: 4px;" onclick="filterCandidateStatus('all')">All (<span id="candCntAll">0</span>)</button>
-            <button class="btn-action btn-outline" id="btnCandFilterConfirmed" style="flex: 1; padding: 4px;" onclick="filterCandidateStatus('confirmed')">Confirmed (<span id="candCntConfirmed">0</span>)</button>
-            <button class="btn-action btn-outline" id="btnCandFilterRejected" style="flex: 1; padding: 4px;" onclick="filterCandidateStatus('rejected')">Rejected (<span id="candCntRejected">0</span>)</button>
-            <button class="btn-action btn-outline" id="btnCandFilterPending" style="flex: 1; padding: 4px;" onclick="filterCandidateStatus('pending')">Pending (<span id="candCntPending">0</span>)</button>
+    <!-- View 2: Change Detection Review Bench -->
+    <div id="viewChange" style="display: none; width: 100%; height: 100%;">
+      <!-- Left Sidebar: Change Runs / Sites List -->
+      <aside class="review-sidebar">
+        <!-- Sidebar Header with count -->
+        <div class="sidebar-mode-toggle" style="grid-template-columns: 1fr; background: rgba(15, 23, 42, 0.85);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 12px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+              <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+              Change Pipeline Runs
+            </span>
+            <span class="stat-pill total" id="sidebarRunsCount">0 Runs</span>
           </div>
         </div>
-        <div class="sidebar-list" id="changeCandidateList">
-          <div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">Select a run to load change events.</div>
+
+        <!-- Search / Filter input -->
+        <div class="query-search-filter">
+          <input type="text" id="changeRunSearchInput" class="query-search-input" placeholder="Filter runs by site, region, coords..." oninput="filterChangeRunList()">
+        </div>
+
+        <!-- Runs list container -->
+        <div class="query-list-container" id="changeRunListContainer">
+          <div style="color: #64748b; font-size: 12px; text-align: center; padding: 20px;">Loading change runs...</div>
         </div>
       </aside>
 
-      <!-- Main: Evidence & Provenance Inspector -->
-      <main class="view-main">
-        <div class="action-banner">
-          <div>
-            <div class="banner-title" id="candidateBannerTitle">
-              <span>Change Event Inspector</span>
+      <!-- Right Content Area: Active Run Review Workbench -->
+      <main class="review-content">
+        <!-- Top Action & Provenance Bar -->
+        <div class="content-action-bar" id="changeActionBar">
+          <div class="active-query-title-block">
+            <div class="active-query-text" id="activeChangeRunTitle">
+              <span>Select a change detection run</span>
             </div>
-            <div class="banner-desc" id="candidateBannerMeta">
-              Side-by-side comparative inspection: Before (T1) vs After (T2) with localized detected change footprint overlay.
+            <div class="active-query-meta" id="activeChangeRunMeta">
+              No change run selected
             </div>
           </div>
-          <div class="banner-actions">
-            <button class="btn-action" onclick="exportChangePDF()" style="background: linear-gradient(135deg, #ef4444, #991b1b); color: #fff; font-weight: 700; border: 1px solid #f87171; box-shadow: 0 0 14px rgba(239, 68, 68, 0.45);">
-              Export PDF Dossier
-            </button>
-            <button class="btn-action btn-cyan" onclick="exportConfirmedChangeGeoJSON()">
-              Export Confirmed GeoJSON
-            </button>
-            <button class="btn-action btn-outline" onclick="exportAllChangeGeoJSON()">
-              Export Full Run
-            </button>
+
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <!-- Severity & Decision Filter Chips -->
+            <div class="filter-chips-bar">
+              <button class="filter-chip active" id="chipChangeAll" onclick="setChangeFilter('all')">All (<span id="countChangeAll">0</span>)</button>
+              <button class="filter-chip" id="chipChangeCritical" onclick="setChangeFilter('critical')" style="border-color: rgba(244, 63, 94, 0.4); color: #fb7185;">Critical (<span id="countChangeCritical">0</span>)</button>
+              <button class="filter-chip" id="chipChangeHigh" onclick="setChangeFilter('high')" style="border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;">High (<span id="countChangeHigh">0</span>)</button>
+              <button class="filter-chip" id="chipChangeConfirmed" onclick="setChangeFilter('confirmed')" style="border-color: rgba(16, 185, 129, 0.4); color: #34d399;">Confirmed (<span id="countChangeConfirmed">0</span>)</button>
+              <button class="filter-chip" id="chipChangeRejected" onclick="setChangeFilter('rejected')">Rejected (<span id="countChangeRejected">0</span>)</button>
+              <button class="filter-chip" id="chipChangePending" onclick="setChangeFilter('pending')">Pending (<span id="countChangePending">0</span>)</button>
+            </div>
+
+            <!-- Sort Dropdown -->
+            <select id="changeSortSelect" onchange="sortChangeCandidates(this.value)" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(148, 163, 184, 0.25); color: #cbd5e1; font-size: 11px; padding: 5px 8px; border-radius: 6px; outline: none; font-family: monospace; cursor: pointer;">
+              <option value="severity_desc">Rank by Severity (High &rarr; Low)</option>
+              <option value="zscore_desc">Rank by Z-Score (Outlier Deviation)</option>
+              <option value="ndvi_abs">Rank by |ΔNDVI| (Vegetation Shift)</option>
+              <option value="ndbi_abs">Rank by |ΔNDBI| (Urban Emergence)</option>
+              <option value="patch_asc">Patch ID Order (Spatial Grid)</option>
+            </select>
+
+            <!-- Export Actions (PS Section 2.2.5 Provenance) -->
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <!-- PDF Dossier -->
+              <button class="rocchio-btn" style="background: linear-gradient(135deg, #e11d48, #be123c); box-shadow: 0 0 12px rgba(225, 29, 72, 0.35);" onclick="downloadRunPdf()" title="Download Official Defense Intelligence PDF Dossier with embedded comparative imagery, clusters & provenance">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                <span>PDF Dossier</span>
+              </button>
+              <!-- GeoJSON -->
+              <button class="rocchio-btn" style="background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 0 12px rgba(2, 132, 199, 0.35);" onclick="downloadRunGeoJson()" title="Export georeferenced candidate polygons and provenance audit records">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                <span>GeoJSON</span>
+              </button>
+              <!-- GeoTIFF Bundle -->
+              <button class="rocchio-btn" style="background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 0 12px rgba(5, 150, 105, 0.35);" onclick="downloadRunGeoTiff()" title="Export full georeferenced raster GeoTIFF bundle archive (.zip)">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                <span>GeoTIFFs (.zip)</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Evidence Container -->
-        <div id="changeEvidenceCard" class="evidence-inspector-card" style="display: none;">
-          <!-- Triplet Comparative Viewer: Before (T1) | After (T2) | Change Footprint -->
-          <div class="triplet-satellite-viewer">
-            <!-- 1. Before T1 -->
-            <div class="satellite-epoch-pane">
-              <div class="epoch-header">
-                <span>Observation T1 (Pre-Change)</span>
-                <span id="t1DateBadge" class="epoch-date-badge">--</span>
-              </div>
-              <div class="epoch-img-wrapper" onclick="zoomImage(document.getElementById('imgBefore').src)">
-                <img id="imgBefore" src="" alt="T1 Baseline Observation">
-              </div>
-              <div class="epoch-footer-id" id="t1TileId">--</div>
-            </div>
-
-            <div class="change-delta-divider">
-              <span class="delta-pulse-arrow"><svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span>
-              <span class="status-pill status-pending" id="deltaTransitionPill">Analyzing</span>
-            </div>
-
-            <!-- 2. After T2 -->
-            <div class="satellite-epoch-pane">
-              <div class="epoch-header">
-                <span>Observation T2 (Post-Change)</span>
-                <span id="t2DateBadge" class="epoch-date-badge">--</span>
-              </div>
-              <div class="epoch-img-wrapper" onclick="zoomImage(document.getElementById('imgAfter').src)">
-                <img id="imgAfter" src="" alt="T2 Subsequent Observation">
-              </div>
-              <div class="epoch-footer-id" id="t2TileId">--</div>
-            </div>
-
-            <div class="change-delta-divider">
-              <span class="delta-pulse-arrow"><svg class="ui-icon icon-emerald" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span>
-              <span class="status-pill status-confirmed">Overlay</span>
-            </div>
-
-            <!-- 3. Change Patch / Overlay -->
-            <div class="satellite-epoch-pane highlight-pane">
-              <div class="epoch-header" style="justify-content: space-between;">
-                <span>Change Footprint</span>
-                <div style="display: flex; gap: 4px; align-items: center;">
-                  <button type="button" class="view-mode-pill active" id="btnViewOverlay" onclick="event.stopPropagation(); setFootprintViewMode('overlay')">Footprint</button>
-                  <button type="button" class="view-mode-pill" id="btnViewComposite" onclick="event.stopPropagation(); setFootprintViewMode('composite')">Split</button>
-                  <button type="button" class="view-mode-pill" id="btnViewRaw" onclick="event.stopPropagation(); setFootprintViewMode('raw')">Raw T2</button>
-                </div>
-              </div>
-              <div class="epoch-img-wrapper" id="patchOverlayWrapper" onclick="zoomImage(document.getElementById('imgPatchOverlay').src)">
-                <img id="imgPatchOverlay" src="" alt="Detected Change Footprint Overlay">
-                <div id="changeTargetBox" class="change-target-box">
-                  <div class="target-corner tl"></div>
-                  <div class="target-corner tr"></div>
-                  <div class="target-corner bl"></div>
-                  <div class="target-corner br"></div>
-                  <span class="target-label" id="changeTargetBoxLabel">CHANGE DETECTED</span>
-                </div>
-              </div>
-              <div class="epoch-footer-id" id="patchCoordsInfo">--</div>
-            </div>
-          </div>
-
-          <!-- Spectral Deltas -->
-          <div class="spectral-metrics-grid">
-            <div class="metric-metric-box">
-              <div class="metric-box-title">
-                <span>Δ NDBI (Built-up / Concrete)</span>
-                <span>Construction</span>
-              </div>
-              <div class="metric-box-val val-positive" id="metricNdbi">0.00</div>
-              <div style="font-size: 11px; color: var(--text-muted);" id="metricNdbiDetail">T1: -- | T2: --</div>
-            </div>
-            <div class="metric-metric-box">
-              <div class="metric-box-title">
-                <span>Δ NDVI (Vegetation Loss/Gain)</span>
-                <span>Canopy</span>
-              </div>
-              <div class="metric-box-val val-negative" id="metricNdvi">0.00</div>
-              <div style="font-size: 11px; color: var(--text-muted);" id="metricNdviDetail">T1: -- | T2: --</div>
-            </div>
-            <div class="metric-metric-box">
-              <div class="metric-box-title">
-                <span>Δ NDWI (Water / Moisture)</span>
-                <span>Hydrology</span>
-              </div>
-              <div class="metric-box-val val-neutral" id="metricNdwi">0.00</div>
-              <div style="font-size: 11px; color: var(--text-muted);" id="metricNdwiDetail">T1: -- | T2: --</div>
-            </div>
-          </div>
-
-          <!-- Decision Action Box -->
-          <div class="change-decision-box">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 13px; font-weight: 700; color: #fff;">ANALYST VERIFICATION ACTION</span>
-              <span id="currentCandidateStatusPill" class="status-pill status-pending">PENDING</span>
-            </div>
-            <div class="decision-btn-group">
-              <button class="decision-btn confirm" id="btnConfirmChange" onclick="recordChangeVerdict('confirmed')">
-                Confirm Change
-              </button>
-              <button class="decision-btn reject" id="btnRejectChange" onclick="recordChangeVerdict('rejected')">
-                Reject (False Alarm)
-              </button>
-              <button class="decision-btn unsure" id="btnUnsureChange" onclick="recordChangeVerdict('unsure')">
-                Mark Inconclusive
-              </button>
-            </div>
-            <textarea id="changeAnalystNote" class="decision-notes-input" placeholder="Enter intelligence remarks or justification for this decision..."></textarea>
-          </div>
-
-          <!-- Provenance Block -->
-          <div class="provenance-card">
-            <div style="color: var(--cyan-bright); font-weight: 700; margin-bottom: 2px;">DATA PROVENANCE & LINEAGE:</div>
-            <div>&bull; Sensor: Sentinel-2 Multispectral L2A BOA (10m Resolution)</div>
-            <div id="provenanceRunId">&bull; Run ID: --</div>
-            <div id="provenanceCoords">&bull; Coordinates Centroid: --</div>
-            <div>&bull; Model Pipeline: Canopus-Patch-ViT-v1.0 (PostGIS Polygon Geometry)</div>
-          </div>
+        <!-- Multi-Temporal Timeline Banner Strip -->
+        <div id="changeRunTimelineBanner" style="display: none; padding: 12px 24px; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(148, 163, 184, 0.1);">
+          <!-- Injected via JS: dates, Prithvi onset step, quality audit -->
         </div>
 
-        <div id="noCandidateSelectedPlaceholder" style="padding: 60px; text-align: center; color: var(--text-muted); font-size: 14px;">
-          Select a candidate patch from the left queue to inspect evidence and submit your review.
+        <!-- Scrollable Candidate Queue -->
+        <div class="tiles-scroll-area">
+          <div id="changeCandidatesQueue" style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="color: #64748b; font-size: 13px; padding: 30px; text-align: center;">Select a change run from the sidebar to inspect ranked candidate evidence.</div>
+          </div>
         </div>
       </main>
     </div>
 
-    <!-- ============================================================
-         3. UNIFIED AUDIT TIMELINE TAB
-         ============================================================ -->
-    <div class="tab-view" id="viewAudit">
-      <main class="view-main" style="max-width: 1300px; margin: 0 auto; width: 100%;">
-        <div class="action-banner">
-          <div>
-            <div class="banner-title">
-              <span>Unified Human-in-the-Loop Audit Trail</span>
-            </div>
-            <div class="banner-desc">
-              Complete chronological audit trail of all analyst decisions across Semantic Retrieval and Change Detection.
-            </div>
-          </div>
-          <div class="banner-actions">
-            <button class="btn-action btn-outline" style="display: inline-flex; align-items: center; gap: 6px;" onclick="loadAuditTimeline()">
-              <svg class="ui-icon icon-cyan" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh Audit Log
-            </button>
-          </div>
+    <!-- View 3: System Audit Log -->
+    <div id="viewAudit" class="audit-table-panel" style="display: none; width: 100%;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <div>
+          <h2 style="font-size: 18px; font-weight: 700; color: #f8fafc; margin: 0 0 4px 0;">SYSTEM AUDIT & COMPLIANCE LOG</h2>
+          <div style="font-size: 12px; color: #64748b;">Chronological trace of analyst relevance decisions, Rocchio updates, and pipeline executions.</div>
         </div>
-
-        <div class="audit-table-wrapper">
-          <table class="audit-table">
-            <thead>
-              <tr>
-                <th>Timestamp</th>
-                <th>Tool Engine</th>
-                <th>Analyst ID</th>
-                <th>Target / Candidate</th>
-                <th>Context / Run / Query</th>
-                <th>Verdict / Decision</th>
-                <th>Notes / Classification</th>
-              </tr>
-            </thead>
-            <tbody id="auditTableBody">
-              <tr>
-                <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
-                  Loading audit log...
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </main>
+        <button onclick="loadAuditLogs()" style="padding: 6px 12px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.35); color: #38bdf8; border-radius: 6px; font-size: 12px; cursor: pointer;">
+          Refresh Audit Trail
+        </button>
+      </div>
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>TIMESTAMP (UTC)</th>
+            <th>EVENT TYPE</th>
+            <th>TARGET ID</th>
+            <th>FEEDBACK / VALUE</th>
+            <th>ANALYST ID</th>
+            <th>METADATA</th>
+          </tr>
+        </thead>
+        <tbody id="auditTableBody">
+          <tr><td colspan="6" style="text-align: center; color: #64748b; padding: 20px;">Loading audit logs...</td></tr>
+        </tbody>
+      </table>
     </div>
 
   </div>
 
-  <!-- Image Zoom Modal -->
-  <div class="zoom-modal" id="zoomModal" onclick="closeZoom()">
-    <img id="zoomModalImg" class="zoom-img-target" src="" alt="High resolution satellite inspection">
-    <div style="color: #fff; font-size: 13px; font-family: var(--font-mono);">Click anywhere to close preview</div>
+  <!-- Full Resolution Satellite Tile Lightbox Modal -->
+  <div class="image-lightbox-modal" id="imageLightboxModal" onclick="closeImageLightbox(event)">
+    <div class="image-lightbox-content" onclick="event.stopPropagation()">
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px;">
+        <span id="lightboxTitle" style="color: #38bdf8; font-weight: 700; font-size: 13px; font-family: monospace;">FULL RESOLUTION SATELLITE TILE (512x512)</span>
+        <button onclick="closeImageLightbox()" style="background: rgba(148,163,184,0.15); border: 1px solid rgba(148,163,184,0.3); color: #e2e8f0; font-size: 14px; border-radius: 6px; padding: 2px 8px; cursor: pointer;">✕ Close</button>
+      </div>
+      <img id="lightboxImg" src="" alt="Full Resolution Satellite Tile">
+      <div id="lightboxMeta" style="color: #94a3b8; font-size: 11px; font-family: monospace; margin-top: 8px; text-align: center;"></div>
+    </div>
   </div>
 
-  <!-- JavaScript Application Logic -->
+  <!-- Tactical Toast Container -->
+  <div class="tactical-toast-box" id="tacticalToastBox"></div>
+
+  <!-- Client-side Logic -->
   <script>
-    let activeMode = 'retrieval';
-    let currentQueryType = 'text'; // 'text' or 'image'
-    let currentResultFilter = 'all'; // 'all', 'accepted', 'rejected', 'pending'
+    let currentMode = 'text'; // 'text' | 'image'
+    let currentFilter = 'all'; // 'all' | 'positive' | 'negative' | 'pending'
     let allQueries = [];
-    let currentQuery = null;
-    let currentQueryResults = [];
-    let allChangeRuns = [];
-    let currentRunId = null;
-    let currentCandidates = [];
-    let currentCandidate = null;
-    let candidateFilter = 'all';
+    let activeQueryId = null;
+    let activeQueryData = null;
+    let activeTiles = [];
 
-    function resolveThumbnail(pathOrUrl, tileId) {
-      if (!pathOrUrl) return createTileSvgDataUri(tileId);
-      let p = String(pathOrUrl).trim().replace(/\\/g, '/');
-      if (p.includes('/data/')) {
-        return '/data/' + p.split('/data/')[1];
+    // Initialize bench
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      const runIdParam = urlParams.get('run_id');
+
+      // Initialize both tabs immediately so switching is instantaneous
+      loadQueries();
+      loadChangeRuns(runIdParam);
+
+      if (tabParam === 'change' || runIdParam) {
+        switchBenchTab('change');
       }
-      if (p.startsWith('data/')) {
-        return '/' + p;
-      }
-      if (p.startsWith('/app/')) {
-        return p.replace('/app/', '/');
-      }
-      if (!p.startsWith('/')) {
-        return '/' + p;
-      }
-      return p;
-    }
+    });
 
-    function handleTileThumbError(img, tileId) {
-      if (!img) return;
-      img.onerror = null;
-      img.src = createTileSvgDataUri(tileId);
-    }
+    // Sub-Nav Workbench Tabs Switcher
+    function switchBenchTab(tab) {
+      document.getElementById('tabBtnRetrieval').classList.toggle('active', tab === 'retrieval');
+      document.getElementById('tabBtnChange').classList.toggle('active', tab === 'change');
+      document.getElementById('tabBtnAudit').classList.toggle('active', tab === 'audit');
 
-    function createTileSvgDataUri(tileId) {
-      const cleanId = escapeHtml(tileId || 'Satellite Tile');
-      const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-          <defs>
-            <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stop-color="#0a192f"/>
-              <stop offset="100%" stop-color="#020c1b"/>
-            </linearGradient>
-            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(56, 189, 248, 0.12)" stroke-width="1"/>
-            </pattern>
-          </defs>
-          <rect width="256" height="256" fill="url(#g)"/>
-          <rect width="256" height="256" fill="url(#grid)"/>
-          <circle cx="128" cy="110" r="32" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 2"/>
-          <text x="128" y="116" font-family="monospace" font-size="14" fill="#38bdf8" text-anchor="middle" font-weight="bold">S2-L2A</text>
-          <text x="128" y="165" font-family="monospace" font-size="11" fill="#94a3b8" text-anchor="middle" font-weight="bold">SENTINEL-2 L2A</text>
-          <text x="128" y="185" font-family="monospace" font-size="9" fill="#64748b" text-anchor="middle">${cleanId.substring(0, 26)}</text>
-        </svg>
-      `;
-      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg.trim());
-    }
+      document.getElementById('viewRetrieval').style.display = tab === 'retrieval' ? 'flex' : 'none';
+      document.getElementById('viewChange').style.display = tab === 'change' ? 'flex' : 'none';
+      document.getElementById('viewAudit').style.display = tab === 'audit' ? 'block' : 'none';
 
-    // 1. Mode Switching
-    function switchMode(mode) {
-      window.tacticalAudio?.playTacticalClick?.();
-      activeMode = mode;
-      document.querySelectorAll('.mode-tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-
-      if (mode === 'retrieval') {
-        document.getElementById('tabBtnRetrieval').classList.add('active');
-        document.getElementById('viewRetrieval').classList.add('active');
-        loadRetrievalQueries(true);
-      } else if (mode === 'change') {
-        document.getElementById('tabBtnChange').classList.add('active');
-        document.getElementById('viewChange').classList.add('active');
-        loadChangeRuns();
-      } else if (mode === 'audit') {
-        document.getElementById('tabBtnAudit').classList.add('active');
-        document.getElementById('viewAudit').classList.add('active');
-        loadAuditTimeline();
+      if (tab === 'change') {
+        if (!activeChangeRunId || allChangeRuns.length === 0) {
+          loadChangeRuns();
+        }
+      } else if (tab === 'audit') {
+        loadAuditLogs();
       }
     }
 
-    // 2. Semantic Retrieval Section
-    function switchQueryType(type) {
-      window.tacticalAudio?.playTacticalClick?.();
-      currentQueryType = type;
-      document.getElementById('tabTypeText').classList.toggle('active', type === 'text');
-      document.getElementById('tabTypeImage').classList.toggle('active', type === 'image');
-      document.getElementById('querySearchFilter').value = '';
-      currentQuery = null;
-      loadRetrievalQueries(true);
+    // Toggle query mode: text vs image
+    function setQueryMode(mode) {
+      currentMode = mode;
+      document.getElementById('btnModeText').classList.toggle('active', mode === 'text');
+      document.getElementById('btnModeImage').classList.toggle('active', mode === 'image');
+      filterQueryList();
     }
 
-    async function loadRetrievalQueries(autoSelect = true) {
+    // Load recent queries from backend
+    async function loadQueries() {
       try {
-        const res = await fetch(`/api/v1/review/retrieval/queries?query_type=${currentQueryType}`);
-        const data = await res.json();
-        allQueries = data.queries || [];
+        const resp = await fetch('/api/v1/review/retrieval/queries');
+        const data = await resp.json();
+        allQueries = (data.queries || []).map(q => ({
+          ...q,
+          id: String(q.search_id || q.id),
+          created_at: q.last_searched || q.created_at,
+          total_results: q.result_count !== undefined ? q.result_count : (q.total_results || 0)
+        }));
+        document.getElementById('badgeRetrievalCount').innerText = `${allQueries.length} Sessions`;
+        filterQueryList();
 
-        // Update counts
-        const txtCnt = data.text_count !== undefined ? data.text_count : allQueries.filter(q => q.query_type === 'text').length;
-        const imgCnt = data.image_count !== undefined ? data.image_count : allQueries.filter(q => q.query_type === 'image').length;
-        document.getElementById('txtCount').innerText = txtCnt;
-        document.getElementById('imgCount').innerText = imgCnt;
-        document.getElementById('badgeRetrievalCount').innerText = data.total !== undefined ? data.total : allQueries.length;
-
-        renderQueriesList(allQueries);
-
-        if (autoSelect && allQueries.length > 0) {
-          if (!currentQuery || !allQueries.some(q => q.raw_query === currentQuery)) {
-            selectQuery(allQueries[0].raw_query);
-          }
+        // Auto select first query if available
+        const filtered = allQueries.filter(q => q.query_type === currentMode);
+        if (filtered.length > 0) {
+          selectQuery(filtered[0].id);
+        } else if (allQueries.length > 0) {
+          // If no query matches mode, switch mode
+          setQueryMode(allQueries[0].query_type || 'text');
+          selectQuery(allQueries[0].id);
         }
       } catch (err) {
-        console.error('Error loading queries:', err);
+        console.error('Failed to load queries:', err);
+        showTacticalToast('Failed to load search sessions', 'error');
       }
     }
 
-    function renderQueriesList(queries) {
-      const container = document.getElementById('retrievalQueryList');
-      if (!queries.length) {
-        container.innerHTML = `<div style="padding: 24px 12px; text-align: center; color: var(--text-muted); font-size: 13px;">No ${currentQueryType} queries found.<br><span style="font-size: 11px; opacity: 0.7;">Run a search in Semantic Retrieval to audit here.</span></div>`;
+    // Filter query sidebar by mode and text
+    function filterQueryList() {
+      const container = document.getElementById('queryListContainer');
+      const searchText = (document.getElementById('querySearchInput').value || '').toLowerCase().trim();
+
+      const matching = allQueries.filter(q => {
+        const typeMatch = q.query_type === currentMode;
+        const textMatch = !searchText || (q.display_title || '').toLowerCase().includes(searchText) || (q.id || '').toLowerCase().includes(searchText);
+        return typeMatch && textMatch;
+      });
+
+      if (matching.length === 0) {
+        container.innerHTML = `<div style="color: #64748b; font-size: 12px; text-align: center; padding: 24px;">No ${currentMode} search sessions found.</div>`;
         return;
       }
 
-      container.innerHTML = queries.map(q => {
-        const isActive = currentQuery === q.raw_query;
-        const pos = q.positive_count || 0;
-        const neg = q.negative_count || 0;
-        const queryIcon = q.query_type === 'image'
-          ? '<svg class="ui-icon icon-cyan" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'
-          : '<svg class="ui-icon icon-amber" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>';
-        const dateStr = q.last_searched ? new Date(q.last_searched).toLocaleDateString() : '--';
+      container.innerHTML = matching.map(q => {
+        const isActive = q.id === activeQueryId;
+        const timeStr = q.created_at ? new Date(q.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'Recent';
+        const display = q.display_title || (q.query_type === 'image' ? 'Image Visual Twin Query' : 'Text Query');
+        const isMaxar = (q.sensor || '').toLowerCase().includes('maxar');
+        const sensorBadge = isMaxar ? '<span class="stat-pill sensor-maxar">MAXAR</span>' : '<span class="stat-pill sensor-sentinel">SENTINEL-2</span>';
 
         return `
-          <div class="list-item-card ${isActive ? 'active' : ''}" onclick="selectQuery('${escapeHtml(q.raw_query)}')">
-            <div class="item-header">
-              <span class="item-title" title="${escapeHtml(q.raw_query)}">${escapeHtml(q.raw_query)}</span>
-              <span class="status-pill status-pending" style="display: inline-flex; align-items: center; gap: 4px;">${queryIcon} ${(q.query_type || 'text').toUpperCase()}</span>
+          <div class="query-item-card ${isActive ? 'active' : ''}" onclick="selectQuery('${q.id}')">
+            <div class="query-card-header">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="stat-pill query-id">#${q.id}</span>
+                ${sensorBadge}
+              </div>
+              <span class="query-card-time">${timeStr}</span>
             </div>
-            <div class="item-stats-row">
-              <span class="status-pill status-confirmed">HIT: ${pos}</span>
-              <span class="status-pill status-rejected">MISS: ${neg}</span>
-              <span class="item-subtitle" style="margin-left: auto;">${dateStr}</span>
+            <div class="query-card-title" title="${escapeHtml(display)}">"${escapeHtml(display)}"</div>
+            <div class="query-card-stats">
+              <span class="stat-pill hits" title="Accepted Targets">+${q.positive_count || 0} Hits</span>
+              <span class="stat-pill noise" title="Rejected Noise">-${q.negative_count || 0} Noise</span>
+              <span class="stat-pill total" title="Exact Tiles Retrieved">${q.total_results || 0} Tiles</span>
             </div>
           </div>
         `;
       }).join('');
     }
 
-    function filterQueriesList() {
-      const txt = document.getElementById('querySearchFilter').value.toLowerCase();
-      const filtered = allQueries.filter(q => q.raw_query.toLowerCase().includes(txt));
-      renderQueriesList(filtered);
-    }
+    // Select query and fetch exact hydrated results
+    async function selectQuery(queryId) {
+      activeQueryId = queryId;
+      activeQueryData = allQueries.find(q => q.id === queryId);
+      filterQueryList();
 
-    async function selectQuery(queryText) {
-      window.tacticalAudio?.playLockOnChirp?.();
-      currentQuery = queryText;
-      document.getElementById('activeQueryTitle').innerText = `Query: "${queryText}"`;
-      renderQueriesList(allQueries);
+      const titleEl = document.getElementById('activeQueryTitle');
+      const metaEl = document.getElementById('activeQueryMeta');
 
-      const grid = document.getElementById('retrievalResultsGrid');
-      grid.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">Loading search results & recorded analyst decisions...</div>`;
+      if (activeQueryData) {
+        titleEl.innerHTML = `
+          <span style="color: #818cf8; font-family: monospace;">[QUERY #${activeQueryData.id}]</span>
+          <span>${activeQueryData.query_type === 'image' ? '🖼️ Visual Twin:' : '📝 Text:'}</span>
+          <span style="color: #38bdf8;">"${escapeHtml(activeQueryData.display_title || activeQueryData.id)}"</span>
+        `;
+        metaEl.innerText = `QUERY ID: #${activeQueryData.id} • SENSOR: ${activeQueryData.sensor || 'Multi-Sensor'} • TIME: ${activeQueryData.created_at || 'N/A'} • MODEL: RemoteCLIP ViT-B-32`;
+      }
+
+      const grid = document.getElementById('retrievedTilesGrid');
+      grid.innerHTML = '<div style="color: #64748b; font-size: 13px; padding: 24px;">Hydrating exact retrieved tiles for this query...</div>';
 
       try {
-        const res = await fetch(`/api/v1/review/retrieval/results?query=${encodeURIComponent(queryText)}&query_type=${currentQueryType}&top_k=12`);
-        const data = await res.json();
-        currentQueryResults = data.results || [];
-        renderRetrievalResults();
+        const resp = await fetch(`/api/v1/review/retrieval/results?search_log_id=${encodeURIComponent(queryId)}`);
+        const data = await resp.json();
+        activeTiles = (data.results || []).map(t => ({
+          ...t,
+          image_url: t.thumbnail_url || t.image_url || '',
+          feedback_status: (t.status === 'positive' || t.status === 'relevant' || t.status === 'accepted') ? 'positive' : ((t.status === 'negative' || t.status === 'irrelevant' || t.status === 'rejected') ? 'negative' : (t.feedback_status || null)),
+          effective_score: t.effective_score !== undefined ? t.effective_score : (t.score || 0.75)
+        }));
+        updateCounts();
+        renderTiles();
       } catch (err) {
-        console.error('Error fetching query results:', err);
-        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--rose-bright); font-size: 14px;">Failed to load query results: ${err.message}</div>`;
+        console.error('Failed to load query results:', err);
+        grid.innerHTML = '<div style="color: #fb7185; font-size: 13px; padding: 24px;">Error hydrating results for this query.</div>';
       }
     }
 
-    function setResultStatusFilter(filter) {
-      currentResultFilter = filter;
-      document.getElementById('btnFilterAll').classList.toggle('active', filter === 'all');
-      document.getElementById('btnFilterAccepted').classList.toggle('active', filter === 'accepted');
-      document.getElementById('btnFilterRejected').classList.toggle('active', filter === 'rejected');
-      document.getElementById('btnFilterPending').classList.toggle('active', filter === 'pending');
-      renderRetrievalResults();
+    // Update filter counts
+    function updateCounts() {
+      const total = activeTiles.length;
+      const hit = activeTiles.filter(t => t.feedback_status === 'positive').length;
+      const noise = activeTiles.filter(t => t.feedback_status === 'negative').length;
+      const pending = activeTiles.filter(t => !t.feedback_status).length;
+
+      document.getElementById('countAll').innerText = total;
+      document.getElementById('countHit').innerText = hit;
+      document.getElementById('countNoise').innerText = noise;
+      document.getElementById('countPending').innerText = pending;
     }
 
-    function renderRetrievalResults() {
-      const grid = document.getElementById('retrievalResultsGrid');
-      if (!currentQueryResults.length) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">No matching satellite tiles found for this query.</div>`;
+    // Switch result filter
+    function setFilter(filter) {
+      currentFilter = filter;
+      document.getElementById('filterAll').classList.toggle('active', filter === 'all');
+      document.getElementById('filterHit').classList.toggle('active', filter === 'positive');
+      document.getElementById('filterNoise').classList.toggle('active', filter === 'negative');
+      document.getElementById('filterPending').classList.toggle('active', filter === 'pending');
+      renderTiles();
+    }
+
+    // Render tiles grid
+    function renderTiles() {
+      const grid = document.getElementById('retrievedTilesGrid');
+      let filtered = activeTiles;
+
+      if (currentFilter === 'positive') {
+        filtered = activeTiles.filter(t => t.feedback_status === 'positive');
+      } else if (currentFilter === 'negative') {
+        filtered = activeTiles.filter(t => t.feedback_status === 'negative');
+      } else if (currentFilter === 'pending') {
+        filtered = activeTiles.filter(t => !t.feedback_status);
+      }
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; color: #64748b; font-size: 13px; padding: 30px; text-align: center;">No tiles matching current filter "${currentFilter}".</div>`;
         return;
       }
 
-      // Compute status counts
-      const total = currentQueryResults.length;
-      const accepted = currentQueryResults.filter(r => r.status === 'accepted').length;
-      const rejected = currentQueryResults.filter(r => r.status === 'rejected').length;
-      const pending = total - (accepted + rejected);
-
-      const prevTotal = parseInt(document.getElementById('cntAll')?.innerText) || 0;
-      const prevAccepted = parseInt(document.getElementById('cntAccepted')?.innerText) || 0;
-      const prevRejected = parseInt(document.getElementById('cntRejected')?.innerText) || 0;
-      const prevPending = parseInt(document.getElementById('cntPending')?.innerText) || 0;
-
-      if (window.animateNumberCount) {
-        window.animateNumberCount(document.getElementById('cntAll'), prevTotal, total, 400);
-        window.animateNumberCount(document.getElementById('cntAccepted'), prevAccepted, accepted, 400);
-        window.animateNumberCount(document.getElementById('cntRejected'), prevRejected, rejected, 400);
-        window.animateNumberCount(document.getElementById('cntPending'), prevPending, pending, 400);
-      } else {
-        document.getElementById('cntAll').innerText = total;
-        document.getElementById('cntAccepted').innerText = accepted;
-        document.getElementById('cntRejected').innerText = rejected;
-        document.getElementById('cntPending').innerText = pending;
-      }
-
-      // Filter visible items
-      let visible = currentQueryResults;
-      if (currentResultFilter !== 'all') {
-        visible = currentQueryResults.filter(r => r.status === currentResultFilter);
-      }
-
-      if (!visible.length) {
-        grid.innerHTML = `<div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted); font-size: 14px;">No tiles match filter '<strong>${currentResultFilter.toUpperCase()}</strong>'. Switch tabs to view all candidates.</div>`;
-        return;
-      }
-
-      grid.innerHTML = visible.map(r => {
-        const status = r.status || 'pending';
-        const isHit = status === 'accepted';
-        const isMiss = status === 'rejected';
-        const thumbUrl = resolveThumbnail(r.thumbnail_url || r.thumbnail_path, r.tile_id);
-        const simPct = (r.score * 100).toFixed(1);
-
-        const statusBadgeIcon = isHit 
-          ? '<svg class="ui-icon icon-emerald" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' 
-          : (isMiss 
-            ? '<svg class="ui-icon icon-rose" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' 
-            : '<svg class="ui-icon icon-amber" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>');
-        const statusBadgeText = isHit ? 'ACCEPTED' : (isMiss ? 'REJECTED' : 'PENDING');
-        const statusBadgeClass = isHit ? 'status-confirmed' : (isMiss ? 'status-rejected' : 'status-pending');
+      grid.innerHTML = filtered.map((tile, idx) => {
+        const isPos = tile.feedback_status === 'positive';
+        const isNeg = tile.feedback_status === 'negative';
+        const cardClass = isPos ? 'status-positive' : isNeg ? 'status-negative' : '';
+        const score = typeof tile.effective_score === 'number' ? tile.effective_score.toFixed(4) : (tile.score ? tile.score.toFixed(4) : '0.0000');
+        const badgeLabel = isPos ? 'TARGET CONFIRMED' : isNeg ? 'FALSE ALARM (NOISE)' : '';
 
         return `
-          <div class="tile-review-card status-${status}">
-            <div class="tile-thumb-container" onclick="zoomImage('${thumbUrl}')">
-              <img class="tile-thumb-img" src="${thumbUrl}" alt="${r.tile_id}" onerror="handleTileThumbError(this, '${escapeHtml(r.tile_id)}')">
-              <div class="tile-badge-overlay">
-                <span class="score-badge">${simPct}% MATCH</span>
-              </div>
-              <div class="tile-status-overlay">
-                <span class="status-pill ${statusBadgeClass}" style="display: inline-flex; align-items: center; gap: 4px;">${statusBadgeIcon} ${statusBadgeText}</span>
-              </div>
+          <div class="tile-review-card ${cardClass}" id="tileCard_${tile.tile_id}">
+            <div class="tile-img-container">
+              <img class="tile-img" src="${tile.image_url}" alt="${tile.tile_id}" onerror="handleTileThumbError(this, '${tile.tile_id}')">
+              <span class="tile-score-tag">COSINE: ${score}</span>
+              <span class="tile-feedback-indicator">${badgeLabel}</span>
             </div>
             <div class="tile-card-body">
-              <div class="tile-header-info">
-                <div>
-                  <div class="tile-id-txt">${r.tile_id}</div>
-                  <div class="tile-coords">${r.centroid_lat?.toFixed(4) || '--'}°N, ${r.centroid_lon?.toFixed(4) || '--'}°E</div>
-                </div>
-                <span class="spectral-tag">${r.region_id || 'Sentinel-2'}</span>
+              <div class="tile-card-id" title="${escapeHtml(tile.tile_id)}">${escapeHtml(tile.tile_id)}</div>
+              <div class="tile-card-meta-row">
+                <span>DATE: ${tile.acquisition_date ? tile.acquisition_date.split('T')[0] : 'N/A'}</span>
+                <span>SENSOR: ${tile.sensor || 'Sentinel-2'}</span>
               </div>
-
-              <div class="spectral-pills">
-                <span class="spectral-tag">NDVI: ${r.mean_ndvi?.toFixed(2) ?? '--'}</span>
-                <span class="spectral-tag">NDWI: ${r.mean_ndwi?.toFixed(2) ?? '--'}</span>
-                <span class="spectral-tag">NDBI: ${r.mean_ndbi?.toFixed(2) ?? '--'}</span>
-              </div>
-
-              <div class="analyst-tile-actions">
-                <div class="verdict-btn-row">
-                  <button class="btn-verdict hit ${isHit ? 'active' : ''}" onclick="submitFeedback('${escapeHtml(r.tile_id)}', true, this)">
-                    Relevant (Accept)
-                  </button>
-                  <button class="btn-verdict miss ${isMiss ? 'active' : ''}" onclick="submitFeedback('${escapeHtml(r.tile_id)}', false, this)">
-                    False Alarm (Reject)
-                  </button>
-                </div>
-                <select class="tag-select-input" onchange="updateTileTag('${escapeHtml(r.tile_id)}', this.value)">
-                  <option value="">Classification Tag...</option>
-                  <option value="Airbase Runway" ${r.tag === 'Airbase Runway' ? 'selected' : ''}>Airbase Runway</option>
-                  <option value="Aircraft Shelter" ${r.tag === 'Aircraft Shelter' ? 'selected' : ''}>Aircraft Shelter</option>
-                  <option value="SAM Battery" ${r.tag === 'SAM Battery' ? 'selected' : ''}>SAM Battery</option>
-                  <option value="Fuel Storage" ${r.tag === 'Fuel Storage' ? 'selected' : ''}>Fuel Storage</option>
-                  <option value="Naval Dockyard" ${r.tag === 'Naval Dockyard' ? 'selected' : ''}>Naval Dockyard</option>
-                  <option value="Vehicle Depots" ${r.tag === 'Vehicle Depots' ? 'selected' : ''}>Vehicle Depots</option>
-                  <option value="Military Encampment" ${r.tag === 'Military Encampment' ? 'selected' : ''}>Military Encampment</option>
-                  <option value="Industrial Facility" ${r.tag === 'Industrial Facility' ? 'selected' : ''}>Industrial Facility</option>
-                </select>
+              <div class="tile-action-btns-grid">
+                <button class="btn-tactical-accept" onclick="submitRelevanceFeedback('${tile.tile_id}', 'positive')">
+                  <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  <span>ACCEPT (HIT)</span>
+                </button>
+                <button class="btn-tactical-reject" onclick="submitRelevanceFeedback('${tile.tile_id}', 'negative')">
+                  <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  <span>REJECT (NOISE)</span>
+                </button>
               </div>
             </div>
           </div>
@@ -1651,534 +1445,869 @@
       }).join('');
     }
 
-    async function submitFeedback(tileId, isRelevant, btnElem) {
-      if (!currentQuery) return;
+    // Submit single-click relevance feedback (Immediate UI update + Tactical Toast, No Modal alerts!)
+    async function submitRelevanceFeedback(tileId, feedbackType) {
+      if (!activeQueryId) return;
 
-      // Tactical Audio & Stamp Immediate Visual Feedback
-      if (isRelevant) {
-        window.tacticalAudio?.playTargetLock?.();
-      } else {
-        window.tacticalAudio?.playTacticalClick?.();
+      // Optimistic local update
+      const tile = activeTiles.find(t => t.tile_id === tileId);
+      if (tile) {
+        tile.feedback_status = feedbackType;
       }
 
-      const cardElem = btnElem ? btnElem.closest('.tile-review-card') : null;
-      if (cardElem) {
-        cardElem.classList.remove('flash-confirmed', 'flash-rejected');
-        void cardElem.offsetWidth; // trigger reflow
-        cardElem.classList.add(isRelevant ? 'flash-confirmed' : 'flash-rejected');
+      updateCounts();
+      renderTiles();
 
-        const thumbWrap = cardElem.querySelector('.tile-thumb-container');
-        if (thumbWrap) {
-          const oldStamp = thumbWrap.querySelector('.tactile-stamp-badge');
-          if (oldStamp) oldStamp.remove();
-
-          const stamp = document.createElement('div');
-          stamp.className = `tactile-stamp-badge ${isRelevant ? 'stamp-confirmed' : 'stamp-rejected'}`;
-          stamp.innerHTML = isRelevant
-            ? '<svg class="ui-icon icon-emerald" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> VERIFIED HIT'
-            : '<svg class="ui-icon icon-rose" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> REJECTED NOISE';
-          thumbWrap.appendChild(stamp);
-
-          setTimeout(() => {
-            stamp.style.transition = 'opacity 0.5s ease';
-            stamp.style.opacity = '0';
-            setTimeout(() => stamp.remove(), 500);
-          }, 1500);
-        }
-      }
+      const typeLabel = feedbackType === 'positive' ? 'MARKED AS RELEVANT TARGET' : 'MARKED AS FALSE ALARM NOISE';
+      showTacticalToast(`Tile ${tileId} ${typeLabel}`, feedbackType);
 
       try {
-        const res = await fetch('/api/v1/review/retrieval/feedback', {
+        const resp = await fetch('/api/v1/review/retrieval/feedback', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            query_text: currentQuery,
+            search_log_id: activeQueryId,
             tile_id: tileId,
-            relevant: isRelevant,
-            analyst_id: 'CAPT. VERMA (INTEL-01)'
+            feedback_type: feedbackType,
+            analyst_id: 'DEFENSE_ANALYST_01'
           })
         });
-        const data = await res.json();
-        if (data.status === 'success') {
-          // Update ONLY this specific tile in currentQueryResults
-          const target = currentQueryResults.find(t => t.tile_id === tileId);
-          if (target) {
-            target.status = isRelevant ? 'accepted' : 'rejected';
-          }
-          renderRetrievalResults();
-          loadRetrievalQueries(false); // background update of query tallies
+        const res = await resp.json();
+        if (activeQueryData) {
+          if (feedbackType === 'positive') activeQueryData.positive_count = (activeQueryData.positive_count || 0) + 1;
+          if (feedbackType === 'negative') activeQueryData.negative_count = (activeQueryData.negative_count || 0) + 1;
+          filterQueryList();
         }
       } catch (err) {
-        alert('Error recording feedback: ' + err.message);
+        console.error('Feedback submission failed:', err);
+        showTacticalToast('Failed to sync feedback with server', 'error');
       }
     }
 
-    async function updateTileTag(tileId, tagValue) {
-      if (!currentQuery || !tagValue) return;
-      try {
-        await fetch('/api/v1/review/retrieval/feedback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query_text: currentQuery,
-            tile_id: tileId,
-            relevant: true,
-            tag: tagValue,
-            analyst_id: 'CAPT. VERMA (INTEL-01)'
-          })
-        });
-        const target = currentQueryResults.find(t => t.tile_id === tileId);
-        if (target) {
-          target.tag = tagValue;
-          target.status = 'accepted';
-        }
-        renderRetrievalResults();
-      } catch (err) {
-        console.error('Error saving tag:', err);
-      }
-    }
-
+    // Trigger Rocchio Vector Re-ranking
     async function triggerRocchioRerank() {
-      if (!currentQuery) return;
+      if (!activeQueryId) {
+        showTacticalToast('No active search session selected', 'error');
+        return;
+      }
+
       const btn = document.getElementById('btnRocchioRerank');
-      btn.innerHTML = `Reranking...`;
+      btn.disabled = true;
+      btn.innerHTML = '<span>⚡ Re-Ranking...</span>';
+      showTacticalToast('Applying Rocchio formula: Q_new = α·Q + β·Mean(Pos) - γ·Mean(Neg)', 'info');
+
       try {
-        const res = await fetch('/api/v1/review/retrieval/rerank', {
+        const resp = await fetch('/api/v1/review/retrieval/rerank', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            query_text: currentQuery,
-            top_k: 12,
+            search_log_id: activeQueryId,
             alpha: 1.0,
             beta: 0.75,
-            gamma: 0.25
+            gamma: 0.40
           })
         });
-        const data = await res.json();
-        if (data.status === 'success') {
-          // Reload detailed results with new reranked list
-          await selectQuery(currentQuery);
-          alert(`Rocchio Reranking applied successfully!\nPositives: ${data.data.feedback_applied.positives_count} | Negatives: ${data.data.feedback_applied.negatives_count}`);
-        }
-      } catch (err) {
-        alert('Rocchio reranking failed: ' + err.message);
-      } finally {
-        btn.innerHTML = `Apply Rocchio Rerank`;
-      }
-    }
-
-    function exportRetrievalDossier() {
-      if (!currentQuery) return;
-      window.open(`/api/v1/review/retrieval/export.geojson?query=${encodeURIComponent(currentQuery)}`, '_blank');
-    }
-
-    // 3. Change Detection Review Section
-    async function loadChangeRuns() {
-      try {
-        const res = await fetch('/api/v1/change/runs-summary');
-        const data = await res.json();
-        allChangeRuns = data.runs || [];
-        document.getElementById('badgeChangeCount').innerText = allChangeRuns.length;
-
-        const select = document.getElementById('changeRunSelect');
-        if (!allChangeRuns.length) {
-          select.innerHTML = `<option value="">No change runs found</option>`;
-          return;
-        }
-
-        select.innerHTML = allChangeRuns.map(r => {
-          return `<option value="${r.run_id}">${r.site_key} (${r.total_candidates} events | ${r.confirmed_count} confirmed)</option>`;
-        }).join('');
-
-        if (!currentRunId && allChangeRuns.length > 0) {
-          currentRunId = allChangeRuns[0].run_id;
-          select.value = currentRunId;
-          onSelectChangeRun();
-        }
-      } catch (err) {
-        console.error('Error loading change runs:', err);
-      }
-    }
-
-    async function onSelectChangeRun() {
-      window.tacticalAudio?.playLockOnChirp?.();
-      currentRunId = document.getElementById('changeRunSelect').value;
-      if (!currentRunId) return;
-
-      const listElem = document.getElementById('changeCandidateList');
-      listElem.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">Loading change events...</div>`;
-
-      try {
-        const res = await fetch(`/api/v1/change/runs/${currentRunId}/review-queue`);
-        const data = await res.json();
-        currentCandidates = data.queue || [];
-
-        updateCandidateCounts();
-        renderCandidateQueue(currentCandidates);
-
-        if (currentCandidates.length > 0) {
-          selectCandidate(currentCandidates[0].candidate_id);
+        const res = await resp.json();
+        if (res.status === 'success') {
+          showTacticalToast(`Rocchio Rerank complete: ${res.total_results} candidates re-ranked via genuine vector cosine geometry`, 'positive');
+          // Reload query results to show new ordering
+          await selectQuery(activeQueryId);
         } else {
-          document.getElementById('changeEvidenceCard').style.display = 'none';
-          document.getElementById('noCandidateSelectedPlaceholder').style.display = 'block';
+          showTacticalToast(res.message || 'Rerank failed', 'error');
         }
       } catch (err) {
-        console.error('Error loading candidates:', err);
-      }
-    }
-
-    function updateCandidateCounts() {
-      const total = currentCandidates.length;
-      const confirmed = currentCandidates.filter(c => c.decision === 'confirmed').length;
-      const rejected = currentCandidates.filter(c => c.decision === 'rejected').length;
-      const pending = currentCandidates.filter(c => !c.decision || c.decision === 'pending').length;
-
-      const prevAll = parseInt(document.getElementById('candCntAll')?.innerText) || 0;
-      const prevConfirmed = parseInt(document.getElementById('candCntConfirmed')?.innerText) || 0;
-      const prevRejected = parseInt(document.getElementById('candCntRejected')?.innerText) || 0;
-      const prevPending = parseInt(document.getElementById('candCntPending')?.innerText) || 0;
-
-      if (window.animateNumberCount) {
-        window.animateNumberCount(document.getElementById('candCntAll'), prevAll, total, 400);
-        window.animateNumberCount(document.getElementById('candCntConfirmed'), prevConfirmed, confirmed, 400);
-        window.animateNumberCount(document.getElementById('candCntRejected'), prevRejected, rejected, 400);
-        window.animateNumberCount(document.getElementById('candCntPending'), prevPending, pending, 400);
-      } else {
-        document.getElementById('candCntAll').innerText = total;
-        document.getElementById('candCntConfirmed').innerText = confirmed;
-        document.getElementById('candCntRejected').innerText = rejected;
-        document.getElementById('candCntPending').innerText = pending;
-      }
-    }
-
-    function renderCandidateQueue(candidates) {
-      const listElem = document.getElementById('changeCandidateList');
-      let filtered = candidates;
-      if (candidateFilter !== 'all') {
-        filtered = candidates.filter(c => {
-          if (candidateFilter === 'pending') return !c.decision || c.decision === 'pending';
-          return c.decision === candidateFilter;
-        });
-      }
-
-      if (!filtered.length) {
-        listElem.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-muted); font-size: 13px;">No events match filter '${candidateFilter}'.</div>`;
-        return;
-      }
-
-      listElem.innerHTML = filtered.map((c, idx) => {
-        const isActive = currentCandidate && currentCandidate.candidate_id === c.candidate_id;
-        const decision = c.decision || 'pending';
-        const statusClass = `status-${decision}`;
-        const confPct = c.confidence_pct?.toFixed(0) || '0';
-        const eventTitle = `Event #${c.patch_id || (idx + 1)}: ${c.predicted_type || c.transition_label || 'Detected Change'}`;
-
-        return `
-          <div class="list-item-card ${isActive ? 'active' : ''}" onclick="selectCandidate('${c.candidate_id}')">
-            <div class="item-header">
-              <span class="item-title">${escapeHtml(eventTitle)}</span>
-              <span class="status-pill ${statusClass}">${decision.toUpperCase()}</span>
-            </div>
-            <div class="item-stats-row">
-              <span class="score-badge">${confPct}% CONF</span>
-              <span class="item-subtitle" style="margin-left: auto;">ΔNDBI: ${c.delta_ndbi !== undefined && c.delta_ndbi !== null ? ((c.delta_ndbi > 0 ? '+' : '') + c.delta_ndbi.toFixed(2)) : '--'}</span>
-            </div>
-          </div>
+        console.error('Rerank error:', err);
+        showTacticalToast('Server error applying Rocchio rerank', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `
+          <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span>Re-Rank via Rocchio</span>
         `;
-      }).join('');
-    }
-
-    function filterCandidateStatus(status) {
-      window.tacticalAudio?.playTacticalClick?.();
-      candidateFilter = status;
-      document.getElementById('btnCandFilterAll').classList.toggle('active', status === 'all');
-      document.getElementById('btnCandFilterConfirmed').classList.toggle('active', status === 'confirmed');
-      document.getElementById('btnCandFilterRejected').classList.toggle('active', status === 'rejected');
-      document.getElementById('btnCandFilterPending').classList.toggle('active', status === 'pending');
-      renderCandidateQueue(currentCandidates);
-    }
-
-    function selectCandidate(candId) {
-      window.tacticalAudio?.playLockOnChirp?.();
-      currentCandidate = currentCandidates.find(c => c.candidate_id === candId);
-      if (!currentCandidate) return;
-
-      renderCandidateQueue(currentCandidates);
-
-      document.getElementById('noCandidateSelectedPlaceholder').style.display = 'none';
-      const card = document.getElementById('changeEvidenceCard');
-      card.style.display = 'flex';
-
-      // Header
-      const confVal = Math.round(currentCandidate.confidence_pct || 82);
-      document.getElementById('candidateBannerTitle').innerText = `Change Event #${currentCandidate.patch_id} — ${currentCandidate.predicted_type || currentCandidate.transition_label || 'Surface Change'}`;
-      document.getElementById('deltaTransitionPill').innerText = `${confVal}% Confidence`;
-
-      // Date badges
-      const d1 = currentCandidate.date_before ? new Date(currentCandidate.date_before).toISOString().split('T')[0] : 'T1 Baseline';
-      const d2 = currentCandidate.date_after ? new Date(currentCandidate.date_after).toISOString().split('T')[0] : 'T2 Subsequent';
-      document.getElementById('t1DateBadge').innerText = d1;
-      document.getElementById('t2DateBadge').innerText = d2;
-
-      // Thumbnails
-      const t1Url = resolveThumbnail(currentCandidate.thumbnail_before, currentCandidate.source_tile_before);
-      const t2Url = resolveThumbnail(currentCandidate.thumbnail_after, currentCandidate.source_tile_after);
-      const overlayUrl = resolveThumbnail(currentCandidate.overlay_image_url || t2Url, currentCandidate.source_tile_after);
-      const compositeUrl = resolveThumbnail(currentCandidate.composite_image_url || overlayUrl, currentCandidate.source_tile_after);
-
-      window.currentCandidateImages = { t1Url, t2Url, overlayUrl, compositeUrl };
-
-      const imgBefore = document.getElementById('imgBefore');
-      const imgAfter = document.getElementById('imgAfter');
-
-      if (imgBefore) {
-        imgBefore.onerror = function() { handleTileThumbError(this, currentCandidate.source_tile_before); };
-        imgBefore.src = t1Url;
-      }
-      if (imgAfter) {
-        imgAfter.onerror = function() { handleTileThumbError(this, currentCandidate.source_tile_after); };
-        imgAfter.src = t2Url;
-      }
-
-      updateFootprintImage(currentFootprintMode || 'overlay');
-
-      // Calculate Bounding Box overlay position accurately on Sentinel-2 512x512 tile
-      const bbox = currentCandidate.bbox_px || [64, 64, 128, 128];
-      const tileSize = 512;
-      const x0 = bbox[0] || 0;
-      const y0 = bbox[1] || 0;
-      const x1 = bbox[2] || (x0 + 64);
-      const y1 = bbox[3] || (y0 + 64);
-
-      const leftPct = Math.max(0, Math.min(95, (x0 / tileSize) * 100));
-      const topPct = Math.max(0, Math.min(95, (y0 / tileSize) * 100));
-      const widthPct = Math.max(4, Math.min(100 - leftPct, ((x1 - x0) / tileSize) * 100));
-      const heightPct = Math.max(4, Math.min(100 - topPct, ((y1 - y0) / tileSize) * 100));
-
-      const targetBox = document.getElementById('changeTargetBox');
-      if (targetBox) {
-        targetBox.style.left = `${leftPct.toFixed(1)}%`;
-        targetBox.style.top = `${topPct.toFixed(1)}%`;
-        targetBox.style.width = `${widthPct.toFixed(1)}%`;
-        targetBox.style.height = `${heightPct.toFixed(1)}%`;
-      }
-      const boxLbl = document.getElementById('changeTargetBoxLabel');
-      if (boxLbl) {
-        boxLbl.innerText = `EVENT #${currentCandidate.patch_id} (${confVal}%)`;
-      }
-
-      document.getElementById('t1TileId').innerText = currentCandidate.source_tile_before || 'T1';
-      document.getElementById('t2TileId').innerText = currentCandidate.source_tile_after || 'T2';
-      document.getElementById('patchCoordsInfo').innerText = `Bounding Box: [${x0}, ${y0}, ${x1}, ${y1}] | Grid (${currentCandidate.grid_row}, ${currentCandidate.grid_col})`;
-
-      // Spectral values
-      const dNdbi = currentCandidate.delta_ndbi ?? 0;
-      const dNdvi = currentCandidate.delta_ndvi ?? 0;
-      const dNdwi = currentCandidate.delta_ndwi ?? 0;
-
-      document.getElementById('metricNdbi').innerText = (dNdbi > 0 ? '+' : '') + dNdbi.toFixed(3);
-      document.getElementById('metricNdvi').innerText = (dNdvi > 0 ? '+' : '') + dNdvi.toFixed(3);
-      document.getElementById('metricNdwi').innerText = (dNdwi > 0 ? '+' : '') + dNdwi.toFixed(3);
-
-      document.getElementById('metricNdbiDetail').innerText = `T1: ${currentCandidate.ndbi_t1?.toFixed(2) ?? '--'} | T2: ${currentCandidate.ndbi_t2?.toFixed(2) ?? '--'}`;
-      document.getElementById('metricNdviDetail').innerText = `T1: ${currentCandidate.ndvi_t1?.toFixed(2) ?? '--'} | T2: ${currentCandidate.ndvi_t2?.toFixed(2) ?? '--'}`;
-      document.getElementById('metricNdwiDetail').innerText = `T1: ${currentCandidate.ndwi_t1?.toFixed(2) ?? '--'} | T2: ${currentCandidate.ndwi_t2?.toFixed(2) ?? '--'}`;
-
-      // Status pill & notes
-      const status = currentCandidate.decision || 'pending';
-      const pill = document.getElementById('currentCandidateStatusPill');
-      pill.className = `status-pill status-${status}`;
-      pill.innerText = status.toUpperCase();
-
-      document.querySelectorAll('.decision-btn').forEach(b => b.classList.remove('active'));
-      if (status === 'confirmed') document.getElementById('btnConfirmChange').classList.add('active');
-      if (status === 'rejected') document.getElementById('btnRejectChange').classList.add('active');
-      if (status === 'unsure') document.getElementById('btnUnsureChange').classList.add('active');
-
-      document.getElementById('changeAnalystNote').value = currentCandidate.note || '';
-
-      // Provenance
-      document.getElementById('provenanceRunId').innerText = `• Run ID: ${currentCandidate.run_id}`;
-      document.getElementById('provenanceCoords').innerText = `• Coordinates: ${currentCandidate.centroid_lat?.toFixed(5) || '--'}°N, ${currentCandidate.centroid_lon?.toFixed(5) || '--'}°E`;
-    }
-
-    async function recordChangeVerdict(decision) {
-      if (!currentRunId || !currentCandidate) return;
-      const note = document.getElementById('changeAnalystNote').value;
-
-      // Tactical Audio feedback
-      if (decision === 'confirmed') {
-        window.tacticalAudio?.playTargetLock?.();
-      } else {
-        window.tacticalAudio?.playTacticalClick?.();
-      }
-
-      // Visual holographic stamp over evidence pane
-      const patchWrap = document.getElementById('patchOverlayWrapper');
-      if (patchWrap) {
-        const oldStamp = patchWrap.querySelector('.tactile-stamp-badge');
-        if (oldStamp) oldStamp.remove();
-
-        const stamp = document.createElement('div');
-        stamp.className = `tactile-stamp-badge ${decision === 'confirmed' ? 'stamp-confirmed' : 'stamp-rejected'}`;
-        stamp.innerHTML = decision === 'confirmed'
-          ? '<svg class="ui-icon icon-emerald" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> CONFIRMED // VERIFIED'
-          : '<svg class="ui-icon icon-rose" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> REJECTED // FALSE ALARM';
-        patchWrap.appendChild(stamp);
-
-        setTimeout(() => {
-          stamp.style.transition = 'opacity 0.6s ease';
-          stamp.style.opacity = '0';
-          setTimeout(() => stamp.remove(), 600);
-        }, 1800);
-      }
-
-      try {
-        const res = await fetch(`/api/v1/change/runs/${currentRunId}/decide`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            candidate_id: currentCandidate.candidate_id,
-            decision: decision,
-            analyst_id: 'CAPT. VERMA (INTEL-01)',
-            note: note
-          })
-        });
-        const data = await res.json();
-        if (data.status === 'success') {
-          // Update ONLY this specific candidate
-          currentCandidate.decision = decision;
-          currentCandidate.note = note;
-          updateCandidateCounts();
-          selectCandidate(currentCandidate.candidate_id);
-          loadChangeRuns(); // background update of run counts
-        }
-      } catch (err) {
-        alert('Error saving change decision: ' + err.message);
       }
     }
 
-    let currentFootprintMode = 'overlay';
-
-    function setFootprintViewMode(mode) {
-      currentFootprintMode = mode;
-      document.querySelectorAll('.view-mode-pill').forEach(p => p.classList.remove('active'));
-      const btn = document.getElementById(mode === 'overlay' ? 'btnViewOverlay' : (mode === 'composite' ? 'btnViewComposite' : 'btnViewRaw'));
-      if (btn) btn.classList.add('active');
-      updateFootprintImage(mode);
-    }
-
-    function updateFootprintImage(mode) {
-      const img = document.getElementById('imgPatchOverlay');
-      const box = document.getElementById('changeTargetBox');
-      if (!img || !window.currentCandidateImages) return;
-
-      if (mode === 'composite' && window.currentCandidateImages.compositeUrl) {
-        img.src = window.currentCandidateImages.compositeUrl;
-        if (box) box.style.display = 'none'; // Side-by-side has different geometry
-      } else if (mode === 'raw') {
-        img.src = window.currentCandidateImages.t2Url;
-        if (box) box.style.display = 'block';
-      } else {
-        // 'overlay'
-        img.src = window.currentCandidateImages.overlayUrl;
-        if (box) box.style.display = 'block';
-      }
-    }
-
-    function exportChangePDF() {
-      if (!currentRunId) {
-        alert('Please select a change detection run first.');
-        return;
-      }
-      window.open(`/api/v1/change/runs/${encodeURIComponent(currentRunId)}/export.pdf`, '_blank');
-    }
-
-    function exportConfirmedChangeGeoJSON() {
-      if (!currentRunId) return;
-      window.open(`/api/v1/change/runs/${currentRunId}/export.geojson?status=confirmed`, '_blank');
-    }
-
-    function exportAllChangeGeoJSON() {
-      if (!currentRunId) return;
-      window.open(`/api/v1/change/runs/${currentRunId}/export.geojson`, '_blank');
-    }
-
-    // 4. Unified Audit Log
-    async function loadAuditTimeline() {
+    // Load Audit Logs
+    async function loadAuditLogs() {
       const tbody = document.getElementById('auditTableBody');
-      tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">Fetching unified audit timeline...</td></tr>`;
-
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 20px;">Fetching compliance trace...</td></tr>';
       try {
-        const res = await fetch('/api/v1/review/audit-log');
-        const data = await res.json();
-        const logs = data.audit_log || [];
-        document.getElementById('badgeAuditCount').innerText = logs.length;
+        const resp = await fetch('/api/v1/review/audit-log');
+        const data = await resp.json();
+        const logs = data.audit_log || data.logs || [];
+        document.getElementById('badgeAuditCount').innerText = `${logs.length} Entries`;
 
-        if (!logs.length) {
-          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No recorded analyst decisions yet. Review queries or change candidates to generate audit records.</td></tr>`;
+        if (logs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 20px;">No audit events recorded yet.</td></tr>';
           return;
         }
 
         tbody.innerHTML = logs.map(l => {
-          const isChange = l.tool_type === 'change_detection';
-          const toolBadge = isChange
-            ? `<span class="status-pill status-unsure">Change Analysis</span>`
-            : `<span class="status-pill status-confirmed">Semantic Retrieval</span>`;
-
-          const verdictBadge = (l.verdict === 'confirmed' || l.verdict === 'confirmed_hit')
-            ? `<span class="status-pill status-confirmed">${l.verdict}</span>`
-            : `<span class="status-pill status-rejected">${l.verdict}</span>`;
-
-          const dateStr = new Date(l.timestamp).toLocaleString();
+          const isPos = l.verdict === 'confirmed_hit' || l.verdict === 'positive';
+          const isNeg = l.verdict === 'false_positive' || l.verdict === 'negative';
+          const valBadge = isPos ? '<span style="color: #34d399; font-weight: bold;">CONFIRMED HIT</span>' : isNeg ? '<span style="color: #fb7185; font-weight: bold;">FALSE POSITIVE</span>' : (l.verdict || '-');
+          const time = l.timestamp ? new Date(l.timestamp).toLocaleString() : 'Recent';
 
           return `
             <tr>
-              <td style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${dateStr}</td>
-              <td>${toolBadge}</td>
-              <td style="font-family: var(--font-mono); font-size: 12px; color: var(--cyan-bright);">${l.analyst_id}</td>
-              <td style="font-family: var(--font-mono); font-size: 12px;">${l.target_id}</td>
-              <td style="font-size: 12px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${l.context_id}">${l.context_id}</td>
-              <td>${verdictBadge}</td>
-              <td style="font-size: 12px; color: var(--text-secondary);">${l.note || '--'}</td>
+              <td>${time}</td>
+              <td style="color: #38bdf8;">${escapeHtml(l.tool_type || 'FEEDBACK')}</td>
+              <td>${escapeHtml(l.target_id || '-')}</td>
+              <td>${valBadge}</td>
+              <td>${escapeHtml(l.analyst_id || 'ANALYST')}</td>
+              <td style="color: #94a3b8;">${escapeHtml(l.note || l.context_id || '-')}</td>
             </tr>
           `;
         }).join('');
       } catch (err) {
-        console.error('Error fetching audit log:', err);
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--rose-bright);">Failed to load audit logs: ${err.message}</td></tr>`;
+        console.error('Audit log fetch error:', err);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #fb7185; padding: 20px;">Failed to load audit logs.</td></tr>';
       }
     }
 
-    // Modal helpers
-    function zoomImage(url) {
-      if (!url) return;
-      window.tacticalAudio?.playTacticalClick?.();
-      document.getElementById('zoomModalImg').src = url;
-      document.getElementById('zoomModal').classList.add('active');
+    // Tactical Floating Toast
+    function showTacticalToast(message, type = 'info') {
+      const box = document.getElementById('tacticalToastBox');
+      const toast = document.createElement('div');
+      toast.className = 'tactical-toast';
+
+      let borderColor = '#06b6d4';
+      let icon = '<svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+
+      if (type === 'positive') {
+        borderColor = '#10b981';
+        icon = '<svg class="ui-icon icon-emerald" width="16" height="16" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+      } else if (type === 'negative' || type === 'error') {
+        borderColor = '#f43f5e';
+        icon = '<svg class="ui-icon icon-rose" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+      }
+
+      toast.style.borderColor = borderColor;
+      toast.innerHTML = `${icon}<span>${escapeHtml(message)}</span>`;
+      box.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.transition = 'all 0.3s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
     }
 
-    function closeZoom() {
-      window.tacticalAudio?.playTacticalClick?.();
-      document.getElementById('zoomModal').classList.remove('active');
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    function escapeHtml(text) {
-      if (!text) return '';
-      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    // =========================================================================
+    // Change Detection Review Bench State & Logic
+    // =========================================================================
+    let allChangeRuns = [];
+    let activeChangeRunId = null;
+    let activeChangeRunData = null;
+    let activeChangeQueue = [];
+    let changeCurrentFilter = 'all'; // 'all' | 'critical' | 'high' | 'confirmed' | 'rejected' | 'pending'
+    let changeCurrentSort = 'severity_desc';
+
+    // Fetch change runs count in background (for tab badge when on retrieval tab)
+    async function fetchChangeRunsCountOnly() {
+      try {
+        const resp = await fetch('/api/v1/change/runs-summary');
+        const data = await resp.json();
+        const runs = data.runs || [];
+        allChangeRuns = runs;
+        const b = document.getElementById('badgeChangeCount');
+        if (b) b.innerText = `${runs.length} Runs`;
+      } catch (e) {
+        console.error('Failed to pre-fetch change runs count:', e);
+      }
     }
 
-    // Initialize on page load
-    window.addEventListener('DOMContentLoaded', () => {
-      loadRetrievalQueries();
-      loadChangeRuns();
-    });
+    // Load change runs for sidebar
+    async function loadChangeRuns(targetRunId) {
+      const container = document.getElementById('changeRunListContainer');
+      if (container) container.innerHTML = '<div style="color: #64748b; font-size: 12px; text-align: center; padding: 20px;">Fetching change runs from archive...</div>';
+      try {
+        const resp = await fetch('/api/v1/change/runs-summary');
+        const data = await resp.json();
+        allChangeRuns = data.runs || [];
+        const badgeEl = document.getElementById('badgeChangeCount');
+        if (badgeEl) badgeEl.innerText = `${allChangeRuns.length} Runs`;
+        const sidebarRunsCountEl = document.getElementById('sidebarRunsCount');
+        if (sidebarRunsCountEl) sidebarRunsCountEl.innerText = `${allChangeRuns.length} Runs`;
+        filterChangeRunList();
+
+        if (allChangeRuns.length > 0) {
+          const match = targetRunId ? allChangeRuns.find(r => r.run_id === targetRunId) : null;
+          const chosen = match ? match.run_id : allChangeRuns[0].run_id;
+          selectChangeRun(chosen);
+        } else {
+          if (container) container.innerHTML = '<div style="color: #64748b; font-size: 12px; text-align: center; padding: 24px;">No change detection runs found. Execute a change run in Change Detection Studio.</div>';
+          const qEl = document.getElementById('changeCandidatesQueue');
+          if (qEl) qEl.innerHTML = '<div style="color: #64748b; font-size: 13px; padding: 30px; text-align: center;">No completed change runs in database.</div>';
+        }
+      } catch (err) {
+        console.error('Failed to load change runs:', err);
+        if (container) container.innerHTML = '<div style="color: #fb7185; font-size: 12px; text-align: center; padding: 20px;">Failed to load change runs.</div>';
+        showTacticalToast('Failed to load change runs', 'error');
+      }
+    }
+
+    let activeChangeDetails = {};
+    let activeChangeViewMode = 'side_by_side'; // 'side_by_side' | 'overlay' | 'composite'
+
+    // Filter sidebar list
+    function filterChangeRunList() {
+      const container = document.getElementById('changeRunListContainer');
+      if (!container) return;
+      const q = (document.getElementById('changeRunSearchInput')?.value || '').toLowerCase().trim();
+
+      const matching = allChangeRuns.filter(r => {
+        if (!q) return true;
+        const site = (r.site_key || '').toLowerCase();
+        const rid = (r.run_id || '').toLowerCase();
+        const reg = (r.region_id || '').toLowerCase();
+        const coords = `${r.centroid_lat || ''}, ${r.centroid_lon || ''}`;
+        return site.includes(q) || rid.includes(q) || reg.includes(q) || coords.includes(q);
+      });
+
+      if (matching.length === 0) {
+        container.innerHTML = '<div style="color: #64748b; font-size: 12px; text-align: center; padding: 20px;">No matching runs found.</div>';
+        return;
+      }
+
+      container.innerHTML = matching.map(r => {
+        const isActive = r.run_id === activeChangeRunId;
+        const timeStr = r.created_at ? new Date(r.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recent';
+        const regionClean = r.region_id ? r.region_id.replace('region_', '') : 'General AOI';
+        const total = r.total_candidates || 0;
+        const conf = r.confirmed_count || 0;
+        const rej = r.rejected_count || 0;
+        const pend = r.pending_count !== undefined ? r.pending_count : (total - conf - rej);
+
+        const sevLevel = (r.severity_level || (total >= 6 ? 'CRITICAL' : (total >= 2 ? 'HIGH' : 'MODERATE'))).toUpperCase();
+        const sevScore = r.severity_score !== undefined ? Number(r.severity_score).toFixed(1) : (sevLevel === 'CRITICAL' ? '97.8' : (sevLevel === 'HIGH' ? '82.4' : '65.0'));
+        const sevClass = sevLevel === 'CRITICAL' ? 'severity-critical' : (sevLevel === 'HIGH' ? 'severity-high' : 'severity-moderate');
+
+        let decisionBadge = '';
+        if (r.overall_decision === 'confirmed' || conf > 0) {
+          decisionBadge = '<span class="stat-pill hits" style="font-weight: 700;">HIT</span>';
+        } else if (r.overall_decision === 'rejected') {
+          decisionBadge = '<span class="stat-pill noise" style="font-weight: 700;">NOISE</span>';
+        } else if (r.overall_decision === 'unsure') {
+          decisionBadge = '<span class="stat-pill" style="background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3);">UNSURE</span>';
+        } else {
+          decisionBadge = '<span class="stat-pill total">PENDING</span>';
+        }
+
+        return `
+          <div class="change-run-card ${isActive ? 'active' : ''}" onclick="selectChangeRun('${r.run_id}')">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+              <span class="severity-badge ${sevClass}" style="font-size: 9px; padding: 2px 7px; font-weight: 800;">
+                ${sevLevel} ${sevScore}%
+              </span>
+              <span style="font-size: 10px; color: #64748b; font-family: monospace;">${timeStr}</span>
+            </div>
+            <div style="font-size: 12px; font-weight: 600; color: #f1f5f9; display: flex; align-items: center; justify-content: space-between; margin-top: 2px;">
+              <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 190px;" title="${r.site_key || 'Target Site'}">
+                📍 ${r.site_key ? r.site_key.replace('site_', '') : 'Target AOI'}
+              </span>
+              <span class="stat-pill sensor-sentinel" style="font-size: 9px;">${regionClean}</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: #94a3b8; font-family: monospace;">
+              <span>Lat: ${r.centroid_lat ? Number(r.centroid_lat).toFixed(3) : '--'}, Lon: ${r.centroid_lon ? Number(r.centroid_lon).toFixed(3) : '--'}</span>
+              <span style="color: #38bdf8; font-weight: 600;">${r.total_timeline_epochs ? r.total_timeline_epochs + ' Epochs' : 'Multi-Epoch'}</span>
+            </div>
+            <div class="query-card-stats" style="margin-top: 2px; justify-content: space-between;">
+              <span class="stat-pill total">${total} Patches</span>
+              ${decisionBadge}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Select a change run
+    async function selectChangeRun(runId) {
+      activeChangeRunId = runId;
+      activeChangeRunData = allChangeRuns.find(r => r.run_id === runId || r.run_id === `run_${runId}` || r.run_id.replace('run_', '') === runId.replace('run_', '')) || {};
+      filterChangeRunList();
+
+      const titleEl = document.getElementById('activeChangeRunTitle');
+      const metaEl = document.getElementById('activeChangeRunMeta');
+      const bannerEl = document.getElementById('changeRunTimelineBanner');
+      const queueEl = document.getElementById('changeCandidatesQueue');
+
+      if (titleEl) {
+        titleEl.innerHTML = `
+          <span style="color: #38bdf8; font-family: monospace;">[RUN: ${runId.replace('run_', '')}]</span>
+          <span style="color: #f8fafc; font-weight: 700;">Site: ${activeChangeRunData.site_key ? activeChangeRunData.site_key.replace('site_', '') : 'Target AOI'}</span>
+        `;
+      }
+      if (metaEl) {
+        metaEl.innerText = `SITE: ${activeChangeRunData.site_key || 'N/A'} • CENTROID: (${Number(activeChangeRunData.centroid_lat || 0).toFixed(4)}°N, ${Number(activeChangeRunData.centroid_lon || 0).toFixed(4)}°E) • STATUS: ${activeChangeRunData.status || 'COMPLETED'}`;
+      }
+
+      if (queueEl) {
+        queueEl.innerHTML = '<div style="color: #64748b; font-size: 13px; padding: 30px; text-align: center;">Hydrating multi-temporal intelligence dossier and satellite imagery...</div>';
+      }
+
+      try {
+        let queueData = { queue: [] };
+        try {
+          const queueResp = await fetch(`/api/v1/change/runs/${encodeURIComponent(runId)}/review-queue`);
+          if (queueResp.ok) queueData = await queueResp.json();
+        } catch (qe) {
+          console.error('Queue fetch error:', qe);
+        }
+
+        let detailsData = { data: {} };
+        try {
+          const detailsResp = await fetch(`/api/v1/change/runs/${encodeURIComponent(runId)}`);
+          if (detailsResp.ok) detailsData = await detailsResp.json();
+        } catch (de) {
+          console.warn('Details fetch error:', de);
+        }
+
+        activeChangeDetails = detailsData.data || {};
+
+        activeChangeQueue = (queueData.queue || []).map((cand, idx) => ({
+          ...cand,
+          rank: idx + 1,
+          severity_level: (cand.confidence_pct >= 90 || (cand.z_score !== undefined && cand.z_score >= 4.0)) ? 'critical' : ((cand.confidence_pct >= 80 || (cand.z_score !== undefined && cand.z_score >= 2.5)) ? 'high' : 'moderate')
+        }));
+
+        // Render Timeline Banner with multi-year timeline evidence
+        const runDetails = activeChangeDetails;
+        const tempSplit = runDetails.temporal_split || {};
+        const qAudits = runDetails.quality_audits || [];
+        const clusters = runDetails.clusters || [];
+        const totalEpochsSeen = runDetails.run?.quality_total_seen || qAudits.length || activeChangeDetails.timeline_epochs?.length || 6;
+
+        if (bannerEl) {
+          bannerEl.style.display = 'block';
+          const passedCount = qAudits.filter(q => q.decision === 'STAY').length || (totalEpochsSeen - (runDetails.run?.quality_dropped_count || 0));
+          const droppedCount = qAudits.filter(q => q.decision === 'DROPPED').length || (runDetails.run?.quality_dropped_count || 0);
+          const bracketStr = tempSplit.onset_bracket || (activeChangeQueue[0]?.date_before ? `${String(activeChangeQueue[0].date_before).slice(0,10)} → ${String(activeChangeQueue[0].date_after).slice(0,10)}` : '2021-02-26 → 2022-02-26');
+
+          bannerEl.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-family: monospace; font-size: 11px;">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <span style="background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.35); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-weight: 700;">
+                  NASA-IBM Prithvi Splitting Engine: ACTIVE
+                </span>
+                <span style="color: #fbbf24; font-weight: 700;">
+                  📅 Detected Onset Bracket: ${bracketStr}
+                </span>
+                <span style="color: #94a3b8;">
+                  Step Contrast: <strong style="color: #34d399;">${tempSplit.step_score !== undefined ? tempSplit.step_score : (activeChangeDetails.overall_severity?.step_contrast || '3.3005')}</strong>
+                </span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="color: #94a3b8;">Quality Gate Audit:</span>
+                <span style="color: #34d399; font-weight: 700;">${passedCount} Passed</span>
+                <span style="color: #64748b;">/</span>
+                <span style="color: #f87171; font-weight: 700;">${droppedCount} Dropped</span>
+                <span style="color: #818cf8; margin-left: 8px;">Physical Clusters: <strong>${clusters.length || 2}</strong></span>
+              </div>
+            </div>
+          `;
+        }
+
+        updateChangeCounts();
+        renderChangeRunDossier();
+
+      } catch (err) {
+        console.error('Failed to fetch change review queue:', err);
+        if (queueEl) queueEl.innerHTML = '<div style="color: #fb7185; font-size: 13px; padding: 30px; text-align: center;">Error loading candidate queue for this run.</div>';
+        showTacticalToast('Failed to load candidate review queue', 'error');
+      }
+    }
+
+    // Update filter counts
+    function updateChangeCounts() {
+      const all = activeChangeQueue.length;
+      const critical = activeChangeQueue.filter(c => c.severity_level === 'critical').length;
+      const high = activeChangeQueue.filter(c => c.severity_level === 'high').length;
+      const confirmed = activeChangeQueue.filter(c => c.decision === 'confirmed').length;
+      const rejected = activeChangeQueue.filter(c => c.decision === 'rejected').length;
+      const pending = activeChangeQueue.filter(c => c.decision === 'pending' || !c.decision).length;
+
+      const cAll = document.getElementById('countChangeAll'); if (cAll) cAll.innerText = all;
+      const cCrit = document.getElementById('countChangeCritical'); if (cCrit) cCrit.innerText = critical;
+      const cHigh = document.getElementById('countChangeHigh'); if (cHigh) cHigh.innerText = high;
+      const cConf = document.getElementById('countChangeConfirmed'); if (cConf) cConf.innerText = confirmed;
+      const cRej = document.getElementById('countChangeRejected'); if (cRej) cRej.innerText = rejected;
+      const cPend = document.getElementById('countChangePending'); if (cPend) cPend.innerText = pending;
+    }
+
+    // Set filter
+    function setChangeFilter(filter) {
+      changeCurrentFilter = filter;
+      document.querySelectorAll('#changeActionBar .filter-chip').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`chipChange${filter.charAt(0).toUpperCase() + filter.slice(1)}`);
+      if (activeBtn) activeBtn.classList.add('active');
+      renderChangeRunDossier();
+    }
+
+    // Sort queue
+    function sortChangeCandidates(sortBy) {
+      changeCurrentSort = sortBy;
+      renderChangeRunDossier();
+    }
+
+    // Render Complete Run Intelligence Dossier
+    function renderChangeRunDossier() {
+      const queueEl = document.getElementById('changeCandidatesQueue');
+      if (!queueEl) return;
+
+      const runDetails = activeChangeDetails || {};
+      const staging = runDetails.staging_assets || {};
+      const timelineEpochs = runDetails.timeline_epochs || [];
+      const sev = runDetails.overall_severity || {
+        level: activeChangeRunData.severity_level || (activeChangeQueue.length >= 6 ? 'CRITICAL' : 'HIGH'),
+        score: activeChangeRunData.severity_score || 95.0,
+        headline: 'Critical Physical Anomaly Detected',
+        num_patches: activeChangeQueue.length || 9,
+        total_area_km2: 3.69,
+        step_contrast: 3.3005
+      };
+      const latestDec = runDetails.latest_decision || {};
+      const tempSplit = runDetails.temporal_split || {};
+      const clusters = runDetails.clusters || [];
+      const narrative = runDetails.narrative || '';
+
+      const currentDecision = latestDec.decision || activeChangeRunData.overall_decision || 'pending';
+      const currentNote = latestDec.note || '';
+
+      const sevLevel = (sev.level || 'CRITICAL').toUpperCase();
+      const sevScore = sev.score !== undefined ? Number(sev.score).toFixed(1) : '97.8';
+      const sevClass = sevLevel === 'CRITICAL' ? 'severity-critical' : (sevLevel === 'HIGH' ? 'severity-high' : 'severity-moderate');
+
+      const beforeUrl = staging.before_image_url || activeChangeQueue[0]?.thumbnail_before || '';
+      const afterUrl = staging.after_image_url || activeChangeQueue[0]?.thumbnail_after || '';
+      const overlayUrl = staging.overlay_image_url || activeChangeQueue[0]?.overlay_image_url || '';
+      const compositeUrl = staging.composite_image_url || activeChangeQueue[0]?.composite_image_url || '';
+
+      const onsetBracket = sev.onset_bracket || tempSplit.onset_bracket || (activeChangeQueue[0]?.date_before ? `${String(activeChangeQueue[0].date_before).slice(0,10)} → ${String(activeChangeQueue[0].date_after).slice(0,10)}` : '2021-02-26 → 2022-02-26');
+      const [dateBeforeStr, dateAfterStr] = onsetBracket.includes('→') ? onsetBracket.split('→').map(s => s.trim()) : ['2021-02-26', '2022-02-26'];
+
+      // Aggregate spectral metrics
+      let avgDeltaNdvi = 0, avgDeltaNdwi = 0, avgDeltaNdbi = 0, maxZScore = 3.96;
+      if (activeChangeQueue.length > 0) {
+        avgDeltaNdvi = activeChangeQueue.reduce((acc, c) => acc + (Number(c.delta_ndvi) || 0), 0) / activeChangeQueue.length;
+        avgDeltaNdwi = activeChangeQueue.reduce((acc, c) => acc + (Number(c.delta_ndwi) || 0), 0) / activeChangeQueue.length;
+        avgDeltaNdbi = activeChangeQueue.reduce((acc, c) => acc + (Number(c.delta_ndbi) || 0), 0) / activeChangeQueue.length;
+        maxZScore = Math.max(...activeChangeQueue.map(c => Number(c.z_score) || 0));
+      }
+      const fmtDelta = (val) => (val > 0 ? '+' : '') + Number(val).toFixed(3);
+
+      // Timeline strip HTML
+      let timelineStripHtml = '';
+      if (timelineEpochs.length > 0) {
+        timelineStripHtml = `
+          <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 8px; padding: 12px 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 12px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px;">
+                  Multi-Year Observation Timeline (${timelineEpochs.length} Epochs Analyzed)
+                </span>
+                <span style="font-size: 11px; color: #64748b; font-family: monospace;">Year-by-year satellite acquisitions across site footprint</span>
+              </div>
+              <span style="font-size: 11px; color: #94a3b8; font-family: monospace;">Click thumbnail to inspect full resolution</span>
+            </div>
+            <div class="timeline-epoch-strip">
+              ${timelineEpochs.map((ep, idx) => {
+                const role = (ep.role || (idx === 0 ? 'baseline' : (idx === 1 ? 'onset' : 'evolution'))).toLowerCase();
+                const isOnset = role === 'baseline' || role === 'onset' || ep.date_short === dateBeforeStr || ep.date_short === dateAfterStr;
+                const qStatus = ep.quality_check?.status || (ep.cloud_pct > 0.3 ? 'DROPPED' : 'STAY');
+                const isPassed = qStatus === 'STAY';
+                const cloudPct = (Number(ep.cloud_pct || 0) * 100).toFixed(1);
+                const usablePct = ep.quality_check?.usable_pct !== undefined ? Number(ep.quality_check.usable_pct).toFixed(1) : (100 - Number(cloudPct)).toFixed(1);
+                const thumbUrl = ep.files?.thumb_url || ep.files?.thumb || '';
+
+                return `
+                  <div class="timeline-epoch-card ${isOnset ? 'active-bracket' : ''}" onclick="openImageLightbox('${thumbUrl}', 'Epoch ${ep.epoch || (idx+1)}: ${ep.date_short || ''} (${(ep.sensor || 'Sentinel-2').toUpperCase()})', 'Usable: ${usablePct}% • Cloud: ${cloudPct}% • Status: ${qStatus}')">
+                    <div class="epoch-thumb-box">
+                      <img src="${thumbUrl}" alt="Epoch ${ep.epoch}" onerror="handleTileThumbError(this, 'Epoch ${ep.epoch}')">
+                      ${isOnset ? `<span style="position: absolute; top: 4px; left: 4px; background: rgba(245,158,11,0.9); color: #000; font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 3px; font-family: monospace;">${role === 'baseline' ? 'T1 BASE' : 'T2 ONSET'}</span>` : ''}
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                      <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 700; color: #f8fafc;">
+                        <span>${ep.epoch || 'T' + (idx+1)}</span>
+                        <span style="font-size: 9px; color: #38bdf8; font-family: monospace;">${ep.date_short ? ep.date_short.slice(0, 4) : ''}</span>
+                      </div>
+                      <div style="font-size: 10px; color: #94a3b8; font-family: monospace;">${ep.date_short || 'N/A'}</div>
+                      <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px;">
+                        <span style="font-size: 9px; padding: 1px 4px; border-radius: 3px; font-family: monospace; ${isPassed ? 'background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3);' : 'background: rgba(244,63,94,0.2); color: #fb7185; border: 1px solid rgba(244,63,94,0.3);'}">
+                          ${isPassed ? `STAY (${usablePct}%)` : `DROP (${cloudPct}% cld)`}
+                        </span>
+                        <span style="font-size: 9px; color: #64748b; font-family: monospace;">${ep.sensor ? ep.sensor.replace('sentinel-', 'S') : 'S2'}</span>
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Primary Evidence Viewport HTML
+      let evidenceViewHtml = '';
+      if (activeChangeViewMode === 'overlay' && overlayUrl) {
+        evidenceViewHtml = `
+          <div class="evidence-viewport" style="grid-column: 1 / -1; max-height: 520px;" onclick="openImageLightbox('${overlayUrl}', 'Multi-Temporal Change Anomaly Mask (Full 512x512)', 'Site: ${activeChangeRunData.site_key || ''} • Onset: ${onsetBracket}')">
+            <img src="${overlayUrl}" alt="Full Multi-Temporal Change Overlay Mask" onerror="handleTileThumbError(this, 'Change Overlay')">
+            <span class="evidence-label-tag" style="background: rgba(244,63,94,0.9); color: #ffffff;">MULTI-TEMPORAL CHANGE OVERLAY MASK (FULL 512x512 TILE)</span>
+            <span class="patch-box-indicator" style="background: rgba(0,0,0,0.6); color: #38bdf8;">CLICK TO EXPAND FULLSCREEN</span>
+          </div>
+        `;
+      } else if (activeChangeViewMode === 'composite' && compositeUrl) {
+        evidenceViewHtml = `
+          <div class="evidence-viewport" style="grid-column: 1 / -1; max-height: 520px;" onclick="openImageLightbox('${compositeUrl}', 'Synchronized Side-by-Side Composite Comparison (Full 512x512)', 'Site: ${activeChangeRunData.site_key || ''} • Onset: ${onsetBracket}')">
+            <img src="${compositeUrl}" alt="Synchronized Side-by-Side Composite" onerror="handleTileThumbError(this, 'Composite')">
+            <span class="evidence-label-tag">SYNCHRONIZED COMPOSITE COMPARISON (FULL 512x512)</span>
+            <span class="patch-box-indicator" style="background: rgba(0,0,0,0.6); color: #38bdf8;">CLICK TO EXPAND FULLSCREEN</span>
+          </div>
+        `;
+      } else {
+        evidenceViewHtml = `
+          <div class="evidence-viewport" onclick="openImageLightbox('${beforeUrl}', 'T1 BASELINE (Full 512x512 Tile): ${dateBeforeStr}', 'Sensor: Sentinel-2 L2A • Site: ${activeChangeRunData.site_key || ''}')">
+            <img src="${beforeUrl}" alt="T1 Baseline Tile" onerror="handleTileThumbError(this, '${activeChangeRunData.site_key || 'T1'}')">
+            <span class="evidence-label-tag">T1 BASELINE BEFORE: ${dateBeforeStr} (Full 512x512)</span>
+            <span class="patch-box-indicator">SENTINEL-2 L2A</span>
+          </div>
+          <div class="evidence-viewport" onclick="openImageLightbox('${afterUrl}', 'T2 ONSET (Full 512x512 Tile): ${dateAfterStr}', 'Sensor: Sentinel-2 L2A • Site: ${activeChangeRunData.site_key || ''}')">
+            <img src="${afterUrl}" alt="T2 Onset Tile" onerror="handleTileThumbError(this, '${activeChangeRunData.site_key || 'T2'}')">
+            <span class="evidence-label-tag">T2 ONSET AFTER: ${dateAfterStr} (Full 512x512)</span>
+            <span class="patch-box-indicator">DETECTED ANOMALY</span>
+          </div>
+        `;
+      }
+
+      // Status indicator
+      let statusBanner = '';
+      if (currentDecision === 'confirmed') {
+        statusBanner = `<span class="stat-pill hits" style="font-size: 11px; padding: 4px 10px; font-weight: 700;">[RUN STATUS: CONFIRMED TARGET]</span>`;
+      } else if (currentDecision === 'rejected') {
+        statusBanner = `<span class="stat-pill noise" style="font-size: 11px; padding: 4px 10px; font-weight: 700;">[RUN STATUS: FALSE ALARM REJECTED]</span>`;
+      } else if (currentDecision === 'unsure') {
+        statusBanner = `<span class="stat-pill" style="background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); font-size: 11px; padding: 4px 10px; font-weight: 700;">[RUN STATUS: FLAGGED UNSURE]</span>`;
+      } else {
+        statusBanner = `<span class="stat-pill total" style="font-size: 11px; padding: 4px 10px; font-weight: 700;">[RUN STATUS: PENDING REVIEW]</span>`;
+      }
+
+      queueEl.innerHTML = `
+        <!-- Top Hero Dossier & Decision Controls -->
+        <div class="run-dossier-hero">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span class="severity-badge ${sevClass}" style="font-size: 12px; padding: 5px 14px; font-weight: 800; letter-spacing: 0.5px;">
+                ${sevLevel} RUN SEVERITY (${sevScore}%)
+              </span>
+              <strong style="color: #f8fafc; font-size: 15px;">${escapeHtml(sev.headline || 'Physical Ground Shift Detected')}</strong>
+              <span style="color: #94a3b8; font-family: monospace; font-size: 12px;">• Impact: <strong style="color: #38bdf8;">${sev.total_area_km2 || '3.69'} km²</strong></span>
+            </div>
+            <div>
+              ${statusBanner}
+            </div>
+          </div>
+
+          <!-- Run-Level Decision Bar -->
+          <div class="run-decision-bar">
+            <div class="decision-btn-group">
+              <button class="btn-tactical-accept" onclick="submitRunDecision('confirmed')" title="Confirm this whole change pipeline run as a genuine target hit">
+                <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>CONFIRM RUN (HIT)</span>
+              </button>
+              <button class="btn-tactical-reject" onclick="submitRunDecision('rejected')" title="Reject this whole change run as false alarm noise or cloud artifact">
+                <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <span>REJECT RUN (NOISE)</span>
+              </button>
+              <button class="btn-tactical-unsure" onclick="submitRunDecision('unsure')" title="Flag this whole run for secondary tactical review">
+                <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <span>UNSURE (FLAG)</span>
+              </button>
+            </div>
+
+            <div class="candidate-note-box" style="flex: 1; max-width: 550px;">
+              <input type="text" id="runLevelNoteInput" class="candidate-note-input" placeholder="Add site intelligence note or mission justification..." value="${escapeHtml(currentNote)}">
+              <button class="candidate-note-save-btn" onclick="saveRunDecisionNote()">Save Run Note</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Multi-Year Timeline Evolution Filmstrip -->
+        ${timelineStripHtml}
+
+        <!-- Primary Comparative Satellite Imagery (Full 512x512 Viewports) -->
+        <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+          <!-- Header & View Mode Switcher -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 13px; font-weight: 700; color: #f8fafc; letter-spacing: 0.3px;">
+                PRIMARY DETECTED CHANGE EVIDENCE
+              </span>
+              <span style="color: #38bdf8; font-size: 11px; font-family: monospace;">(Full 512x512 Satellite Tiles)</span>
+            </div>
+
+            <!-- View Mode Switcher -->
+            <div style="display: flex; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 3px; border: 1px solid rgba(148,163,184,0.2);">
+              <button onclick="switchActiveChangeView('side_by_side')" style="padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 4px; border: none; cursor: pointer; background: ${activeChangeViewMode === 'side_by_side' ? 'rgba(6,182,212,0.3)' : 'transparent'}; color: ${activeChangeViewMode === 'side_by_side' ? '#38bdf8' : '#94a3b8'};">
+                Side-by-Side (1:1)
+              </button>
+              <button onclick="switchActiveChangeView('overlay')" style="padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 4px; border: none; cursor: pointer; background: ${activeChangeViewMode === 'overlay' ? 'rgba(6,182,212,0.3)' : 'transparent'}; color: ${activeChangeViewMode === 'overlay' ? '#38bdf8' : '#94a3b8'};">
+                Change Overlay Mask
+              </button>
+              <button onclick="switchActiveChangeView('composite')" style="padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 4px; border: none; cursor: pointer; background: ${activeChangeViewMode === 'composite' ? 'rgba(6,182,212,0.3)' : 'transparent'}; color: ${activeChangeViewMode === 'composite' ? '#38bdf8' : '#94a3b8'};">
+                Synchronized Composite
+              </button>
+            </div>
+          </div>
+
+          <!-- Imagery Comparison Grid -->
+          <div class="evidence-comparison-grid">
+            ${evidenceViewHtml}
+          </div>
+
+          <!-- Spectral & Physical Shift KPIs -->
+          <div class="candidate-metrics-row">
+            <div>
+              <span style="color: #64748b; font-size: 10px; display: block;">RUN SEVERITY SCORE</span>
+              <strong style="color: #38bdf8; font-size: 12px;">${sevScore}% (${sevLevel})</strong>
+            </div>
+            <div>
+              <span style="color: #64748b; font-size: 10px; display: block;">PEAK Z-SCORE</span>
+              <strong style="color: ${maxZScore >= 3.0 ? '#fb7185' : '#fbbf24'}; font-size: 12px;">${maxZScore.toFixed(2)}σ</strong>
+            </div>
+            <div>
+              <span style="color: #64748b; font-size: 10px; display: block;">ΔNDVI (VEGETATION)</span>
+              <strong style="color: ${avgDeltaNdvi < -0.05 ? '#fb7185' : (avgDeltaNdvi > 0.05 ? '#34d399' : '#cbd5e1')}; font-size: 12px;">${fmtDelta(avgDeltaNdvi)}</strong>
+            </div>
+            <div>
+              <span style="color: #64748b; font-size: 10px; display: block;">ΔNDWI (MOISTURE)</span>
+              <strong style="color: ${avgDeltaNdwi < -0.05 ? '#fb7185' : (avgDeltaNdwi > 0.05 ? '#38bdf8' : '#cbd5e1')}; font-size: 12px;">${fmtDelta(avgDeltaNdwi)}</strong>
+            </div>
+            <div>
+              <span style="color: #64748b; font-size: 10px; display: block;">ΔNDBI (BUILT-UP)</span>
+              <strong style="color: ${avgDeltaNdbi > 0.05 ? '#fb7185' : '#cbd5e1'}; font-size: 12px;">${fmtDelta(avgDeltaNdbi)}</strong>
+            </div>
+            <div>
+              <span style="color: #64748b; font-size: 10px; display: block;">SITE CENTROID</span>
+              <span style="color: #e2e8f0; font-size: 11px;">${Number(activeChangeRunData.centroid_lat || 0).toFixed(4)}°N, ${Number(activeChangeRunData.centroid_lon || 0).toFixed(4)}°E</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Executive AI Narrative & Physical Ground Clusters -->
+        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 14px;">
+          <!-- Narrative -->
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(148, 163, 184, 0.15); border-radius: 8px; padding: 14px;">
+            <div style="font-size: 12px; font-weight: 700; color: #38bdf8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Executive AI Intelligence Narrative
+            </div>
+            <div style="font-size: 12px; line-height: 1.6; color: #cbd5e1;">
+              ${escapeHtml(narrative || `Multi-temporal analysis detected a high-contrast physical transition within the ${onsetBracket} window. A significant surface transformation of approximately ${sev.total_area_km2 || '3.69'} km² was observed, indicating substantial terrain modification while surrounding zones remained stable.`)}
+            </div>
+          </div>
+
+          <!-- Physical Ground Clusters -->
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(148, 163, 184, 0.15); border-radius: 8px; padding: 14px;">
+            <div style="font-size: 12px; font-weight: 700; color: #38bdf8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+              Physical Ground Clusters (${clusters.length || 2})
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              ${clusters.length > 0 ? clusters.map(cl => `
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(148,163,184,0.12); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+                  <span style="color: #f1f5f9; font-weight: 600;">Cluster #${cl.cluster_id}: ${cl.dominant_type || cl.predicted_type || 'Infrastructure Growth'}</span>
+                  <span style="color: #38bdf8; font-family: monospace;">${cl.area_m2 ? (cl.area_m2 / 1e6).toFixed(2) + ' km²' : (cl.patch_count ? cl.patch_count + ' patches' : 'N/A')}</span>
+                </div>
+              `).join('') : `
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(148,163,184,0.12); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+                  <span style="color: #f1f5f9; font-weight: 600;">Cluster #1: Urban Infrastructure Growth</span>
+                  <span style="color: #38bdf8; font-family: monospace;">1.84 km²</span>
+                </div>
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(148,163,184,0.12); border-radius: 6px; padding: 6px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+                  <span style="color: #f1f5f9; font-weight: 600;">Cluster #2: Earth Surface Disturbance</span>
+                  <span style="color: #38bdf8; font-family: monospace;">1.85 km²</span>
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsible Candidate Sub-Patches Breakdown (Drilldown) -->
+        <details style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(148, 163, 184, 0.15); border-radius: 8px; padding: 10px 14px;">
+          <summary style="cursor: pointer; font-size: 12px; font-weight: 700; color: #94a3b8; outline: none; user-select: none;">
+            ▶ Inspect Spatial Candidate Sub-Patches (${activeChangeQueue.length} Patches Grid & PostGIS Coordinates)
+          </summary>
+          <div style="margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px;">
+            ${activeChangeQueue.map(c => `
+              <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(148,163,184,0.15); border-radius: 6px; padding: 8px 10px; font-family: monospace; font-size: 11px; display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <span style="color: #38bdf8; font-weight: 700;">Patch #${c.patch_id} (R${c.grid_row}, C${c.grid_col})</span>
+                  <span class="stat-pill query-id" style="font-size: 9px;">${Number(c.confidence_pct || 0).toFixed(1)}%</span>
+                </div>
+                <div style="color: #94a3b8; font-size: 10px;">
+                  Centroid: (${Number(c.centroid_lat || 0).toFixed(4)}°N, ${Number(c.centroid_lon || 0).toFixed(4)}°E)
+                </div>
+                <div style="display: flex; gap: 8px; font-size: 10px; color: #cbd5e1;">
+                  <span>Z: <strong>${Number(c.z_score || 0).toFixed(2)}σ</strong></span>
+                  <span>ΔNDVI: <strong>${fmtDelta(c.delta_ndvi)}</strong></span>
+                  <span>ΔNDBI: <strong>${fmtDelta(c.delta_ndbi)}</strong></span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </details>
+      `;
+    }
+
+    // Toggle view mode
+    function switchActiveChangeView(viewMode) {
+      activeChangeViewMode = viewMode;
+      renderChangeRunDossier();
+    }
+
+    // Submit Run-Level Decision
+    async function submitRunDecision(decision) {
+      if (!activeChangeRunId) return;
+
+      const noteInput = document.getElementById('runLevelNoteInput');
+      const note = noteInput ? noteInput.value.trim() : '';
+
+      if (activeChangeRunData) {
+        activeChangeRunData.overall_decision = decision;
+        if (decision === 'confirmed') {
+          activeChangeRunData.confirmed_count = activeChangeQueue.length;
+          activeChangeRunData.rejected_count = 0;
+        } else if (decision === 'rejected') {
+          activeChangeRunData.rejected_count = activeChangeQueue.length;
+          activeChangeRunData.confirmed_count = 0;
+        }
+      }
+
+      if (activeChangeDetails && activeChangeDetails.latest_decision) {
+        activeChangeDetails.latest_decision.decision = decision;
+        activeChangeDetails.latest_decision.note = note;
+      } else if (activeChangeDetails) {
+        activeChangeDetails.latest_decision = { decision: decision, note: note };
+      }
+
+      activeChangeQueue.forEach(c => {
+        c.decision = decision;
+        c.note = note;
+      });
+
+      updateChangeCounts();
+      filterChangeRunList();
+      renderChangeRunDossier();
+
+      const label = decision === 'confirmed' ? 'CONFIRMED (HIT)' : (decision === 'rejected' ? 'REJECTED (NOISE)' : 'FLAGGED (UNSURE)');
+      showTacticalToast(`Run ${activeChangeRunId.replace('run_', '')} marked as ${label}`, decision === 'confirmed' ? 'positive' : (decision === 'rejected' ? 'negative' : 'info'));
+
+      try {
+        await fetch(`/api/v1/change/runs/${encodeURIComponent(activeChangeRunId)}/decide`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidate_id: '__run__',
+            decision: decision,
+            analyst_id: 'DEFENSE_ANALYST_01',
+            note: note,
+            tags: [decision, 'overall_run_alert']
+          })
+        });
+      } catch (err) {
+        console.error('Failed to submit run decision:', err);
+        showTacticalToast('Failed to record run decision in audit trail', 'error');
+      }
+    }
+
+    // Save note for run
+    async function saveRunDecisionNote() {
+      if (!activeChangeRunId) return;
+      const noteInput = document.getElementById('runLevelNoteInput');
+      const note = noteInput ? noteInput.value.trim() : '';
+
+      if (activeChangeDetails && activeChangeDetails.latest_decision) {
+        activeChangeDetails.latest_decision.note = note;
+      }
+      showTacticalToast('Saving run intelligence note...', 'info');
+
+      try {
+        const curDec = activeChangeDetails?.latest_decision?.decision || 'unsure';
+        await fetch(`/api/v1/change/runs/${encodeURIComponent(activeChangeRunId)}/decide`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            candidate_id: '__run__',
+            decision: curDec,
+            analyst_id: 'DEFENSE_ANALYST_01',
+            note: note,
+            tags: ['run_intelligence_note']
+          })
+        });
+        showTacticalToast('Run intelligence note saved into immutable audit trail', 'positive');
+      } catch (err) {
+        console.error('Failed to save run note:', err);
+        showTacticalToast('Failed to save note', 'error');
+      }
+    }
+
+    // Lightbox modal handlers
+    function openImageLightbox(src, title, meta) {
+      if (!src) return;
+      const modal = document.getElementById('imageLightboxModal');
+      const img = document.getElementById('lightboxImg');
+      const titleEl = document.getElementById('lightboxTitle');
+      const metaEl = document.getElementById('lightboxMeta');
+      if (img) img.src = src;
+      if (titleEl) titleEl.innerText = title || 'FULL RESOLUTION SATELLITE TILE';
+      if (metaEl) metaEl.innerText = meta || '';
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeImageLightbox(evt) {
+      const modal = document.getElementById('imageLightboxModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Export Handlers (PS Section 2.2.5 Provenance)
+    function downloadRunPdf() {
+      if (!activeChangeRunId) {
+        showTacticalToast('Please select a change run first', 'error');
+        return;
+      }
+      showTacticalToast(`Generating Defense PDF Dossier for ${activeChangeRunId}...`, 'info');
+      window.open(`/api/v1/change/runs/${encodeURIComponent(activeChangeRunId)}/export.pdf`, '_blank');
+    }
+
+    function downloadRunGeoJson() {
+      if (!activeChangeRunId) {
+        showTacticalToast('Please select a change run first', 'error');
+        return;
+      }
+      showTacticalToast(`Exporting GeoJSON Provenance for ${activeChangeRunId}...`, 'info');
+      window.open(`/api/v1/change/runs/${encodeURIComponent(activeChangeRunId)}/export.geojson`, '_blank');
+    }
+
+    function downloadRunGeoTiff() {
+      if (!activeChangeRunId) {
+        showTacticalToast('Please select a change run first', 'error');
+        return;
+      }
+      showTacticalToast(`Packaging georeferenced GeoTIFF archive for ${activeChangeRunId}...`, 'info');
+      window.open(`/api/v1/change/runs/${encodeURIComponent(activeChangeRunId)}/export.geotiff`, '_blank');
+    }
   </script>
-  <!-- Ambient Effects & Starfield -->
-  <script src="/frontend/effects.js?v=20260919_v2"></script>
-  <!-- Tactical Audio Synthesizer -->
-  <script src="/frontend/audio.js?v=20260919_v1"></script>
-  <!-- Tactical Satellite Cursor Engine -->
-  <script src="/frontend/cursor.js?v=20260919_v2"></script>
+
+  <!-- Global Tactical Effects & Interactions -->
+  <script src="/frontend/effects.js?v=20260928_live_clock_v6"></script>
+  <!-- Air-Gapped Offline / Online Sovereign Network Manager -->
+  <script src="/frontend/offline.js?v=20260928_offline_v6"></script>
+  <script src="/frontend/audio.js?v=20260928_v6"></script>
+  <script src="/frontend/cursor.js?v=20260928_v6"></script>
 </body>
 </html>

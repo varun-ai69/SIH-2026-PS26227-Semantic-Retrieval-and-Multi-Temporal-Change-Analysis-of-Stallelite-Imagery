@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Canopus — Sovereign Multi-Temporal Change Detection Studio</title>
-  <link rel="stylesheet" href="/frontend/index.css?v=20260919_popover_final">
+  <link rel="stylesheet" href="/frontend/index.css?v=20260928_minimal_v4">
   <link rel="stylesheet" href="/frontend/effects.css?v=20260919_v2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -740,44 +740,53 @@
 
   <!-- Top Aerospace Navigation Bar -->
   <header>
-    <div class="logo-section">
-      <div class="logo-badge" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25)); border: 1px solid var(--accent-cyan); border-radius: 8px; width: 36px; height: 36px;">
+    <a href="/" class="logo-section">
+      <div class="logo-badge">
         <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
       </div>
-      <div>
-        <div class="logo-title">CANOPUS &bull; CHANGE DETECTION STUDIO</div>
-        <div class="logo-subtitle">SOVEREIGN MULTI-TEMPORAL MOSAIC CANVAS &bull; DEFENSE DGIS</div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span class="logo-title">CANOPUS</span>
+        <span class="logo-divider">/</span>
+        <span class="logo-module-tag">CHANGE DETECTION</span>
       </div>
-    </div>
+    </a>
     <nav class="nav-links">
-      <a href="/" class="nav-item" id="nav-map" style="text-decoration: none;">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map & Coverage
+      <a href="/" class="nav-item" id="nav-map">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map &amp; Coverage
       </a>
-      <a href="/retrieval.html" class="nav-item" id="nav-retrieval" style="text-decoration: none;">
+      <a href="/retrieval.html" class="nav-item" id="nav-retrieval">
         <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
       </a>
-      <a href="/change.html" class="nav-item active" id="nav-change" style="text-decoration: none;">
+      <a href="/change.html" class="nav-item active" id="nav-change">
         <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
       </a>
-      <a href="/clustering.html" class="nav-item" id="nav-clustering" style="text-decoration: none;">
+      <a href="/clustering.html" class="nav-item" id="nav-clustering">
         <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
       </a>
-      <a href="/review.html" class="nav-item" id="nav-review" style="text-decoration: none;">
+      <a href="/review.html" class="nav-item" id="nav-review">
         <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
       </a>
     </nav>
     <div class="header-status">
-      <button class="cursor-toggle-btn" id="cursorToggleBtn" onclick="toggleTacticalCursor()" title="Toggle Satellite Cursor (Alt+C)" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.3); color: #38bdf8; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
-        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg> <span>TAC CURSOR</span>
-      </button>
-      <button class="audio-toggle-btn" id="audioToggleBtn" onclick="toggleTacticalAudio()" title="Toggle Tactical Sound (Alt+M)" style="background: rgba(15,23,42,0.6); border: 1px solid rgba(100,116,139,0.3); color: #64748b; padding: 4px 8px; border-radius: 4px; font-family: monospace; font-size: 11px; display: flex; align-items: center; gap: 4px;">
-        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg> <span>TAC AUDIO [MUTE]</span>
-      </button>
-      <div class="offline-badge">
-        <div class="offline-dot"></div>
-        <span>SOVEREIGN OFFLINE ARCHIVE</span>
+      <!-- Live UTC Mission Clock -->
+      <div class="mission-clock-pill" title="Synchronized Satellite Orbital Time (UTC)">
+        <svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <span class="mission-clock-time" id="liveUtcClock">00:00:00 UTC</span>
       </div>
-      <span class="tag-badge" id="totalTilesBadge">0 TILES ONLINE</span>
+
+      <!-- Air-Gapped Offline / Online Sovereign Network Mode Pill -->
+      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()" title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
+        <div class="mode-dot"></div>
+        <span>ONLINE</span>
+      </div>
+
+      <a href="/?openIngest=1" class="ingest-aoi-nav-btn" style="text-decoration: none;">
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Ingest New AOI
+      </a>
+      <div class="status-pill" id="archiveStatusPill">
+        <div class="status-dot"></div>
+        <span id="archiveTileCount">ONLINE</span>
+      </div>
     </div>
   </header>
 
@@ -894,50 +903,44 @@
   <!-- Staged Multi-Temporal Evidence Modal -->
   <div class="modal-backdrop" id="evidenceModal">
     <div class="modal-card">
+      <!-- Modal Header -->
       <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; gap: 10px; flex-wrap: wrap;">
         <h3 style="margin: 0; font-size: 16px; color: var(--cyan-bright); display: flex; align-items: center; gap: 8px;">
           <svg class="ui-icon icon-cyan" width="18" height="18" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
           Multi-Temporal Change Detection &bull; Evidence Studio
         </h3>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="display: flex; gap: 4px; background: rgba(0,0,0,0.4); padding: 3px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
-            <button type="button" class="view-mode-pill active" id="modalViewModeWipe" onclick="setModalComparisonMode('wipe')">
-              <svg class="ui-icon icon-cyan" width="12" height="12" viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21"/><polyline points="8 8 4 12 8 16"/><polyline points="16 8 20 12 16 16"/></svg>
-              Split Wipe Reveal
-            </button>
-            <button type="button" class="view-mode-pill" id="modalViewModeDual" onclick="setModalComparisonMode('dual')">
-              <svg class="ui-icon icon-amber" width="12" height="12" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
-              Side-by-Side Dual
-            </button>
-          </div>
+          <span id="modalStepCountBadge" style="display:none; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.35); font-family: var(--font-mono); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 5px;"></span>
           <button onclick="closeEvidenceModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 16px; cursor: pointer; padding: 4px 8px; line-height: 1; display: inline-flex; align-items: center;" aria-label="Close"><svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
       </div>
 
-      <!-- Main 2-Image Comparison Grid (Uncluttered, No Corner Obstructions) -->
-      <div class="comparison-wrapper" id="modalComparisonWrapper" style="margin: 14px 0;">
-        <!-- Injected via JS -->
-      </div>
+      <!-- Whole-Window Executive Narrative Banner -->
+      <div id="modalWholeWindowBanner" style="display:none; margin: 12px 0 0 0; background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(6,18,40,0.95)); border: 1px solid rgba(56,189,248,0.3); border-radius: 10px; padding: 12px 16px;"></div>
 
-      <!-- Optional Collapsed Audit & Hardware Details Drawer (Hidden by default) -->
+      <!-- Multi-Step Timeline Switcher Bar -->
+      <div id="modalStepSwitcherBar" style="display:none; margin: 10px 0; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.07);"></div>
+
+      <!-- Side-by-Side Dual Viewport (injected per-step) -->
+      <div id="modalComparisonWrapper" style="margin: 10px 0;"></div>
+
+      <!-- Tactical Cluster Cards (injected per-step) -->
+      <div id="modalTacticalClustersPanel" style="margin: 0;"></div>
+
+      <!-- Optional Collapsed Quality Audit Drawer -->
       <details style="margin-top: 10px; font-family: var(--font-mono); font-size: 11px; color: #64748b; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 12px;">
-        <summary style="cursor: pointer; color: #38bdf8; outline: none; font-weight: 600;">
-          View Detailed Splitting & Quality Audit Metrics (Optional)
-        </summary>
+        <summary style="cursor: pointer; color: #38bdf8; outline: none; font-weight: 600;">View Quality Audit &amp; Spectral Deltas (Optional)</summary>
         <div style="margin-top: 10px;">
-          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">
-            Staging Directory: <span id="stagedDirText" style="color: var(--cyan-bright);">data/change_staging/...</span>
-          </div>
-          <div class="split-engine-card" id="modalSplitEngineCard" style="background: rgba(14, 165, 233, 0.08); border: 1px solid rgba(14, 165, 233, 0.3); border-radius: 8px; padding: 10px;"></div>
+          <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px;">Staging Directory: <span id="stagedDirText" style="color: var(--cyan-bright);">data/change_staging/...</span></div>
+          <div class="split-engine-card" id="modalSplitEngineCard" style="background: rgba(14,165,233,0.08); border: 1px solid rgba(14,165,233,0.3); border-radius: 8px; padding: 10px;"></div>
           <div class="quality-audit-card" id="modalQualitySummary" style="margin-top: 8px;"></div>
-          <div class="patch-change-card" id="modalPatchChangeCard" style="display: none; margin-top: 8px;"></div>
           <div class="deltas-strip" id="modalDeltasStrip" style="margin-top: 8px;"></div>
         </div>
       </details>
 
       <div style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 12px; align-items: center;">
-        <a href="/review.html" class="hud-pill primary" style="text-decoration: none; padding: 8px 20px; background: linear-gradient(135deg, #06b6d4, #3b82f6); color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; box-shadow: 0 0 16px rgba(6,182,212,0.4);">
-          <span>Open in Analyst Review Workbench (Accept/Reject)</span>
+        <a href="/review.html?tab=change" id="modalBtnOpenReview" class="hud-pill primary" style="text-decoration: none; padding: 8px 20px; background: linear-gradient(135deg, #06b6d4, #3b82f6); color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; box-shadow: 0 0 16px rgba(6,182,212,0.4);">
+          <span>Open in Analyst Review Workbench</span>
           <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
         <button onclick="closeEvidenceModal()" class="hud-pill" style="padding: 8px 20px; color: #fff; font-weight: 600; cursor: pointer;">Close</button>
@@ -983,7 +986,8 @@
         if (!res.ok) throw new Error('Failed to load grid map data');
         gridData = await res.json();
 
-        document.getElementById('totalTilesBadge').innerText = `${gridData.total_tiles} TILES ONLINE`;
+        const tb = document.getElementById('totalTilesBadge');
+        if (tb) tb.innerText = `${gridData.total_tiles} TILES ONLINE`;
 
         computeAtlasCoordinates();
         renderRegionPills();
@@ -1452,7 +1456,23 @@
       if (!selectedTile) return;
       const btn = document.getElementById('btnRunChange');
       btn.disabled = true;
-      btn.innerHTML = 'Running Quality Check & Staging...';
+
+      // Progressive loading messages during long multi-step GPU inference (~3-5 min)
+      const _loadMsgs = [
+        '&#9880; Running Quality Check Gate...',
+        '&#128752; Staging Clean Epochs to Disk...',
+        '&#9889; Prithvi-EO-2.0 Temporal Splitting...',
+        '&#128269; Patch Change Detection (GPU)...',
+        '&#129504; RemoteCLIP Semantic Clustering...',
+        '&#128202; Building Tactical Morphology...'
+      ];
+      let _loadIdx = 0;
+      btn.innerHTML = _loadMsgs[0];
+      const _loadTimer = setInterval(() => {
+        _loadIdx = (_loadIdx + 1) % _loadMsgs.length;
+        if (!btn.disabled) { clearInterval(_loadTimer); return; }
+        btn.innerHTML = _loadMsgs[_loadIdx];
+      }, 3500);
 
       try {
         const res = await fetch('/api/v1/change/stage-tile', {
@@ -1472,6 +1492,7 @@
       } catch (err) {
         alert(`Error staging files: ${err.message}`);
       } finally {
+        clearInterval(_loadTimer);
         btn.disabled = false;
         btn.innerHTML = 'Run Change Detection Engine on this Tile';
       }
@@ -1482,6 +1503,13 @@
       window.tacticalAudio?.playLockOnChirp?.();
       document.getElementById('stagedDirText').innerText = data.staging_dir || '';
       const pca = data.patch_change_analysis || {};
+
+      // Dynamic deep-link to Review Workbench for this specific run
+      const reviewBtn = document.getElementById('modalBtnOpenReview');
+      if (reviewBtn) {
+        const runId = data.run_id || '';
+        reviewBtn.href = runId ? `/review.html?tab=change&run_id=${encodeURIComponent(runId)}` : '/review.html?tab=change';
+      }
 
       // 1. Splitting Engine Decision Card
       const splitEl = document.getElementById('modalSplitEngineCard');
@@ -1565,13 +1593,13 @@
 
       summaryEl.innerHTML = qualityHtml;
 
-      // 3. Render Temporal Comparison (Split Wipe Reveal Slider by default, with Dual Option)
+      // 3. Render Multi-Step Timeline View
       currentModalEvidenceData = data;
-      renderModalComparison();
+      renderMultiStepView(data);
 
-      // 4. Detailed Patch Change Analysis Card
+      // 4. (Legacy patch card suppressed — handled by renderStepTacticalCards)
       const patchCard = document.getElementById('modalPatchChangeCard');
-      if (patchCard && pca && pca.status === 'success') {
+      if (false && patchCard && pca && pca.status === 'success') {
         const stats = pca.robust_stats || {};
         const candidates = pca.candidates || [];
         const candPercent = ((pca.num_candidates / (pca.total_patches || 64)) * 100).toFixed(1);
@@ -1816,256 +1844,359 @@
     }
 
     /* ============================================================
-       PHASE 6: INTERACTIVE TEMPORAL SPLIT WIPE-REVEAL SLIDER
+       PHASE 6: MULTI-STEP TEMPORAL DUAL VIEW + NARRATIVE BANNER
        ============================================================ */
     let currentModalEvidenceData = null;
-    let currentModalComparisonMode = 'wipe'; // 'wipe' or 'dual'
-    let wipeAutoSweepActive = false;
-    let wipeSweepAnimId = null;
-    let currentWipeOverlayMode = 'overlay'; // 'overlay' or 'raw'
+    let currentActiveStepIndex = 1;  // 1-based step number currently shown
+    let currentDualOverlayMode = 'overlay'; // 'overlay' or 'raw'
 
-    function setModalComparisonMode(mode) {
-      window.tacticalAudio?.playTacticalClick?.();
-      currentModalComparisonMode = mode;
-      document.getElementById('modalViewModeWipe')?.classList.toggle('active', mode === 'wipe');
-      document.getElementById('modalViewModeDual')?.classList.toggle('active', mode === 'dual');
-      renderModalComparison();
-    }
+    // --------------------------------------------------------
+    // renderMultiStepView: Entry point for the new UI
+    // --------------------------------------------------------
+    function renderMultiStepView(data) {
+      if (!data) return;
+      const steps = data.steps || [];
+      const wwn = data.whole_window_narrative || null;
 
-    function renderModalComparison() {
-      if (!currentModalEvidenceData) return;
-      const compWrapper = document.getElementById('modalComparisonWrapper');
-      compWrapper.innerHTML = '';
-      stopWipeAutoSweep();
-
-      const data = currentModalEvidenceData;
-      const pca = data.patch_change_analysis || {};
-      const pcaFiles = pca.files || {};
-      const t1 = data.epochs && data.epochs[0] ? data.epochs[0] : null;
-      const t2 = data.epochs && data.epochs[1] ? data.epochs[1] : null;
-
-      const t1ImgUrl = pcaFiles.before_thumb || (t1 && t1.files ? t1.files.thumb_url : '');
-      const overlayUrl = pcaFiles.change_overlay || (t2 && t2.files ? t2.files.thumb_url : '');
-      const rawUrl = pcaFiles.after_thumb || (t2 && t2.files ? t2.files.thumb_url : '');
-      const t1Date = t1 ? t1.date_short : 'T1 Baseline';
-      const t2Date = t2 ? t2.date_short : 'T2 Subsequent';
-      const candCount = pca.num_candidates || 0;
-
-      if (currentModalComparisonMode === 'wipe') {
-        // Render Split Wipe Reveal Slider
-        compWrapper.innerHTML = `
-          <div style="width: 100%;">
-            <div class="wipe-toolbar">
-              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                <span style="font-family: var(--font-mono); font-size: 11px; color: #94a3b8; margin-right: 4px;">REVEAL LAYER:</span>
-                <button type="button" class="wipe-btn ${currentWipeOverlayMode === 'overlay' ? 'active' : ''}" id="btnWipeModeOverlay" onclick="setWipeOverlayLayer('overlay', '${overlayUrl}', '${rawUrl}')">
-                  <svg class="ui-icon icon-rose" width="12" height="12" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                  AI Change Footprint (${candCount} Patches)
-                </button>
-                <button type="button" class="wipe-btn ${currentWipeOverlayMode === 'raw' ? 'active' : ''}" id="btnWipeModeRaw" onclick="setWipeOverlayLayer('raw', '${overlayUrl}', '${rawUrl}')">
-                  <svg class="ui-icon icon-sky" width="12" height="12" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
-                  Raw T2 Optical
-                </button>
-              </div>
-              <div style="display: flex; gap: 6px; align-items: center;">
-                <button type="button" class="wipe-btn" id="btnWipeAutoSweep" onclick="toggleWipeAutoSweep()">
-                  <svg class="ui-icon icon-cyan" width="12" height="12" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                  <span id="txtWipeSweep">Demo Radar Sweep</span>
-                </button>
-                <button type="button" class="wipe-btn" onclick="resetWipePosition()" title="Reset to Center 50%">
-                  50% Split
-                </button>
-              </div>
+      // Narrative Banner
+      const bannerEl = document.getElementById('modalWholeWindowBanner');
+      if (wwn && bannerEl) {
+        const statusColors = {
+          'ACTIVE_DEVELOPMENT': { bg: 'rgba(239,68,68,0.12)', border: '#ef4444', color: '#f87171' },
+          'NEW_EMERGENCE':      { bg: 'rgba(245,158,11,0.12)', border: '#f59e0b', color: '#fbbf24' },
+          'EXPANDING':          { bg: 'rgba(168,85,247,0.12)', border: '#a855f7', color: '#c084fc' },
+          'RECESSION':          { bg: 'rgba(148,163,184,0.12)', border: '#94a3b8', color: '#94a3b8' },
+          'TRANSFORMED':        { bg: 'rgba(56,189,248,0.12)', border: '#38bdf8', color: '#38bdf8' },
+          'STABLE':             { bg: 'rgba(16,185,129,0.12)', border: '#10b981', color: '#34d399' }
+        };
+        const sc = statusColors[wwn.status] || statusColors['TRANSFORMED'];
+        const dyn = wwn.dynamics_breakdown || {};
+        const dynBadges = Object.entries(dyn).map(([k, v]) => {
+          const dc = { APPEARANCE:'#ef4444', EXPANSION:'#f59e0b', CONTRACTION:'#3b82f6', DISAPPEARANCE:'#94a3b8' };
+          return `<span style="background:${dc[k]||'#38bdf8'}22;color:${dc[k]||'#38bdf8'};border:1px solid ${dc[k]||'#38bdf8'}55;font-size:10px;font-weight:700;padding:1px 7px;border-radius:4px;font-family:var(--font-mono);">${k} ×${v}</span>`;
+        }).join('');
+        bannerEl.style.display = 'block';
+        bannerEl.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+            <div>
+              <div style="font-size:12px;color:#64748b;font-family:var(--font-mono);margin-bottom:4px;">WHOLE-WINDOW INTELLIGENCE SUMMARY &bull; ${wwn.start_date || ''} → ${wwn.end_date || ''}</div>
+              <div style="font-size:15px;font-weight:700;color:${sc.color};">${wwn.headline || 'Multi-Temporal Analysis'}</div>
             </div>
-
-            <div class="wipe-reveal-container" id="wipeContainer" style="--wipe-pos: 50%;">
-              <div class="wipe-reveal-underlay">
-                <img id="wipeImgUnderlay" src="${t1ImgUrl}" alt="T1 Baseline Observation">
-              </div>
-              <div class="wipe-reveal-overlay" id="wipeOverlayWrap">
-                <img id="wipeImgOverlay" src="${currentWipeOverlayMode === 'overlay' ? overlayUrl : rawUrl}" alt="T2 Subsequent Observation">
-              </div>
-              <div class="wipe-laser-divider" id="wipeLaserDivider">
-                <div class="wipe-laser-handle" id="wipeLaserHandle" title="Drag laser curtain left/right">
-                  <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/><polyline points="9 18 15 12 9 6"/></svg>
-                </div>
-              </div>
-              <div class="wipe-hud-badge left">
-                T1: ${t1Date} (BASELINE)
-              </div>
-              <div class="wipe-hud-badge right" id="wipeRightBadge">
-                T2: ${t2Date} (${currentWipeOverlayMode === 'overlay' ? 'OVERLAY' : 'RAW'})
-              </div>
-            </div>
-            <div style="text-align: center; margin-top: 6px; font-family: var(--font-mono); font-size: 11px; color: #64748b;">
-              &larr; Drag handle or move cursor across satellite canvas to dynamically reveal temporal change &rarr;
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+              <span style="background:${sc.bg};color:${sc.color};border:1px solid ${sc.border};font-size:11px;font-weight:700;padding:3px 10px;border-radius:5px;font-family:var(--font-mono);">${wwn.status || 'ANALYSED'}</span>
+              <span style="color:#64748b;font-size:10px;font-family:var(--font-mono);">${wwn.total_epochs||0} Epochs &bull; ${wwn.total_impact_hectares||0} ha impacted</span>
             </div>
           </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">${dynBadges}</div>
+          <div style="font-size:12px;color:#94a3b8;line-height:1.6;">${wwn.full_narrative || ''}</div>
         `;
-
-        setupWipeEventListeners();
-
-      } else {
-        // Dual Side-by-Side Cards Mode
-        if (t1) {
-          const card1 = document.createElement('div');
-          card1.className = 'epoch-card';
-          card1.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 13px; margin-bottom: 8px; font-weight: 700;">
-              <span style="color: #38bdf8;">Before: ${t1Date} (Baseline)</span>
-            </div>
-            <div style="border-radius: 8px; border: 1px solid rgba(255,255,255,0.12); overflow: hidden; background: #000;">
-              <img id="modalT1Img" src="${t1ImgUrl}" alt="Before State" style="width: 100%; aspect-ratio: 1; object-fit: cover; display: block;">
-            </div>
-          `;
-          compWrapper.appendChild(card1);
-        }
-
-        if (t2) {
-          const card2 = document.createElement('div');
-          card2.className = 'epoch-card';
-          card2.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 13px; margin-bottom: 8px; font-weight: 700;">
-              <span style="color: #f87171;">After: ${t2Date} (${candCount} Patches Changed)</span>
-              <button class="patch-toggle-btn" id="btnToggleOverlay" onclick="toggleAfterOverlay('${overlayUrl}', '${rawUrl}')">
-                Raw / Box
-              </button>
-            </div>
-            <div style="border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.45); overflow: hidden; background: #000;">
-              <img id="modalT2Img" src="${overlayUrl}" alt="After State" style="width: 100%; aspect-ratio: 1; object-fit: cover; display: block;">
-            </div>
-          `;
-          compWrapper.appendChild(card2);
-        }
       }
+
+      // Step Switcher Bar
+      const switcherBar = document.getElementById('modalStepSwitcherBar');
+      const stepCountBadge = document.getElementById('modalStepCountBadge');
+
+      if (steps.length === 0) {
+        // Fallback: single pair from epochs
+        if (switcherBar) switcherBar.style.display = 'none';
+        if (stepCountBadge) stepCountBadge.style.display = 'none';
+        renderFallbackDualView(data);
+        return;
+      }
+
+      if (stepCountBadge) {
+        stepCountBadge.style.display = '';
+        stepCountBadge.textContent = `${steps.length} Transition Step${steps.length > 1 ? 's' : ''} Detected`;
+      }
+      if (switcherBar) {
+        switcherBar.style.display = 'flex';
+        switcherBar.innerHTML = `<span style="font-size:11px;color:#64748b;font-family:var(--font-mono);margin-right:4px;white-space:nowrap;">JUMP TO STEP:</span>` +
+          steps.map((s, i) => {
+            const stepN = i + 1;
+            const isOnset = s.role && s.role.toLowerCase().includes('onset');
+            const roleLabel = isOnset ? 'Onset' : 'Evolution';
+            const activeStyle = stepN === currentActiveStepIndex
+              ? `background:${isOnset ? '#ef444430' : '#38bdf820'};color:${isOnset ? '#f87171' : '#38bdf8'};border-color:${isOnset ? '#ef4444' : '#38bdf8'};`
+              : 'background:rgba(0,0,0,0.35);color:#64748b;border-color:rgba(255,255,255,0.12);';
+            return `<button id="stepBtn_${stepN}" onclick="switchToStep(${stepN})" style="${activeStyle}border:1px solid;border-radius:6px;padding:5px 10px;cursor:pointer;font-family:var(--font-mono);font-size:11px;font-weight:700;transition:all 0.2s;">
+              ${isOnset ? '⚡' : '→'} Step ${stepN} <span style="font-weight:400;opacity:0.7;">(${s.date_before?.slice(0,7)||''} → ${s.date_after?.slice(0,7)||''})</span><br>
+              <span style="font-size:9px;opacity:0.8;">[${roleLabel}] ${s.num_candidates||0} patches</span>
+            </button>`;
+          }).join('');
+      }
+
+      // Render the first (or current) step
+      currentActiveStepIndex = 1;
+      renderStepView(steps[0], data);
     }
 
-    function setWipeOverlayLayer(layerMode, overlayUrl, rawUrl) {
-      currentWipeOverlayMode = layerMode;
-      document.getElementById('btnWipeModeOverlay')?.classList.toggle('active', layerMode === 'overlay');
-      document.getElementById('btnWipeModeRaw')?.classList.toggle('active', layerMode === 'raw');
-      const img = document.getElementById('wipeImgOverlay');
-      if (img) img.src = (layerMode === 'overlay' ? overlayUrl : rawUrl);
-      const rightBadge = document.getElementById('wipeRightBadge');
-      if (rightBadge && currentModalEvidenceData) {
-        const t2 = currentModalEvidenceData.epochs?.[1];
-        const t2Date = t2 ? t2.date_short : 'T2 Subsequent';
-        rightBadge.innerText = `T2: ${t2Date} (${layerMode === 'overlay' ? 'OVERLAY' : 'RAW'})`;
+    function switchToStep(stepN) {
+      window.tacticalAudio?.playTacticalClick?.();
+      if (!currentModalEvidenceData) return;
+      const steps = currentModalEvidenceData.steps || [];
+      const step = steps[stepN - 1];
+      if (!step) return;
+      currentActiveStepIndex = stepN;
+      // Update active button styles
+      steps.forEach((s, i) => {
+        const btn = document.getElementById(`stepBtn_${i+1}`);
+        if (!btn) return;
+        const isOnset = s.role && s.role.toLowerCase().includes('onset');
+        const isActive = (i+1) === stepN;
+        if (isActive) {
+          btn.style.background = isOnset ? '#ef444430' : '#38bdf820';
+          btn.style.color = isOnset ? '#f87171' : '#38bdf8';
+          btn.style.borderColor = isOnset ? '#ef4444' : '#38bdf8';
+        } else {
+          btn.style.background = 'rgba(0,0,0,0.35)';
+          btn.style.color = '#64748b';
+          btn.style.borderColor = 'rgba(255,255,255,0.12)';
+        }
+      });
+      renderStepView(step, currentModalEvidenceData);
+    }
+
+    function renderStepView(step, data) {
+      const compWrapper = document.getElementById('modalComparisonWrapper');
+      const clustersPanel = document.getElementById('modalTacticalClustersPanel');
+      if (!step || !compWrapper) return;
+
+      const pca = step.patch_change_analysis || data.patch_change_analysis || {};
+      const files = step.files || pca.files || {};
+      const beforeUrl = files.before_thumb || '';
+      const overlayUrl = files.change_overlay || files.after_thumb || '';
+      const rawUrl = files.after_thumb || '';
+      const sideUrl = files.side_by_side || '';
+      const dateB = step.date_before || step.epoch_before_label || 'Before';
+      const dateA = step.date_after || step.epoch_after_label || 'After';
+      const candCount = step.num_candidates || 0;
+      const isOnset = step.role && step.role.toLowerCase().includes('onset');
+      const roleLabel = isOnset ? '⚡ Onset Breakpoint' : '→ Post-Onset Evolution';
+      const roleColor = isOnset ? '#f87171' : '#38bdf8';
+
+      const misreg = pca.misregistration_correction || {};
+      const misregApplied = misreg.applied;
+      const misregShift = misregApplied ? `🛰️ Phase-Locked: ${misreg.shift_y_pixels > 0 ? '+' : ''}${misreg.shift_y_pixels}y, ${misreg.shift_x_pixels > 0 ? '+' : ''}${misreg.shift_x_pixels}x px` : '';
+
+      // Dual Side-by-Side Viewport
+      compWrapper.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <!-- Before -->
+          <div style="background:rgba(15,23,42,0.85);border:1px solid rgba(56,189,248,0.25);border-radius:10px;overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(56,189,248,0.15);">
+              <span style="color:#38bdf8;font-family:var(--font-mono);font-size:12px;font-weight:700;">BEFORE &bull; T<sub>k</sub></span>
+              <span style="color:#64748b;font-family:var(--font-mono);font-size:11px;">${dateB}</span>
+            </div>
+            <div style="background:#000;aspect-ratio:1;overflow:hidden;">
+              ${beforeUrl ? `<img src="${beforeUrl}" alt="Before ${dateB}" style="width:100%;height:100%;object-fit:cover;display:block;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#334155;font-size:11px;font-family:var(--font-mono);">Image not available</div>'}
+            </div>
+          </div>
+          <!-- After -->
+          <div style="background:rgba(15,23,42,0.85);border:1px solid ${candCount > 0 ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.25)'};border-radius:10px;overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid ${candCount > 0 ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.15)'};">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="color:${roleColor};font-family:var(--font-mono);font-size:12px;font-weight:700;">AFTER &bull; T<sub>k+1</sub></span>
+                <span style="background:${candCount > 0 ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)'};color:${candCount > 0 ? '#f87171' : '#34d399'};border:1px solid ${candCount > 0 ? 'rgba(239,68,68,0.4)' : 'rgba(16,185,129,0.35)'};font-family:var(--font-mono);font-size:10px;font-weight:700;padding:1px 6px;border-radius:4px;">${candCount > 0 ? candCount + ' CHANGED' : 'STABLE'}</span>
+              </div>
+              <div style="display:flex;gap:5px;align-items:center;">
+                <span style="color:#64748b;font-family:var(--font-mono);font-size:11px;">${dateA}</span>
+                ${overlayUrl ? `<button id="btnDualToggleOverlay" onclick="toggleDualOverlay('${overlayUrl}','${rawUrl}')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#f87171;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:10px;font-family:var(--font-mono);font-weight:700;">AI Overlay</button>` : ''}
+              </div>
+            </div>
+            <div style="background:#000;aspect-ratio:1;overflow:hidden;">
+              ${overlayUrl ? `<img id="dualAfterImg" src="${overlayUrl}" alt="After ${dateA}" style="width:100%;height:100%;object-fit:cover;display:block;">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#334155;font-size:11px;font-family:var(--font-mono);">Image not available</div>'}
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;align-items:center;gap:10px;margin-top:6px;font-family:var(--font-mono);font-size:11px;color:#64748b;flex-wrap:wrap;">
+          <span>${roleLabel} &bull; ${dateB} &rarr; ${dateA}</span>
+          ${misregApplied ? `<span style="background:rgba(56,189,248,0.12);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-weight:600;" title="Sub-pixel phase correlation aligned satellite orbital jitter">${misregShift}</span>` : ''}
+        </div>
+      `;
+
+      // Tactical Cluster Cards
+      if (clustersPanel) renderStepTacticalCards(step, clustersPanel);
+    }
+
+    function toggleDualOverlay(overlayUrl, rawUrl) {
+      const img = document.getElementById('dualAfterImg');
+      const btn = document.getElementById('btnDualToggleOverlay');
+      if (!img) return;
+      const isOverlay = img.dataset.mode !== 'raw';
+      if (isOverlay) {
+        img.src = rawUrl;
+        img.dataset.mode = 'raw';
+        if (btn) { btn.textContent = 'Raw Optical'; btn.style.color = '#38bdf8'; btn.style.borderColor = 'rgba(56,189,248,0.4)'; btn.style.background = 'rgba(56,189,248,0.12)'; }
+      } else {
+        img.src = overlayUrl;
+        img.dataset.mode = 'overlay';
+        if (btn) { btn.textContent = 'AI Overlay'; btn.style.color = '#f87171'; btn.style.borderColor = 'rgba(239,68,68,0.35)'; btn.style.background = 'rgba(239,68,68,0.15)'; }
       }
       window.tacticalAudio?.playTacticalClick?.();
     }
 
-    function setWipePosition(pct) {
-      const container = document.getElementById('wipeContainer');
-      if (!container) return;
-      const clamped = Math.max(2, Math.min(98, pct));
-      container.style.setProperty('--wipe-pos', `${clamped}%`);
-    }
+    const TACTICAL_META = {
+      APPEARANCE:   { color: '#ef4444', bg: 'rgba(239,68,68,0.13)',  border: '#ef444455', icon: '+', label: 'APPEARANCE' },
+      EXPANSION:    { color: '#f59e0b', bg: 'rgba(245,158,11,0.13)', border: '#f59e0b55', icon: '⬡', label: 'EXPANSION' },
+      CONTRACTION:  { color: '#3b82f6', bg: 'rgba(59,130,246,0.13)', border: '#3b82f655', icon: '◈', label: 'CONTRACTION' },
+      DISAPPEARANCE:{ color: '#94a3b8', bg: 'rgba(148,163,184,0.13)',border: '#94a3b855', icon: '−', label: 'DISAPPEARANCE' }
+    };
 
-    function resetWipePosition() {
-      stopWipeAutoSweep();
-      setWipePosition(50);
-      window.tacticalAudio?.playTacticalClick?.();
-    }
+    const CLUSTER_PALETTE = [
+      '#ef4444','#10b981','#f59e0b','#06b6d4','#a855f7','#ec4899','#f97316','#22d3ee'
+    ];
 
-    function toggleWipeAutoSweep() {
-      if (wipeAutoSweepActive) {
-        stopWipeAutoSweep();
+    function renderStepTacticalCards(step, panel) {
+      const clusters = step.clusters || [];
+      const pca = step.patch_change_analysis || {};
+      const clusterSemantics = pca.cluster_semantics || {};
+      const deltas = step.spectral_deltas || {};
+
+      if (clusters.length === 0 && Object.keys(clusterSemantics).length === 0) {
+        panel.innerHTML = `
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:12px 16px;font-family:var(--font-mono);font-size:12px;color:#34d399;text-align:center;margin:6px 0;">
+            ✓ No significant physical change clusters detected — terrain is spectrally stable for this transition interval.
+          </div>`;
+        return;
+      }
+
+      // Build cluster list — prefer step.clusters (from change_stager), fallback to cluster_semantics
+      let cardList = [];
+      if (clusters.length > 0) {
+        cardList = clusters;
       } else {
-        startWipeAutoSweep();
+        cardList = Object.entries(clusterSemantics).map(([cid, cl]) => ({ cluster_id: parseInt(cid), ...cl }));
       }
+
+      const fmt = (v) => v !== undefined && v !== null ? ((v > 0 ? '+' : '') + parseFloat(v).toFixed(3)) : 'N/A';
+
+      let cardsHtml = `
+        <div style="margin:6px 0 4px 0;display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-family:var(--font-mono);font-size:11px;color:#38bdf8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Tactical Cluster Analysis</span>
+          <span style="font-family:var(--font-mono);font-size:10px;color:#475569;">${cardList.length} cluster${cardList.length > 1 ? 's' : ''} &bull; ${step.num_candidates||0} changed patches</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">`;
+
+      cardList.forEach((cl, i) => {
+        const cid = cl.cluster_id || cl.cluster || (i + 1);
+        const clusterColor = CLUSTER_PALETTE[(parseInt(cid) - 1) % CLUSTER_PALETTE.length] || CLUSTER_PALETTE[0];
+
+        // Tactical dynamic (may come from change_stager enrichment or cluster_semantics)
+        const td = cl.tactical_dynamic || {};
+        const dynamicKey = td.dynamic || 'APPEARANCE';
+        const tm = TACTICAL_META[dynamicKey] || TACTICAL_META.APPEARANCE;
+        const confidence = td.confidence || cl.confidence || 0.85;
+        const confPct = (confidence * 100).toFixed(0);
+        const rationale = td.rationale || cl.interpretation || cl.predicted_type || 'Physical land-cover transformation.';
+
+        // Spectral values from various sources
+        const dNdvi = cl.mean_delta_ndvi ?? cl.cluster_averages?.avg_delta_ndvi ?? cl.deltas?.delta_ndvi ?? null;
+        const dNdwi = cl.mean_delta_ndwi ?? cl.cluster_averages?.avg_delta_ndwi ?? cl.deltas?.delta_ndwi ?? null;
+        const dNdbi = cl.mean_delta_ndbi ?? cl.cluster_averages?.avg_delta_ndbi ?? cl.deltas?.delta_ndbi ?? null;
+        const transLabel = cl.transition_type || cl.cluster_transition || cl.predicted_type || 'Land-Cover Transition';
+        const numPatch = cl.num_patches || cl.cluster_size || 0;
+        const areaHa = cl.area_sq_m ? (cl.area_sq_m / 10000).toFixed(2) : (numPatch > 0 ? (numPatch * 0.41).toFixed(2) : 'N/A');
+
+        cardsHtml += `
+          <div style="background:${tm.bg};border:1px solid ${tm.border};border-radius:9px;padding:11px 14px;display:flex;flex-direction:column;gap:8px;">
+            <!-- Card Header -->
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="background:${clusterColor};color:#fff;font-weight:700;font-size:11px;padding:2px 9px;border-radius:4px;font-family:var(--font-mono);">C${cid}</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;background:${tm.bg};color:${tm.color};border:1px solid ${tm.border};font-size:11px;font-weight:800;padding:2px 10px;border-radius:5px;font-family:var(--font-mono);letter-spacing:0.5px;">
+                  ${tm.icon} ${tm.label}
+                </span>
+                <span style="color:#e2e8f0;font-size:12px;font-weight:600;">${transLabel}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="color:#64748b;font-size:11px;font-family:var(--font-mono);">${numPatch > 0 ? numPatch + ' patches' : ''} ${areaHa !== 'N/A' ? '· ' + areaHa + ' ha' : ''}</span>
+                <span style="background:rgba(56,189,248,0.1);color:#38bdf8;border:1px solid rgba(56,189,248,0.25);font-size:10px;padding:1px 7px;border-radius:4px;font-family:var(--font-mono);">conf ${confPct}%</span>
+              </div>
+            </div>
+            <!-- Rationale -->
+            <div style="font-size:12px;color:#94a3b8;line-height:1.55;">${rationale}</div>
+            <!-- Spectral Delta Mini-Grid -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+              <div style="background:rgba(0,0,0,0.3);padding:6px 8px;border-radius:6px;">
+                <div style="font-size:9px;color:#475569;font-family:var(--font-mono);margin-bottom:2px;">ΔNDVI</div>
+                <div style="font-size:13px;font-weight:700;color:${dNdvi !== null && dNdvi < -0.04 ? '#f87171' : (dNdvi > 0.04 ? '#34d399' : '#cbd5e1')};font-family:var(--font-mono);">${fmt(dNdvi)}</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.3);padding:6px 8px;border-radius:6px;">
+                <div style="font-size:9px;color:#475569;font-family:var(--font-mono);margin-bottom:2px;">ΔNDWI</div>
+                <div style="font-size:13px;font-weight:700;color:${dNdwi !== null && dNdwi < -0.04 ? '#f87171' : (dNdwi > 0.04 ? '#38bdf8' : '#cbd5e1')};font-family:var(--font-mono);">${fmt(dNdwi)}</div>
+              </div>
+              <div style="background:rgba(0,0,0,0.3);padding:6px 8px;border-radius:6px;">
+                <div style="font-size:9px;color:#475569;font-family:var(--font-mono);margin-bottom:2px;">ΔNDBI</div>
+                <div style="font-size:13px;font-weight:700;color:${dNdbi !== null && dNdbi > 0.04 ? '#f87171' : '#cbd5e1'};font-family:var(--font-mono);">${fmt(dNdbi)}</div>
+              </div>
+            </div>
+          </div>`;
+      });
+
+      cardsHtml += '</div>';
+      panel.innerHTML = cardsHtml;
     }
 
-    function startWipeAutoSweep() {
-      stopWipeAutoSweep();
-      wipeAutoSweepActive = true;
-      const btn = document.getElementById('btnWipeAutoSweep');
-      if (btn) {
-        btn.classList.add('active');
-        const txt = document.getElementById('txtWipeSweep');
-        if (txt) txt.innerText = 'Pause Sweep';
-      }
-      window.tacticalAudio?.playLockOnChirp?.();
+    function renderFallbackDualView(data) {
+      // Handles the case with < 5 epochs or no multi-step data
+      const compWrapper = document.getElementById('modalComparisonWrapper');
+      const clustersPanel = document.getElementById('modalTacticalClustersPanel');
+      const pca = data.patch_change_analysis || {};
+      const files = pca.files || {};
+      const t1 = data.epochs?.[0];
+      const t2 = data.epochs?.[1];
+      const beforeUrl = files.before_thumb || (t1?.files?.thumb_url) || '';
+      const overlayUrl = files.change_overlay || (t2?.files?.thumb_url) || '';
+      const rawUrl = files.after_thumb || overlayUrl;
+      const dateB = t1?.date_short || 'Baseline';
+      const dateA = t2?.date_short || 'Current';
+      const candCount = pca.num_candidates || 0;
 
-      let startTime = performance.now();
-      function sweepStep(now) {
-        if (!wipeAutoSweepActive) return;
-        const elapsed = (now - startTime) / 1000;
-        // Smooth sine wave oscillation between 12% and 88%
-        const val = 50 + 38 * Math.sin((elapsed * Math.PI * 2) / 3.6);
-        setWipePosition(val);
-        wipeSweepAnimId = requestAnimationFrame(sweepStep);
-      }
-      wipeSweepAnimId = requestAnimationFrame(sweepStep);
+      if (compWrapper) compWrapper.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:rgba(15,23,42,0.85);border:1px solid rgba(56,189,248,0.25);border-radius:10px;overflow:hidden;">
+            <div style="padding:8px 12px;border-bottom:1px solid rgba(56,189,248,0.15);"><span style="color:#38bdf8;font-family:var(--font-mono);font-size:12px;font-weight:700;">BEFORE &bull; ${dateB}</span></div>
+            <div style="background:#000;aspect-ratio:1;">${beforeUrl ? `<img src="${beforeUrl}" style="width:100%;height:100%;object-fit:cover;display:block;">` : ''}</div>
+          </div>
+          <div style="background:rgba(15,23,42,0.85);border:1px solid rgba(239,68,68,0.35);border-radius:10px;overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid rgba(239,68,68,0.2);">
+              <span style="color:#f87171;font-family:var(--font-mono);font-size:12px;font-weight:700;">AFTER &bull; ${dateA} (${candCount} changed)</span>
+              ${overlayUrl ? `<button onclick="toggleDualOverlay('${overlayUrl}','${rawUrl}')" id="btnDualToggleOverlay" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.35);color:#f87171;padding:2px 8px;border-radius:4px;cursor:pointer;font-size:10px;font-family:var(--font-mono);font-weight:700;">AI Overlay</button>` : ''}
+            </div>
+            <div style="background:#000;aspect-ratio:1;">${overlayUrl ? `<img id="dualAfterImg" src="${overlayUrl}" style="width:100%;height:100%;object-fit:cover;display:block;">` : ''}</div>
+          </div>
+        </div>`;
+
+      // Build a synthetic step for cluster cards
+      const syntheticStep = {
+        clusters: [],
+        patch_change_analysis: pca,
+        spectral_deltas: data.spectral_deltas || {},
+        num_candidates: pca.num_candidates || 0,
+        role: 'Direct Milestone Transition'
+      };
+      if (clustersPanel) renderStepTacticalCards(syntheticStep, clustersPanel);
     }
 
-    function stopWipeAutoSweep() {
-      wipeAutoSweepActive = false;
-      if (wipeSweepAnimId) {
-        cancelAnimationFrame(wipeSweepAnimId);
-        wipeSweepAnimId = null;
-      }
-      const btn = document.getElementById('btnWipeAutoSweep');
-      if (btn) {
-        btn.classList.remove('active');
-        const txt = document.getElementById('txtWipeSweep');
-        if (txt) txt.innerText = 'Demo Radar Sweep';
-      }
-    }
-
-    function setupWipeEventListeners() {
-      const container = document.getElementById('wipeContainer');
-      if (!container) return;
-
-      let isDragging = false;
-
-      function updateFromPointer(e) {
-        const rect = container.getBoundingClientRect();
-        const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
-        const x = clientX - rect.left;
-        const pct = (x / rect.width) * 100;
-        setWipePosition(pct);
-      }
-
-      function onPointerDown(e) {
-        isDragging = true;
-        stopWipeAutoSweep();
-        updateFromPointer(e);
-        window.tacticalAudio?.playTacticalClick?.();
-        document.getElementById('wipeLaserHandle')?.classList.add('active');
-      }
-
-      function onPointerMove(e) {
-        if (!isDragging) return;
-        updateFromPointer(e);
-      }
-
-      function onPointerUp() {
-        if (isDragging) {
-          isDragging = false;
-          document.getElementById('wipeLaserHandle')?.classList.remove('active');
-        }
-      }
-
-      container.addEventListener('pointerdown', onPointerDown);
-      window.addEventListener('pointermove', onPointerMove);
-      window.addEventListener('pointerup', onPointerUp);
-      window.addEventListener('pointercancel', onPointerUp);
+    // Keep toggleAfterOverlay for legacy compatibility
+    function toggleAfterOverlay(overlayUrl, rawUrl) {
+      toggleDualOverlay(overlayUrl, rawUrl);
     }
 
     function closeEvidenceModal() {
       window.tacticalAudio?.playTacticalClick?.();
-      stopWipeAutoSweep();
       document.getElementById('evidenceModal').classList.remove('open');
     }
 
     window.addEventListener('DOMContentLoaded', initChangeMap);
   </script>
   <!-- Ambient Effects & Starfield -->
-  <script src="/frontend/effects.js?v=20260919_v2"></script>
+  <script src="/frontend/effects.js?v=20260928_live_clock_v6"></script>
+  <!-- Air-Gapped Offline / Online Sovereign Network Manager -->
+  <script src="/frontend/offline.js?v=20260928_offline_v6"></script>
   <!-- Tactical Audio Synthesizer -->
-  <script src="/frontend/audio.js?v=20260919_v1"></script>
+  <script src="/frontend/audio.js?v=20260928_v6"></script>
   <!-- Tactical Satellite Cursor Engine -->
-  <script src="/frontend/cursor.js?v=20260919_v2"></script>
+  <script src="/frontend/cursor.js?v=20260928_v6"></script>
 </body>
 </html>
