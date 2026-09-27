@@ -15,6 +15,7 @@ Provides GeoJSON export compatible with standard GIS tools (QGIS, Leaflet).
 
 import json
 import logging
+from pathlib import Path
 import time
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
@@ -476,19 +477,21 @@ def get_change_run_details(run_id: str) -> Optional[Dict[str, Any]]:
                     r.*,
                     ST_AsGeoJSON(r.geometry) as geom_json
                 FROM change_runs r
-                WHERE r.run_id = %s
+                WHERE r.run_id = %s OR r.run_id = %s OR r.run_id = %s
                 LIMIT 1;
-            """, (run_id,))
+            """, (run_id, f"run_{run_id}", run_id.replace("run_", "")))
             run_row = cur.fetchone()
             if not run_row:
                 return None
+
+            actual_run_id = run_row["run_id"]
 
             # Quality Audits
             cur.execute("""
                 SELECT * FROM change_quality_audits
                 WHERE run_id = %s
                 ORDER BY acquisition_date ASC;
-            """, (run_id,))
+            """, (actual_run_id,))
             quality_rows = cur.fetchall()
 
             # Temporal Split
@@ -496,7 +499,7 @@ def get_change_run_details(run_id: str) -> Optional[Dict[str, Any]]:
                 SELECT * FROM change_temporal_splits
                 WHERE run_id = %s
                 LIMIT 1;
-            """, (run_id,))
+            """, (actual_run_id,))
             split_row = cur.fetchone()
 
             # Clusters
@@ -504,7 +507,7 @@ def get_change_run_details(run_id: str) -> Optional[Dict[str, Any]]:
                 SELECT * FROM change_clusters
                 WHERE run_id = %s
                 ORDER BY cluster_id ASC;
-            """, (run_id,))
+            """, (actual_run_id,))
             cluster_rows = cur.fetchall()
 
             # Candidate Patches
@@ -515,15 +518,114 @@ def get_change_run_details(run_id: str) -> Optional[Dict[str, Any]]:
                 FROM change_candidate_patches p
                 WHERE p.run_id = %s
                 ORDER BY p.distance DESC;
-            """, (run_id,))
+            """, (actual_run_id,))
             patch_rows = cur.fetchall()
+
+            # Latest decision for run from analyst_decisions
+            cur.execute("""
+                SELECT decision, analyst_id, note, tags, decided_at
+                FROM analyst_decisions
+                WHERE run_id = %s
+                ORDER BY decided_at DESC
+                LIMIT 1;
+            """, (actual_run_id,))
+            run_decision_row = cur.fetchone()
+
+            # Staging assets & Manifest data
+            staging_dir = run_row.get("staging_dir")
+            clean_stage = str(staging_dir).replace("\\", "/").strip("/") if staging_dir else ""
+
+            staging_assets = {
+                "before_image_url": f"/{clean_stage}/before_thumb.jpg" if clean_stage else None,
+                "after_image_url": f"/{clean_stage}/after_thumb.jpg" if clean_stage else None,
+                "overlay_image_url": f"/{clean_stage}/change_overlay.jpg" if clean_stage else None,
+                "composite_image_url": f"/{clean_stage}/change_side_by_side.jpg" if clean_stage else None,
+            }
+
+            manifest_info = {}
+            if clean_stage:
+                repo_root = Path(__file__).resolve().parents[2]
+                m_path = repo_root / clean_stage / "manifest.json"
+                if not m_path.is_file():
+                    m_path = Path("/app") / clean_stage / "manifest.json"
+                if m_path.is_file():
+                    try:
+                        with open(m_path, "r", encoding="utf-8") as mf:
+                            manifest_info = json.load(mf)
+                    except Exception as me:
+                        logger.warning(f"Error reading manifest for {run_id}: {me}")
+
+            # Timeline Epochs (multi-year evolution evidence)
+            epochs_list = []
+            if manifest_info.get("epochs"):
+                epochs_list = manifest_info["epochs"]
+            else:
+                for qa in quality_rows:
+                    tid = qa.get("tile_id")
+                    cur.execute("SELECT file_path, thumbnail_path, sensor FROM tiles WHERE tile_id = %s LIMIT 1;", (tid,))
+                    t_info = cur.fetchone() or {}
+                    thumb_path = t_info.get("thumbnail_path") or ""
+                    thumb_url = "/" + str(thumb_path).replace("\\", "/").lstrip("/") if thumb_path else None
+                    u_pct = float(qa.get("usable_pct") or 1.0)
+                    epochs_list.append({
+                        "epoch": qa.get("year") or str(qa.get("acquisition_date"))[:4],
+                        "date_short": str(qa.get("acquisition_date"))[:10],
+                        "sensor": t_info.get("sensor") or "Sentinel-2",
+                        "cloud_pct": float(qa.get("cloud_pct") or 0.0),
+                        "quality_check": {
+                            "status": qa.get("decision", "STAY"),
+                            "bad_pixel_pct": float(qa.get("bad_pixel_pct") or 0.0),
+                            "usable_pct": round(u_pct * 100.0 if u_pct <= 1.0 else u_pct, 1)
+                        },
+                        "files": {
+                            "thumb_url": thumb_url
+                        }
+                    })
+
+            # Overall Run Severity
+            num_patches = len(patch_rows)
+            step_contrast = float(split_row.get("step_score") or 0.0) if split_row else 0.0
+            total_area_m2 = sum(c.get("area_m2", 0) for c in cluster_rows) or (num_patches * 409600)
+            total_area_km2 = round(total_area_m2 / 1e6, 2)
+
+            if num_patches >= 6 or total_area_km2 >= 2.0 or step_contrast >= 2.5:
+                severity_level = "CRITICAL"
+                severity_score = round(min(99.0, max(88.0, 78.0 + num_patches * 2.2)), 1)
+                severity_headline = "Critical Physical Anomaly Detected"
+            elif num_patches >= 2 or total_area_km2 >= 0.8 or step_contrast >= 1.2:
+                severity_level = "HIGH"
+                severity_score = round(min(87.9, max(75.0, 68.0 + num_patches * 2.0)), 1)
+                severity_headline = "High Priority Ground Shift"
+            elif num_patches >= 1:
+                severity_level = "MODERATE"
+                severity_score = round(min(74.9, max(58.0, 50.0 + num_patches * 2.0)), 1)
+                severity_headline = "Moderate Surface Transition"
+            else:
+                severity_level = "STABLE"
+                severity_score = 15.0
+                severity_headline = "Stable Terrain (Zero Deviation)"
+
+            overall_severity = {
+                "level": severity_level,
+                "score": severity_score,
+                "headline": severity_headline,
+                "num_patches": num_patches,
+                "total_area_km2": total_area_km2,
+                "step_contrast": step_contrast,
+                "onset_bracket": split_row.get("onset_bracket") if split_row else None
+            }
 
             return {
                 "run": run_row,
+                "staging_assets": staging_assets,
+                "timeline_epochs": epochs_list,
                 "quality_audits": quality_rows,
                 "temporal_split": split_row,
                 "clusters": cluster_rows,
-                "candidate_patches": patch_rows
+                "candidate_patches": patch_rows,
+                "overall_severity": overall_severity,
+                "latest_decision": dict(run_decision_row) if run_decision_row else None,
+                "narrative": manifest_info.get("whole_window_narrative")
             }
     finally:
         conn.close()
