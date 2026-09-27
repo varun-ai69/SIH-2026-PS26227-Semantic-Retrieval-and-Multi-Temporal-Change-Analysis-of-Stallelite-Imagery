@@ -12,6 +12,21 @@
 
   const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Immediate Live UTC Clock (runs on script parse)
+  function updateLiveClockNow() {
+    const now = new Date();
+    const h = String(now.getUTCHours()).padStart(2, '0');
+    const m = String(now.getUTCMinutes()).padStart(2, '0');
+    const s = String(now.getUTCSeconds()).padStart(2, '0');
+    const timeStr = `${h}:${m}:${s} UTC`;
+    document.querySelectorAll('#liveUtcClock, .mission-clock-time').forEach(el => {
+      el.textContent = timeStr;
+    });
+  }
+  updateLiveClockNow();
+  setInterval(updateLiveClockNow, 1000);
+  window.updateLiveMissionClock = updateLiveClockNow;
+
   // ============================================================
   // 1. LIVING PARALLAX STARFIELD & RADAR SWEEP
   // ============================================================
@@ -416,6 +431,21 @@
   }
 
   // ============================================================
+  // 8. LIVE UTC MISSION CLOCK
+  // ============================================================
+
+  function updateLiveMissionClock() {
+    const el = document.getElementById('liveUtcClock');
+    if (el) {
+      const now = new Date();
+      const h = String(now.getUTCHours()).padStart(2, '0');
+      const m = String(now.getUTCMinutes()).padStart(2, '0');
+      const s = String(now.getUTCSeconds()).padStart(2, '0');
+      el.textContent = `${h}:${m}:${s} UTC`;
+    }
+  }
+
+  // ============================================================
   // INITIALIZATION
   // ============================================================
 
@@ -424,6 +454,8 @@
     initCRTScanlines();
     initBootSequence();
     initPageTransitionShutter();
+    updateLiveMissionClock();
+    setInterval(updateLiveMissionClock, 1000);
   }
 
   if (document.readyState === 'loading') {

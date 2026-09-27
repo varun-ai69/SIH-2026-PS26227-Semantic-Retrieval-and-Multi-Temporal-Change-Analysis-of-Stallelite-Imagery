@@ -667,7 +667,33 @@ window.handleGeoTiffFilesSelected = function(files) {
 };
 
 window.openIngestModal = function() {
-  document.getElementById('ingestModal').classList.add('open');
+  const modal = document.getElementById('ingestModal');
+  if (!modal) return;
+  modal.classList.add('open');
+
+  // Show air-gapped alert banner if currently in offline mode
+  const isOffline = localStorage.getItem('canopus_offline_mode') === 'true';
+  const existingBanner = document.getElementById('ingestOfflineNotice');
+  if (isOffline) {
+    if (!existingBanner) {
+      const banner = document.createElement('div');
+      banner.id = 'ingestOfflineNotice';
+      banner.style.cssText = 'background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 8px; padding: 12px 16px; margin: 0 0 16px 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; color: #fbbf24;';
+      banner.innerHTML = `
+        <div>
+          <strong>AIR-GAPPED OFFLINE MODE:</strong>
+          <span>External STAC & Maxar satellite downloading is paused. Click Go Online or use Direct GeoTIFF tab.</span>
+        </div>
+        <button onclick="window.setNetworkMode(false); const n = document.getElementById('ingestOfflineNotice'); if (n) n.remove();" style="background: #f59e0b; color: #000; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap;">
+          Go Online Now
+        </button>
+      `;
+      const body = modal.querySelector('.modal-body') || modal;
+      body.insertBefore(banner, body.firstChild);
+    }
+  } else if (existingBanner) {
+    existingBanner.remove();
+  }
 };
 
 window.closeIngestModal = function() {
@@ -801,6 +827,11 @@ window.startIngestion = async function() {
 
   try {
     if (currentIngestMode === 'aoi') {
+      const isOffline = localStorage.getItem('canopus_offline_mode') === 'true';
+      if (isOffline) {
+        throw new Error("System is currently in Air-Gapped Offline Mode. External STAC / Sentinel-2 requests are blocked. Click 'GO ONLINE' in the top header to switch to Online Mode, or use the 'Direct GeoTIFF Ingestion' tab for local files.");
+      }
+
       // Entry Point A: AOI Polygon
       const geojsonStr = document.getElementById('geojsonInput').value.trim();
       if (!geojsonStr) {
@@ -1376,7 +1407,8 @@ window.selectConversation = async function(conversationId) {
         const fakeResponse = {
           results: tileResults,
           execution_time_ms: queryContext.execution_time_ms || 0,
-          total_found: tileResults.length
+          total_found: tileResults.length,
+          search_log_id: msg.search_log_id || queryContext.search_log_id || null
         };
         renderAssistantResultsBubble(fakeResponse, queryContext);
       }
@@ -1571,6 +1603,17 @@ window.submitSemanticSearch = async function() {
       responseData = await res.json();
     }
 
+    if (responseData && responseData.search_log_id) {
+      window.currentSearchLogId = responseData.search_log_id;
+    }
+    if (responseData && responseData.query) {
+      window.currentSearchQuery = responseData.query;
+    } else if (promptText) {
+      window.currentSearchQuery = promptText;
+    } else if (searchFileToUpload) {
+      window.currentSearchQuery = 'image:' + searchFileToUpload.name;
+    }
+
     // Remove Loading Bubble
     const loadingElem = document.getElementById(loadingMsgId);
     if (loadingElem) loadingElem.remove();
@@ -1729,6 +1772,8 @@ function renderAssistantResultsBubble(response, queryInfo) {
   const requestedK = queryInfo?.topK || 5;
   const targetSensorName = queryInfo?.sensor || 'All Sensors';
 
+  const searchLogId = (response && response.search_log_id) || (queryInfo && queryInfo.search_log_id) || (window.currentSearchLogId || '');
+
   // Build Results Grid or Empty State
   let resultsGridHtml = '';
   if (totalFound === 0) {
@@ -1806,9 +1851,13 @@ function renderAssistantResultsBubble(response, queryInfo) {
                 <svg class="ui-icon icon-sm" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
                 Map
               </button>
-              <button class="result-action-btn" onclick="discoverSimilarFromTile('${item.tile_id}')" title="Discover similar candidate sites">
-                <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 12 21.5 2.5"/><circle cx="12" cy="12" r="2"/></svg>
-                Similar
+              <button class="result-action-btn card-accept-btn" onclick="quickCardFeedback('${item.tile_id}', true, this, '${searchLogId}')" title="Accept Target (Hit)" style="background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.35); color: #34d399;">
+                <svg class="ui-icon icon-emerald" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Accept
+              </button>
+              <button class="result-action-btn card-reject-btn" onclick="quickCardFeedback('${item.tile_id}', false, this, '${searchLogId}')" title="Reject Noise (False Alarm)" style="background: rgba(244,63,94,0.15); border-color: rgba(244,63,94,0.35); color: #fb7185;">
+                <svg class="ui-icon icon-rose" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Reject
               </button>
             </div>
           </div>
@@ -2132,14 +2181,104 @@ window.closeTileInspect = function() {
   currentInspectingTile = null;
 };
 
+function displayFloatingFeedbackToast(msg) {
+  if (window.showTacticalToast) {
+    window.showTacticalToast(msg);
+  } else {
+    const existing = document.getElementById('floatingFeedbackToast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.id = 'floatingFeedbackToast';
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#0d1424;border:1px solid #06b6d4;color:#38bdf8;padding:10px 18px;border-radius:6px;font-family:monospace;font-size:12px;z-index:99999;box-shadow:0 0 20px rgba(6,182,212,0.4);display:flex;align-items:center;gap:8px;';
+    toast.innerHTML = `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#10b981;"></span> ${escapeHtml(msg)}`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      if (toast.parentNode) toast.remove();
+    }, 2800);
+  }
+}
+
+window.quickCardFeedback = async function(tileId, isRelevant, btnElem, searchLogId) {
+  const card = btnElem ? btnElem.closest('.result-card') : null;
+  const logId = searchLogId || window.currentSearchLogId || null;
+  const inputEl = document.getElementById('searchPromptInput');
+  let q = (inputEl && inputEl.value && inputEl.value.trim()) || '';
+  if (!q && typeof currentSearchQuery !== 'undefined' && currentSearchQuery) {
+    q = currentSearchQuery;
+  }
+  if (!q && window.currentSearchQuery) {
+    q = window.currentSearchQuery;
+  }
+  if (!q && window.currentSearchImageName) {
+    q = 'image:' + window.currentSearchImageName;
+  }
+  if (!q) q = 'General Satellite Reconnaissance';
+
+  // Immediate visual feedback on card
+  if (card) {
+    card.style.transition = 'all 0.3s ease';
+    if (isRelevant) {
+      card.style.borderColor = 'rgba(16, 185, 129, 0.9)';
+      card.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.35)';
+      const hitBtn = card.querySelector('.card-accept-btn');
+      if (hitBtn) {
+        hitBtn.style.background = '#10b981';
+        hitBtn.style.color = '#000';
+      }
+      const missBtn = card.querySelector('.card-reject-btn');
+      if (missBtn) missBtn.style.opacity = '0.4';
+    } else {
+      card.style.borderColor = 'rgba(244, 63, 94, 0.9)';
+      card.style.boxShadow = '0 0 20px rgba(244, 63, 94, 0.35)';
+      const missBtn = card.querySelector('.card-reject-btn');
+      if (missBtn) {
+        missBtn.style.background = '#f43f5e';
+        missBtn.style.color = '#fff';
+      }
+      const hitBtn = card.querySelector('.card-accept-btn');
+      if (hitBtn) hitBtn.style.opacity = '0.4';
+    }
+  }
+
+  if (window.playTacticalLockChirp && isRelevant) window.playTacticalLockChirp();
+  else if (window.playTacticalClick) window.playTacticalClick();
+
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/review/retrieval/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        search_log_id: logId ? parseInt(logId) : null,
+        query_text: q,
+        tile_id: tileId,
+        relevant: isRelevant,
+        feedback_type: isRelevant ? 'positive' : 'negative',
+        analyst_id: 'CAPT. VERMA (INTEL-01)'
+      })
+    });
+    const data = await res.json();
+    if (data.status === 'success') {
+      const msg = `TILE #${tileId} // ${isRelevant ? 'ACCEPTED (CONFIRMED TARGET)' : 'REJECTED (PENALIZED NOISE)'}`;
+      displayFloatingFeedbackToast(msg);
+    }
+  } catch (err) {
+    console.error('Feedback error:', err);
+    displayFloatingFeedbackToast(`FEEDBACK ERROR // ${err.message}`);
+  }
+};
+
 window.quickModalFeedback = async function(isRelevant) {
   if (!currentInspectingTile || !currentInspectingTile.tile_id) return;
   const tileId = currentInspectingTile.tile_id;
+  const logId = window.currentSearchLogId || null;
 
   const inputEl = document.getElementById('searchPromptInput');
   let q = (inputEl && inputEl.value && inputEl.value.trim()) || '';
   if (!q && typeof currentSearchQuery !== 'undefined' && currentSearchQuery) {
     q = currentSearchQuery;
+  }
+  if (!q && window.currentSearchQuery) {
+    q = window.currentSearchQuery;
   }
   if (!q) {
     q = (currentInspectingTile.spot_description)
@@ -2152,9 +2291,11 @@ window.quickModalFeedback = async function(isRelevant) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        search_log_id: logId ? parseInt(logId) : null,
         query_text: q,
         tile_id: tileId,
         relevant: isRelevant,
+        feedback_type: isRelevant ? 'positive' : 'negative',
         analyst_id: 'CAPT. VERMA (INTEL-01)'
       })
     });
@@ -2175,18 +2316,10 @@ window.quickModalFeedback = async function(isRelevant) {
           if (window.playTacticalClick) window.playTacticalClick();
         }
       }
-      if (window.showTacticalToast) {
-        window.showTacticalToast(`TILE #${tileId} // ${isRelevant ? 'ACCEPTED (TARGET VERIFIED)' : 'REJECTED (NOISE CLASSIFIED)'}`);
-      } else {
-        alert(`Tile #${tileId} marked as ${isRelevant ? 'ACCEPTED' : 'REJECTED'}.`);
-      }
+      displayFloatingFeedbackToast(`TILE #${tileId} // ${isRelevant ? 'ACCEPTED (TARGET VERIFIED)' : 'REJECTED (NOISE CLASSIFIED)'}`);
     }
   } catch (err) {
-    if (window.showTacticalToast) {
-      window.showTacticalToast(`FEEDBACK ERROR // ${err.message}`);
-    } else {
-      alert('Failed to save feedback: ' + err.message);
-    }
+    displayFloatingFeedbackToast(`FEEDBACK ERROR // ${err.message}`);
   }
 };
 
@@ -2714,6 +2847,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('leafletMap')) {
     initMap();
     checkUrlParamsForTileHighlight();
+    if (new URLSearchParams(window.location.search).get('openIngest')) {
+      setTimeout(() => { if (typeof openIngestModal === 'function') openIngestModal(); }, 400);
+    }
   }
   if (document.getElementById('retrievalChatFeed')) {
     initChatSystem();
