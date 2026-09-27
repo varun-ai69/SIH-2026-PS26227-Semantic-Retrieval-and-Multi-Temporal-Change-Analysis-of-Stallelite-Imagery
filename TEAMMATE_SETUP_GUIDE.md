@@ -1,10 +1,10 @@
-# 🛰️ CANOPUS — Quick Setup Guide for Teammates
+# 🛰️ CANOPUS — Quick Setup Guide
 
-Sirf yeh **4 steps** follow karne hain:
+Follow these simple steps to run the entire system locally:
 
 ---
 
-### Step 1: Clone Repo
+### Step 1: Clone the Repository
 ```bash
 git clone https://github.com/varun-ai69/SIH-2026-PS26227-Semantic-Retrieval-and-Multi-Temporal-Analysis-.git
 cd SIH-2026-PS26227-Semantic-Retrieval-and-Multi-Temporal-Analysis-
@@ -12,60 +12,67 @@ cd SIH-2026-PS26227-Semantic-Retrieval-and-Multi-Temporal-Analysis-
 
 ---
 
-### Step 2: Environment File Banao
-```bash
-# Windows (PowerShell):
-Copy-Item .env.example .env
+### Step 2: Create the Environment File
+Copy `.env.example` to `.env`:
 
-# Linux / Mac:
+**Windows (PowerShell):**
+```powershell
+Copy-Item .env.example .env
+```
+
+**Linux / macOS:**
+```bash
 cp .env.example .env
 ```
-*(Kuch bhi edit nahi karna, defaults direct chalenge)*
+*(No edits required — all defaults work out of the box).*
 
 ---
 
-### Step 3: Models Download & Place Karo (2 Files)
+### Step 3: Download & Place Model Weights (2 Files)
 
-Dono files download karke exact in folders mein daal do:
+Download both files and place them in the following paths:
 
-#### 1. RemoteCLIP (~605 MB)
-* **Download Link**: [RemoteCLIP-ViT-B-32.pt](https://huggingface.co/chendelong/RemoteCLIP/resolve/main/RemoteCLIP-ViT-B-32.pt)
-* **Kha Rakhna Hai**: `models/retrieval/RemoteCLIP-ViT-B-32.pt`
+#### 1. RemoteCLIP ViT-B-32 (~605 MB)
+* **Download**: [RemoteCLIP-ViT-B-32.pt](https://huggingface.co/chendelong/RemoteCLIP/resolve/main/RemoteCLIP-ViT-B-32.pt)
+* **Save to**: `models/retrieval/RemoteCLIP-ViT-B-32.pt`
 
 #### 2. Prithvi-EO-2.0 (~1.32 GB)
-* **Download Link**: [Prithvi_EO_V2_300M.pt](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-300M/resolve/main/Prithvi_EO_V2_300M.pt)
-* **Kha Rakhna Hai**: `models/retrieval/prithvi/Prithvi_EO_V2_300M.pt`
+* **Download**: [Prithvi_EO_V2_300M.pt](https://huggingface.co/ibm-nasa-geospatial/Prithvi-EO-2.0-300M/resolve/main/Prithvi_EO_V2_300M.pt)
+* **Save to**: `models/retrieval/prithvi/Prithvi_EO_V2_300M.pt`
 
-> **Final `models/` folder aisa dikhna chahiye:**
-> ```text
-> models/
-> └── retrieval/
->     ├── RemoteCLIP-ViT-B-32.pt
->     └── prithvi/
->         ├── config.json
->         ├── prithvi_mae.py
->         └── Prithvi_EO_V2_300M.pt
-> ```
+**Expected `models/` directory structure:**
+```text
+models/
+└── retrieval/
+    ├── RemoteCLIP-ViT-B-32.pt
+    └── prithvi/
+        ├── config.json
+        ├── prithvi_mae.py
+        └── Prithvi_EO_V2_300M.pt
+```
 
 ---
 
-### Step 4: Docker Run Karo
+### Step 4: Start the System with Docker
+Make sure Docker Desktop is running, then execute:
 ```bash
 docker compose up -d --build
 ```
 
 ---
 
-### 🚀 Done! Browser Mein Open Karo:
+### 🚀 Access the Web Applications
+Once started, open these in your browser:
 * **Map & Ingestion**: [http://localhost:8000](http://localhost:8000)
 * **Semantic Search & Chat**: [http://localhost:8000/retrieval.html](http://localhost:8000/retrieval.html)
 * **Change Detection & PDF Export**: [http://localhost:8000/change.html](http://localhost:8000/change.html)
-* **Clustering**: [http://localhost:8000/clustering.html](http://localhost:8000/clustering.html)
+* **Clustering & Discovery**: [http://localhost:8000/clustering.html](http://localhost:8000/clustering.html)
 * **Analyst Review Queue**: [http://localhost:8000/review.html](http://localhost:8000/review.html)
+* **API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
-### 🛑 Stop Karna Ho Toh:
+### 🛑 Stop the System
 ```bash
 docker compose down
 ```
