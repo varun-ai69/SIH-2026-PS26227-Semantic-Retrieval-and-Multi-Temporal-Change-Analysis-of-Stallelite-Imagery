@@ -305,9 +305,58 @@ def export_change_review_pdf(run_id: str):
                 "Content-Disposition": f'attachment; filename="{filename}"'
             }
         )
-    except ValueError as ve:
-        raise HTTPException(status_code=404, detail=str(ve))
     except Exception as e:
         logger.error(f"Error generating PDF dossier for {run_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+
+
+
+@router.get("/runs/{run_id}/export.geotiff")
+def export_change_review_geotiff(run_id: str):
+    """
+    Exports all georeferenced GeoTIFF assets associated with run_id (baseline, milestone epochs,
+    and change candidate masks) as a compressed archive (.zip) for GIS workflows.
+    """
+    import io
+    import zipfile
+    from pathlib import Path
+
+    conn = get_pg_connection()
+    try:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+            cur.execute("SELECT staging_dir, manifest_path FROM change_runs WHERE run_id = %s;", (run_id,))
+            row = cur.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail=f"Run {run_id} not found.")
+
+            # Resolve staging path safely
+            raw_stage = str(row["staging_dir"]).replace("\\", "/").strip("/")
+            repo_root = Path(__file__).resolve().parents[3]
+            staging_path = repo_root / raw_stage
+            if not staging_path.is_dir():
+                staging_path = Path("/app") / raw_stage
+            if not staging_path.is_dir():
+                raise HTTPException(status_code=404, detail=f"Staging directory for {run_id} not found on disk ({staging_path}).")
+
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zip_file:
+                for file_path in staging_path.rglob("*"):
+                    if file_path.is_file():
+                        rel_path = file_path.relative_to(staging_path)
+                        zip_file.write(file_path, arcname=str(rel_path))
+
+            buf.seek(0)
+            filename = f"Change_GeoTIFF_Bundle_{run_id}.zip"
+            return Response(
+                content=buf.getvalue(),
+                media_type="application/zip",
+                headers={
+                    "Content-Disposition": f'attachment; filename="{filename}"'
+                }
+            )
+    finally:
+        conn.close()
+
 

@@ -34,9 +34,11 @@ router = APIRouter(prefix="/api/v1/review", tags=["Analyst Review Workbench"])
 
 
 class SearchFeedbackRequest(BaseModel):
-    query_text: str = Field(..., description="Query prompt text that produced the result")
+    query_text: Optional[str] = Field(None, description="Query prompt text that produced the result")
+    search_log_id: Optional[Any] = Field(None, description="Search log database ID")
     tile_id: str = Field(..., description="Target satellite tile ID being reviewed")
-    relevant: bool = Field(..., description="True if relevant target, False if false alarm")
+    feedback_type: Optional[str] = Field(None, description="'positive' or 'negative'")
+    relevant: Optional[bool] = Field(None, description="True if relevant target, False if false alarm")
     relevance_score: float = Field(1.0, ge=0.0, le=1.0, description="Confidence/relevance rating")
     tag: str = Field("", description="Target classification tag e.g. 'airbase', 'runway'")
     note: str = Field("", description="Analyst rationale or notes")
@@ -44,7 +46,8 @@ class SearchFeedbackRequest(BaseModel):
 
 
 class RocchioRerankRequest(BaseModel):
-    query_text: str = Field(..., description="Query prompt text to rerank")
+    query_text: Optional[str] = Field(None, description="Query prompt text to rerank")
+    search_log_id: Optional[Any] = Field(None, description="Search log database ID")
     top_k: int = Field(10, ge=1, le=50, description="Top K items to retrieve")
     alpha: float = Field(1.0, description="Weight of original query vector")
     beta: float = Field(0.75, description="Weight of positive feedback centroid")
@@ -87,14 +90,38 @@ def submit_search_feedback(req: SearchFeedbackRequest):
     Submits analyst relevance feedback (thumbs up / thumbs down / tag / note) on a search result.
     """
     try:
+        query_text = req.query_text
+        search_id_int = int(req.search_log_id) if req.search_log_id is not None and str(req.search_log_id).isdigit() else None
+        if search_id_int:
+            from backend.services.analyst_workflow import get_pg_connection
+            import psycopg2.extras
+            conn = get_pg_connection()
+            try:
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute("SELECT raw_query, query_type FROM search_log WHERE search_id = %s;", (search_id_int,))
+                    row = cur.fetchone()
+                    if row and row.get("raw_query"):
+                        query_text = row["raw_query"]
+            finally:
+                conn.close()
+
+        if not query_text:
+            query_text = str(search_id_int or "unknown_query")
+
+        # Map feedback_type to boolean relevant if not explicitly set
+        relevant = req.relevant
+        if relevant is None:
+            relevant = (req.feedback_type == "positive")
+
         feedback = record_search_feedback(
-            query_text=req.query_text,
+            query_text=query_text,
             tile_id=req.tile_id,
-            relevant=req.relevant,
+            relevant=relevant,
             relevance_score=req.relevance_score,
             tag=req.tag,
             note=req.note,
-            analyst_id=req.analyst_id
+            analyst_id=req.analyst_id,
+            search_id=search_id_int
         )
         return {"status": "success", "feedback": feedback}
     except Exception as e:
@@ -104,19 +131,20 @@ def submit_search_feedback(req: SearchFeedbackRequest):
 
 @router.get("/retrieval/results", response_model=Dict[str, Any])
 def get_query_results_enriched(
-    query: str = Query(..., description="Query text or image identifier"),
+    query: Optional[str] = Query(None, description="Query text or image identifier"),
+    search_log_id: Optional[str] = Query(None, description="Search log database ID"),
     query_type: Optional[str] = Query("text", description="Query type: 'text' or 'image'"),
-    top_k: int = Query(12, ge=1, le=50, description="Top K tiles to return")
+    top_k: int = Query(24, ge=1, le=50, description="Top K tiles to return")
 ):
     """
     Returns search results for a query populated with their current analyst feedback state,
     including accepted, rejected, and pending counts.
     """
     try:
-        data = get_query_detailed_results(query_text=query, query_type=query_type, top_k=top_k)
+        data = get_query_detailed_results(query_text=query, query_type=query_type, search_log_id=search_log_id, top_k=top_k)
         return data
     except Exception as e:
-        logger.error(f"Error getting detailed query results for '{query}': {e}", exc_info=True)
+        logger.error(f"Error getting detailed query results for '{query or search_log_id}': {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -139,14 +167,32 @@ def rerank_with_feedback(req: RocchioRerankRequest):
     Executes Rocchio Relevance Feedback vector reranking using analyst ratings.
     """
     try:
+        query_text = req.query_text
+        if not query_text and req.search_log_id:
+            from backend.services.analyst_workflow import get_pg_connection
+            import psycopg2.extras
+            conn = get_pg_connection()
+            try:
+                with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                    cur.execute("SELECT raw_query FROM search_log WHERE search_id = %s;", (int(req.search_log_id),))
+                    row = cur.fetchone()
+                    if row:
+                        query_text = row["raw_query"]
+            finally:
+                conn.close()
+
+        if not query_text:
+            query_text = str(req.search_log_id or "")
+
         reranked = apply_rocchio_rerank(
-            query_text=req.query_text,
+            query_text=query_text,
+            search_log_id=req.search_log_id,
             top_k=req.top_k,
             alpha=req.alpha,
             beta=req.beta,
             gamma=req.gamma
         )
-        return {"status": "success", "data": reranked}
+        return reranked
     except Exception as e:
         logger.error(f"Error during Rocchio rerank: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
