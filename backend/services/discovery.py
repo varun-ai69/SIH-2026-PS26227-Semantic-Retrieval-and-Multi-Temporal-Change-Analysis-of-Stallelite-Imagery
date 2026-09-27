@@ -253,7 +253,7 @@ class DiscoveryService:
             conn = self._get_pg_conn()
             with conn.cursor() as cur:
                 cur.execute(
-                    "SELECT tile_id FROM tiles WHERE cluster_id = %s LIMIT %s;",
+                    "SELECT tile_id FROM tiles WHERE cluster_id = %s ORDER BY acquisition_date DESC, tile_id ASC LIMIT %s;",
                     (cluster_id, limit)
                 )
                 rows = cur.fetchall()
