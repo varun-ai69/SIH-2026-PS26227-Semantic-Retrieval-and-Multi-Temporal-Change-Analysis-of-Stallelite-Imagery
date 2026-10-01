@@ -91,3 +91,11 @@ scratch_*.py
 show_cloudy_tiles.py
 verify_*.py
 datasets/defense_strategic_bases.geojson
+
+# 9. Presentations, Office Documents & Temporary Office Locks
+*.ppt
+*.pptx
+*.doc
+*.docx
+~$*
+data/calibration/

@@ -1,0 +1,60 @@
+# ====================================================================
+# Canopus Platform - Netlify Deployment Configuration
+# ====================================================================
+
+[build]
+  # The static directory containing the HTML, CSS, JS, and asset files
+  publish = "frontend"
+  command = ""
+
+# 1. Asset path rewrite: ensures requests to /frontend/* resolve correctly
+#    (e.g., /frontend/index.css -> /index.css)
+[[redirects]]
+  from = "/frontend/*"
+  to = "/:splat"
+  status = 200
+
+# 2. Clean URLs & Direct HTML routing
+[[redirects]]
+  from = "/retrieval"
+  to = "/retrieval.html"
+  status = 200
+
+[[redirects]]
+  from = "/change"
+  to = "/change.html"
+  status = 200
+
+[[redirects]]
+  from = "/clustering"
+  to = "/clustering.html"
+  status = 200
+
+[[redirects]]
+  from = "/review"
+  to = "/review.html"
+  status = 200
+
+# 3. Reverse Proxy to Live FastAPI Backend (Optional / Recommended)
+#    If you host your Python backend on Railway, Render, Fly.io, AWS, or ngrok,
+#    uncomment and replace the URL below to proxy API requests with ZERO CORS issues!
+#
+# [[redirects]]
+#   from = "/api/*"
+#   to = "https://your-backend-api-url.com/api/:splat"
+#   status = 200
+#   force = true
+#
+# [[redirects]]
+#   from = "/data/*"
+#   to = "https://your-backend-api-url.com/data/:splat"
+#   status = 200
+#   force = true
+
+# 4. Security & CORS Headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Access-Control-Allow-Origin = "*"
