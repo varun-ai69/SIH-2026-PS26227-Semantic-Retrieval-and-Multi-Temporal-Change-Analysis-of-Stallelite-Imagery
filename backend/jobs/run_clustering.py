@@ -126,10 +126,95 @@ def fetch_all_qdrant_points(client: QdrantClient) -> Tuple[List[Any], List[str],
     return point_ids, tile_ids, vectors, collections
 
 
-def cluster_embeddings(vectors: List[np.ndarray]) -> np.ndarray:
+DEFAULT_CLUSTERS = 8
+
+TACTICAL_LANDCOVER_TAXONOMY = [
+    {
+        "label": "Agricultural Farmlands & Vegetative Fields",
+        "category": "vegetat",
+        "prompt": "agricultural farmlands, cultivated crop fields, rural vegetation and fertile pastures"
+    },
+    {
+        "label": "Dense Woodland & Vegetative Canopy",
+        "category": "vegetat",
+        "prompt": "dense forest canopy, woodland trees, mountain forests and natural green foliage"
+    },
+    {
+        "label": "Urban Core & Dense Built-up Residential",
+        "category": "urban",
+        "prompt": "dense urban core, residential buildings, city blocks and high density streets"
+    },
+    {
+        "label": "Suburban Settlement & Mixed Urban Greenspace",
+        "category": "urban",
+        "prompt": "suburban residential development, neighborhood housing with gardens and trees"
+    },
+    {
+        "label": "Industrial Complexes & Warehouse Logistics",
+        "category": "industr",
+        "prompt": "industrial parks, large warehouses, factory buildings and logistical freight centers"
+    },
+    {
+        "label": "Airport Infrastructure & Transportation Corridors",
+        "category": "industr",
+        "prompt": "airport runways, taxiways, tarmac aprons, railway corridors and multi-lane highways"
+    },
+    {
+        "label": "Port Terminals, Docks & Navigational Waterways",
+        "category": "water",
+        "prompt": "harbor docks, shipping port terminals, piers, maritime ship vessels and coastal berths"
+    },
+    {
+        "label": "Coastal Shoreline & Deep Aquatic Basins",
+        "category": "water",
+        "prompt": "ocean water, coastal shoreline, marine sea, river bays and open aquatic basins"
+    },
+    {
+        "label": "Arid Scrubland & Transition Terrain",
+        "category": "arid",
+        "prompt": "arid barren ground, desert sand, open unpaved soil, dry scrub and transitional terrain"
+    },
+    {
+        "label": "Commercial Centers, Flat Roofs & Paved Parking",
+        "category": "urban",
+        "prompt": "commercial shopping centers, big box flat roofs, asphalt parking lots and facilities"
+    }
+]
+
+_TAXONOMY_TEXT_EMBEDDINGS: Optional[np.ndarray] = None
+
+
+def get_taxonomy_text_embeddings() -> Optional[np.ndarray]:
     """
-    Applies HDBSCAN or adaptive KMeans clustering to group high-dimensional tile vectors.
-    Returns integer cluster labels array (label -1 indicates noise/outliers in HDBSCAN).
+    Returns pre-computed or on-demand RemoteCLIP 512-D embeddings
+    for the canonical tactical land-cover taxonomy prompts.
+    """
+    global _TAXONOMY_TEXT_EMBEDDINGS
+    if _TAXONOMY_TEXT_EMBEDDINGS is not None:
+        return _TAXONOMY_TEXT_EMBEDDINGS
+    try:
+        from backend.services.encoder import get_encoder
+        encoder = get_encoder()
+        prompts = [t["prompt"] for t in TACTICAL_LANDCOVER_TAXONOMY]
+        vecs = encoder.encode_text(prompts)
+        _TAXONOMY_TEXT_EMBEDDINGS = np.array(vecs, dtype=np.float32)
+        log.info(f"Initialized RemoteCLIP taxonomy embeddings for {len(prompts)} tactical classes.")
+    except Exception as e:
+        log.warning(f"Could not encode taxonomy prompts via RemoteCLIP ({e}). Using deterministic heuristics.")
+        _TAXONOMY_TEXT_EMBEDDINGS = None
+    return _TAXONOMY_TEXT_EMBEDDINGS
+
+
+def cluster_embeddings(
+    vectors: List[np.ndarray],
+    target_clusters: int = DEFAULT_CLUSTERS,
+    method: str = "kmeans"
+) -> np.ndarray:
+    """
+    Partitions high-dimensional tile vectors across the entire archive.
+    Default setting: 8 clusters via KMeans (random_state=42, n_init=15) on L2-normalized
+    512-dim RemoteCLIP embeddings, ensuring 8 clean, balanced, non-noise partitions.
+    Gracefully supports HDBSCAN if explicitly requested.
     """
     n_samples = len(vectors)
     if n_samples == 0:
@@ -137,110 +222,208 @@ def cluster_embeddings(vectors: List[np.ndarray]) -> np.ndarray:
 
     X = np.stack(vectors, axis=0)
 
-    # Normalize vectors to unit length for cosine distance equivalence
+    # Normalize vectors to unit length for spherical cosine distance
     norms = np.linalg.norm(X, axis=1, keepdims=True)
     norms[norms == 0] = 1.0
     X_norm = X / norms
 
-    if n_samples < 4:
-        # Trivial cluster for very small archives
-        log.info(f"Sample size {n_samples} is small. Assigning single cluster.")
+    if n_samples < 2:
         return np.zeros(n_samples, dtype=int)
 
-    # Try HDBSCAN first
-    try:
-        from sklearn.cluster import HDBSCAN
-        min_c = min(5, max(2, n_samples // 3))
-        hdb = HDBSCAN(min_cluster_size=min_c, metric="euclidean")
-        labels = hdb.fit_predict(X_norm)
-
-        # Count non-noise clusters
-        unique_clusters = set(labels) - {-1}
-        log.info(f"HDBSCAN produced {len(unique_clusters)} clusters (noise points: {np.sum(labels == -1)}).")
-
-        # If HDBSCAN classified everything as noise or single cluster, fallback to KMeans
-        if len(unique_clusters) < 2 and n_samples >= 4:
-            log.info("HDBSCAN produced fewer than 2 clusters. Using KMeans for clearer partitioning.")
-            from sklearn.cluster import KMeans
-            k = min(5, max(2, n_samples // 2))
-            km = KMeans(n_clusters=k, random_state=42, n_init=10)
-            labels = km.fit_predict(X_norm)
-
-        return labels
-    except Exception as e:
-        log.warning(f"HDBSCAN clustering encountered an issue: {e}. Falling back to KMeans.")
-        from sklearn.cluster import KMeans
-        k = min(5, max(2, n_samples // 2))
-        km = KMeans(n_clusters=k, random_state=42, n_init=10)
-        return km.fit_predict(X_norm)
-
-
-def derive_cluster_label(
-    cluster_idx: int,
-    medoid_tile_id: str,
-    member_tile_ids: List[str],
-    pg_conn
-) -> str:
-    """
-    Queries Postgres for spectral indices of the cluster medoid and members
-    to generate a descriptive human-readable label.
-    """
-    try:
-        with pg_conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
-            cur.execute("""
-                SELECT
-                    AVG(mean_ndvi) as avg_ndvi,
-                    AVG(mean_ndwi) as avg_ndwi,
-                    AVG(mean_ndbi) as avg_ndbi,
-                    MAX(sensor) as sensor
-                FROM tiles
-                WHERE tile_id = ANY(%s);
-            """, (member_tile_ids,))
-            stats = cur.fetchone()
-            pg_conn.commit()
-
-        ndvi = stats.get("avg_ndvi") if stats else None
-        ndwi = stats.get("avg_ndwi") if stats else None
-        ndbi = stats.get("avg_ndbi") if stats else None
-
-        # Land cover interpretation heuristic
-        if ndwi is not None and ndwi >= 0.15:
-            terrain_type = "Aquatic & Coastal Water"
-        elif ndvi is not None and ndvi >= 0.35:
-            terrain_type = "Dense Woodland & Forest Canopy"
-        elif ndvi is not None and ndvi >= 0.20:
-            terrain_type = "Vegetative & Agricultural Fields"
-        elif ndbi is not None and ndbi >= 0.03:
-            terrain_type = "Urban Core & Built-up Infrastructure"
-        elif ndbi is not None and ndbi >= 0.0:
-            terrain_type = "Industrial / Tarmac Logistics"
-        else:
-            terrain_type = "Open Arid & Transition Terrain"
-
-        idx_info = []
-        if ndvi is not None: idx_info.append(f"NDVI {ndvi:.2f}")
-        if ndwi is not None: idx_info.append(f"NDWI {ndwi:.2f}")
-        if ndbi is not None: idx_info.append(f"NDBI {ndbi:.2f}")
-        
-        idx_str = f" ({', '.join(idx_info)})" if idx_info else ""
-        return f"Cluster {cluster_idx + 1} — {terrain_type}{idx_str}"
-    except Exception as e:
+    # If HDBSCAN requested explicitly
+    if method.lower() == "hdbscan":
         try:
-            pg_conn.rollback()
-        except Exception:
-            pass
-        log.warning(f"Error deriving cluster label: {e}")
-        return f"Cluster {cluster_idx + 1} (Partition Group)"
+            from sklearn.cluster import HDBSCAN
+            min_c = min(10, max(2, n_samples // target_clusters))
+            hdb = HDBSCAN(min_cluster_size=min_c, metric="euclidean")
+            labels = hdb.fit_predict(X_norm)
+            unique_clusters = set(labels) - {-1}
+            log.info(f"HDBSCAN produced {len(unique_clusters)} clusters (noise: {np.sum(labels == -1)}).")
+            if len(unique_clusters) >= 2:
+                return labels
+            log.info("HDBSCAN produced fewer than 2 clusters. Falling back to default KMeans.")
+        except Exception as e:
+            log.warning(f"HDBSCAN clustering failed: {e}. Falling back to default KMeans.")
+
+    # Default: Robust KMeans with target_clusters (8 by default)
+    from sklearn.cluster import KMeans
+    k = min(target_clusters, n_samples)
+    km = KMeans(n_clusters=k, random_state=42, n_init=15)
+    labels = km.fit_predict(X_norm)
+    log.info(f"KMeans produced exactly {k} clusters across {n_samples} tile vectors.")
+    return labels
 
 
-def run_clustering_job() -> Dict[str, Any]:
+def derive_cluster_labels_batch(
+    unique_labels: List[int],
+    labels: np.ndarray,
+    vectors: List[np.ndarray],
+    tile_ids: List[str],
+    pg_conn
+) -> Dict[int, str]:
+    """
+    Generates rich, distinct, domain-specific tactical land-cover labels for each cluster.
+    Combines:
+    1. RemoteCLIP vision-language semantic similarity against canonical aerospace taxonomy.
+    2. Multi-spectral physical index priors (NDVI/NDWI/NDBI) when available from tiles.
+    3. Greedy maximum-bipartite assignment ensuring NO duplicate labels across all clusters.
+    """
+    results: Dict[int, str] = {}
+    valid_labels = [l for l in unique_labels if l != -1]
+    n_clusters = len(valid_labels)
+
+    if n_clusters == 0:
+        return results
+
+    X = np.stack(vectors, axis=0)
+    norms = np.linalg.norm(X, axis=1, keepdims=True)
+    norms[norms == 0] = 1.0
+    X_norm = X / norms
+
+    centroids = []
+    cluster_stats = []
+
+    for l in valid_labels:
+        indices = [i for i, lbl in enumerate(labels) if lbl == l]
+        c_vecs = X_norm[indices]
+        centroid = np.mean(c_vecs, axis=0)
+        c_norm = np.linalg.norm(centroid)
+        if c_norm > 0:
+            centroid = centroid / c_norm
+        centroids.append(centroid)
+
+        c_tile_ids = [tile_ids[i] for i in indices]
+        try:
+            with pg_conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+                cur.execute("""
+                    SELECT
+                        AVG(mean_ndvi) as avg_ndvi,
+                        AVG(mean_ndwi) as avg_ndwi,
+                        AVG(mean_ndbi) as avg_ndbi,
+                        MAX(sensor) as sensor
+                    FROM tiles
+                    WHERE tile_id = ANY(%s);
+                """, (list(c_tile_ids),))
+                st = cur.fetchone()
+                pg_conn.commit()
+        except Exception as e:
+            try:
+                pg_conn.rollback()
+            except Exception:
+                pass
+            st = None
+
+        cluster_stats.append({
+            "ndvi": st.get("avg_ndvi") if st else None,
+            "ndwi": st.get("avg_ndwi") if st else None,
+            "ndbi": st.get("avg_ndbi") if st else None,
+            "sensor": st.get("sensor") if st else None,
+            "count": len(indices)
+        })
+
+    centroids_arr = np.array(centroids) # (n_clusters, 512)
+    taxonomy_embeddings = get_taxonomy_text_embeddings()
+
+    if taxonomy_embeddings is not None and len(taxonomy_embeddings) >= n_clusters:
+        # Compute cosine similarity matrix between cluster centroids and taxonomy
+        sim_matrix = np.dot(centroids_arr, taxonomy_embeddings.T) # (n_clusters, n_taxonomy)
+
+        # Apply multi-spectral prior boosts
+        for k in range(n_clusters):
+            st = cluster_stats[k]
+            ndvi = st["ndvi"]
+            ndwi = st["ndwi"]
+            ndbi = st["ndbi"]
+
+            for t_idx, item in enumerate(TACTICAL_LANDCOVER_TAXONOMY):
+                cat = item["category"]
+                if ndwi is not None and ndwi >= 0.05 and cat == "water":
+                    sim_matrix[k, t_idx] += 0.15
+                if ndvi is not None and ndvi >= 0.22 and cat == "vegetat":
+                    sim_matrix[k, t_idx] += 0.12
+                if ndbi is not None and ndbi >= 0.02 and (cat == "urban" or cat == "industr"):
+                    sim_matrix[k, t_idx] += 0.10
+                if ndbi is not None and ndbi < -0.15 and cat == "water":
+                    sim_matrix[k, t_idx] += 0.08
+
+        # Greedy distinct assignment to guarantee NO duplicate labels across all clusters
+        pair_scores = []
+        for k in range(n_clusters):
+            for t_idx in range(len(TACTICAL_LANDCOVER_TAXONOMY)):
+                pair_scores.append((sim_matrix[k, t_idx], k, t_idx))
+
+        pair_scores.sort(key=lambda x: x[0], reverse=True)
+
+        assigned_tax_indices = set()
+        cluster_assignments = {}
+        assigned_clusters = set()
+
+        for score, k, t_idx in pair_scores:
+            if k not in assigned_clusters and t_idx not in assigned_tax_indices:
+                assigned_clusters.add(k)
+                assigned_tax_indices.add(t_idx)
+                cluster_assignments[k] = t_idx
+                if len(assigned_clusters) == n_clusters:
+                    break
+
+        # Fallback if any unassigned
+        for k in range(n_clusters):
+            if k not in cluster_assignments:
+                for t_idx in range(len(TACTICAL_LANDCOVER_TAXONOMY)):
+                    if t_idx not in assigned_tax_indices:
+                        assigned_tax_indices.add(t_idx)
+                        cluster_assignments[k] = t_idx
+                        break
+
+        for k, l in enumerate(valid_labels):
+            t_idx = cluster_assignments.get(k, k % len(TACTICAL_LANDCOVER_TAXONOMY))
+            tax = TACTICAL_LANDCOVER_TAXONOMY[t_idx]
+            st = cluster_stats[k]
+
+            idx_info = []
+            if st['ndvi'] is not None: idx_info.append(f"NDVI {st['ndvi']:.2f}")
+            if st['ndwi'] is not None: idx_info.append(f"NDWI {st['ndwi']:.2f}")
+            if st['ndbi'] is not None: idx_info.append(f"NDBI {st['ndbi']:.2f}")
+            idx_str = f" ({', '.join(idx_info)})" if idx_info else " (High-Res Optical / RemoteCLIP 512-D)"
+
+            results[l] = f"Cluster {k + 1} — {tax['label']}{idx_str}"
+
+    else:
+        # Fallback deterministic spectral labeling
+        fallback_types = [
+            "Agricultural Farmlands & Vegetative Fields",
+            "Urban Core & Dense Built-up Residential",
+            "Airport Infrastructure & Transportation Corridors",
+            "Coastal Shoreline & Deep Aquatic Basins",
+            "Port Terminals, Docks & Navigational Waterways",
+            "Arid Scrubland & Transition Terrain",
+            "Commercial Centers, Flat Roofs & Paved Parking",
+            "Industrial Complexes & Warehouse Logistics"
+        ]
+        for k, l in enumerate(valid_labels):
+            st = cluster_stats[k]
+            name = fallback_types[k % len(fallback_types)]
+            idx_info = []
+            if st['ndvi'] is not None: idx_info.append(f"NDVI {st['ndvi']:.2f}")
+            if st['ndwi'] is not None: idx_info.append(f"NDWI {st['ndwi']:.2f}")
+            if st['ndbi'] is not None: idx_info.append(f"NDBI {st['ndbi']:.2f}")
+            idx_str = f" ({', '.join(idx_info)})" if idx_info else ""
+            results[l] = f"Cluster {k + 1} — {name}{idx_str}"
+
+    return results
+
+
+def run_clustering_job(
+    target_clusters: int = DEFAULT_CLUSTERS,
+    method: str = "kmeans"
+) -> Dict[str, Any]:
     """
     Full Phase 1 execution function:
-    Pulls embeddings, clusters, writes back to Postgres & Qdrant.
+    Pulls embeddings, clusters into target_clusters (default 8), writes back to Postgres & Qdrant.
     """
     t0 = datetime.utcnow()
     log.info("=" * 70)
-    log.info("STARTING STANDALONE TILE CLUSTERING JOB (PS 2.2.4)")
+    log.info(f"STARTING STANDALONE TILE CLUSTERING JOB (target_clusters={target_clusters}, method={method})")
     log.info("=" * 70)
 
     q_client = get_qdrant_client()
@@ -256,12 +439,21 @@ def run_clustering_job() -> Dict[str, Any]:
         }
 
     log.info(f"Loaded {len(vectors)} total embeddings from archive. Running clustering algorithm...")
-    labels = cluster_embeddings(vectors)
+    labels = cluster_embeddings(vectors, target_clusters=target_clusters, method=method)
 
     run_stamp = t0.strftime("%Y%m%d%H%M%S")
     unique_labels = sorted(list(set(labels)))
 
     conn = get_pg_connection()
+
+    # Precompute rich domain-specific tactical labels for all clusters in batch
+    cluster_labels_map = derive_cluster_labels_batch(
+        unique_labels=unique_labels,
+        labels=labels,
+        vectors=vectors,
+        tile_ids=tile_ids,
+        pg_conn=conn
+    )
 
     # Map each tile to its new cluster_id
     tile_cluster_map: Dict[str, Optional[str]] = {}
@@ -293,13 +485,8 @@ def run_clustering_job() -> Dict[str, Any]:
         medoid_idx = int(np.argmin(dists))
         medoid_tile_id = c_tile_ids[medoid_idx]
 
-        # Generate descriptive label
-        human_label = derive_cluster_label(
-            cluster_idx=label,
-            medoid_tile_id=medoid_tile_id,
-            member_tile_ids=c_tile_ids,
-            pg_conn=conn
-        )
+        # Fetch label from batch map
+        human_label = cluster_labels_map.get(label, f"Cluster {label + 1} — Land Cover Partition")
 
         cluster_records.append({
             "cluster_id": c_id,

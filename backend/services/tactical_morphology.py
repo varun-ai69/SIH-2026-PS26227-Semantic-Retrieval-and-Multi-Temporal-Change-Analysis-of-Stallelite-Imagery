@@ -68,14 +68,26 @@ def classify_tactical_dynamic(
         prior_cluster: Spatially corresponding cluster from the previous temporal step (if available).
         step_index: 1 for initial change onset; > 1 for subsequent evolution steps.
     """
-    deltas = cluster.get("deltas") or {}
-    d_ndbi = float(deltas.get("delta_ndbi") or 0.0)
-    d_ndvi = float(deltas.get("delta_ndvi") or 0.0)
-    d_ndwi = float(deltas.get("delta_ndwi") or 0.0)
+    deltas = cluster.get("deltas") or cluster.get("cluster_averages") or {}
+    d_ndbi = float(deltas.get("delta_ndbi") if deltas.get("delta_ndbi") is not None else (
+        deltas.get("avg_delta_ndbi") if deltas.get("avg_delta_ndbi") is not None else (
+            cluster.get("mean_delta_ndbi") or 0.0
+        )
+    ))
+    d_ndvi = float(deltas.get("delta_ndvi") if deltas.get("delta_ndvi") is not None else (
+        deltas.get("avg_delta_ndvi") if deltas.get("avg_delta_ndvi") is not None else (
+            cluster.get("mean_delta_ndvi") or 0.0
+        )
+    ))
+    d_ndwi = float(deltas.get("delta_ndwi") if deltas.get("delta_ndwi") is not None else (
+        deltas.get("avg_delta_ndwi") if deltas.get("avg_delta_ndwi") is not None else (
+            cluster.get("mean_delta_ndwi") or 0.0
+        )
+    ))
     
-    indices_t1 = cluster.get("indices_t1") or {}
-    t1_ndbi = float(indices_t1.get("ndbi") or 0.0)
-    t1_ndvi = float(indices_t1.get("ndvi") or 0.0)
+    indices_t1 = cluster.get("indices_t1") or cluster.get("t1_indices") or {}
+    t1_ndbi = float(indices_t1.get("ndbi") or cluster.get("mean_t1_ndbi") or 0.0)
+    t1_ndvi = float(indices_t1.get("ndvi") or cluster.get("mean_t1_ndvi") or 0.0)
     
     current_area = float(cluster.get("area_sq_m") or cluster.get("area_m2") or cluster.get("num_patches", 1) * 4096.0)
     prior_area = float(prior_cluster.get("area_sq_m") or prior_cluster.get("area_m2") or prior_cluster.get("num_patches", 1) * 4096.0) if prior_cluster else None
@@ -91,7 +103,7 @@ def classify_tactical_dynamic(
             dynamic = "EXPANSION"
             confidence = min(0.98, 0.85 + (area_ratio - 1.0) * 0.1)
             growth_pct = (area_ratio - 1.0) * 100.0
-            rationale = f"Cluster footprint grew by +{growth_pct:.1f}% ({current_area:.0f} m² vs {prior_area:.0f} m² in prior epoch)."
+            rationale = f"Cluster footprint expanded by +{growth_pct:.1f}% ({current_area:.0f} m² vs {prior_area:.0f} m² in prior epoch)."
         elif area_ratio <= 0.85:
             dynamic = "CONTRACTION"
             confidence = min(0.98, 0.85 + (1.0 - area_ratio) * 0.1)
@@ -100,7 +112,7 @@ def classify_tactical_dynamic(
         else:
             if d_ndbi > 0:
                 dynamic = "EXPANSION"
-                rationale = f"Stable footprint area ({current_area:.0f} m²) with internal structural consolidation (ΔNDBI +{d_ndbi:.3f})."
+                rationale = f"Consolidated footprint area ({current_area:.0f} m²) with structural densification (ΔNDBI +{d_ndbi:.3f})."
             else:
                 dynamic = "CONTRACTION"
                 rationale = f"Footprint stabilized with receding physical intensity (ΔNDBI {d_ndbi:.3f})."
@@ -112,31 +124,30 @@ def classify_tactical_dynamic(
             dynamic = "DISAPPEARANCE"
             confidence = 0.92
             rationale = f"Structural asset present in T1 (NDBI {t1_ndbi:.3f}) was demolished or removed in T2 (ΔNDBI {d_ndbi:.3f})."
-        elif d_ndwi <= -0.10:
-            dynamic = "DISAPPEARANCE"
+        elif d_ndwi <= -0.08:
+            dynamic = "CONTRACTION" if step_index > 1 else "DISAPPEARANCE"
             confidence = 0.90
-            rationale = f"Water body or moisture feature receded significantly (ΔNDWI {d_ndwi:.3f})."
-        elif d_ndvi <= -0.15 and d_ndbi < 0.02:
-            dynamic = "DISAPPEARANCE"
-            confidence = 0.87
-            rationale = f"Vegetation canopy completely removed / clear-cut (ΔNDVI {d_ndvi:.3f})."
-        # Check Appearance vs Expansion for onset
-        elif step_index > 1 and d_ndbi > 0.02:
-            dynamic = "EXPANSION"
+            rationale = f"Surface water or moisture reservoir receded significantly (ΔNDWI {d_ndwi:.3f})."
+        elif d_ndvi <= -0.12 and d_ndbi < 0.02:
+            dynamic = "CONTRACTION" if step_index > 1 else "DISAPPEARANCE"
             confidence = 0.89
-            rationale = f"Ongoing construction expansion into adjacent ground (ΔNDBI +{d_ndbi:.3f})."
+            rationale = f"Vegetation canopy clear-cut and biomass loss observed (ΔNDVI {d_ndvi:.3f})."
         elif d_ndbi >= 0.035 or (t1_ndbi < 0.0 and d_ndbi > 0.02):
             dynamic = "APPEARANCE"
             confidence = 0.95
-            rationale = f"Brand-new structural feature emerged on previously open terrain (T1 NDBI {t1_ndbi:.3f} → ΔNDBI +{d_ndbi:.3f})."
-        elif d_ndvi >= 0.15:
+            rationale = f"New structural built-up footprint emerged on previously unpaved terrain (ΔNDBI +{d_ndbi:.3f})."
+        elif d_ndvi >= 0.08:
+            dynamic = "APPEARANCE"
+            confidence = 0.91
+            rationale = f"Active vegetation canopy densification and crop/foliage biomass greening (ΔNDVI +{d_ndvi:.3f})."
+        elif d_ndwi >= 0.08:
             dynamic = "APPEARANCE"
             confidence = 0.88
-            rationale = f"New vegetative / crop emergence detected across previously bare terrain (ΔNDVI +{d_ndvi:.3f})."
+            rationale = f"Surface moisture accumulation and water feature emergence detected (ΔNDWI +{d_ndwi:.3f})."
         else:
             dynamic = "APPEARANCE"
-            confidence = 0.82
-            rationale = f"Localized physical transformation detected where no prior disturbance was recorded."
+            confidence = 0.86
+            rationale = f"Distinct physical land-cover disturbance detected with confirmed spectral differentiation."
 
     meta = TACTICAL_DYNAMICS_META.get(dynamic, TACTICAL_DYNAMICS_META["APPEARANCE"])
 

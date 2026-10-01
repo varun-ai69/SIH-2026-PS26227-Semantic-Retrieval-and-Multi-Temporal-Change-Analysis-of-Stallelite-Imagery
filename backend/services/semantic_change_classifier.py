@@ -515,7 +515,10 @@ class SemanticChangeClassifier:
         else:
             if delta_ndvi > 0:
                 pred_type = "Vegetation Increase"
-                trans_label = f"{dom_t1_name} → Vegetation"
+                if dom_t1_name in ("Vegetation", "Dense Vegetation", "Dense Forest", "Farmland / Crops", "Farmland"):
+                    trans_label = "Vegetation Canopy Growth & Greening"
+                else:
+                    trans_label = f"{dom_t1_name} → Vegetation"
                 interp = f"Vegetation increase / greening observed (ΔNDVI +{delta_ndvi:.3f})"
             else:
                 # If NDBI is also distinctly positive (e.g. >= 0.05), it's land clearance directly for construction
@@ -525,7 +528,10 @@ class SemanticChangeClassifier:
                     interp = f"Vegetation clearance for construction (ΔNDBI +{delta_ndbi:.3f}, ΔNDVI {delta_ndvi:.3f})"
                 else:
                     pred_type = "Vegetation Decrease"
-                    trans_label = f"Vegetation → {dom_t2_name}" if dom_t1_name in ("Vegetation", "Dense Vegetation", "Dense Forest", "Farmland / Crops") else f"Canopy Clearance ({dom_t1_name})"
+                    if dom_t2_name in ("Vegetation", "Dense Vegetation", "Dense Forest", "Farmland / Crops"):
+                        trans_label = "Vegetation Canopy Disturbance & Thinning"
+                    else:
+                        trans_label = f"Vegetation → {dom_t2_name}" if dom_t1_name in ("Vegetation", "Dense Vegetation", "Dense Forest", "Farmland / Crops") else f"Canopy Clearance ({dom_t1_name})"
                     interp = f"Vegetation decrease / canopy clearance observed (ΔNDVI {delta_ndvi:.3f})"
 
         return pred_type, trans_label, interp

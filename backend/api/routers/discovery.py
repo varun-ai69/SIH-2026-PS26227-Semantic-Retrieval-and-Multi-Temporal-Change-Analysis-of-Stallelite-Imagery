@@ -101,14 +101,18 @@ def get_cluster_tiles(
     response_model=Dict[str, Any],
     summary="Trigger Offline Re-Clustering Job"
 )
-def recompute_clusters():
+def recompute_clusters(
+    n_clusters: int = Query(8, ge=2, le=32, description="Target number of semantic clusters (default 8)"),
+    method: str = Query("kmeans", description="Clustering algorithm: 'kmeans' or 'hdbscan'")
+):
     """
-    Triggers the batch HDBSCAN/KMeans clustering job over all vectors in Qdrant.
+    Triggers the batch KMeans/HDBSCAN clustering job over all vectors in Qdrant.
     Refreshes cluster IDs in Postgres 'tiles' and 'clusters' tables and updates Qdrant payloads.
+    Default setting creates 8 coherent semantic clusters with vision-language labels.
     """
     try:
-        log.info("Triggering clustering job via API...")
-        result = run_clustering_job()
+        log.info(f"Triggering clustering job via API (n_clusters={n_clusters}, method={method})...")
+        result = run_clustering_job(target_clusters=n_clusters, method=method)
         return result
     except Exception as e:
         log.error(f"Clustering job execution failed: {e}", exc_info=True)
