@@ -9,7 +9,13 @@
  *  5. Multi-year timeline selection & dynamic ingestion pipeline execution
  */
 
-const API_BASE = window.location.origin;
+// Configurable backend base: uses custom URL if set, or current origin (works with Netlify proxy or direct backend)
+const API_BASE = (typeof window !== 'undefined' && (
+  window.CANOPUS_BACKEND_URL ||
+  localStorage.getItem('canopus_backend_url') ||
+  window.location.origin
+)).replace(/\/+$/, '');
+window.API_BASE = API_BASE;
 
 // Global Map State
 let map = null;
@@ -25,7 +31,7 @@ let coverageData = null;
 // 1. PAGE NAVIGATION SWITCHER
 // ============================================================
 
-window.switchPage = function(pageId) {
+window.switchPage = function (pageId) {
   // Update Nav Buttons
   document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.getElementById(`nav-${pageId}`);
@@ -106,20 +112,20 @@ function setupMouseCoordsHud() {
   const hudLatLon = document.getElementById('hudLatLon');
   const hudZoom = document.getElementById('hudZoom');
 
-  map.on('mousemove', function(e) {
+  map.on('mousemove', function (e) {
     if (hudLatLon) {
       hudLatLon.innerText = `Lat: ${e.latlng.lat.toFixed(4)}° | Lon: ${e.latlng.lng.toFixed(4)}°`;
     }
   });
 
-  map.on('zoomend', function() {
+  map.on('zoomend', function () {
     if (hudZoom) {
       hudZoom.innerText = map.getZoom();
     }
   });
 }
 
-window.parseCoordinateInput = function(raw) {
+window.parseCoordinateInput = function (raw) {
   if (!raw) return null;
   const clean = raw.trim();
 
@@ -133,14 +139,14 @@ window.parseCoordinateInput = function(raw) {
       if (Array.isArray(arr) && arr.length === 2) {
         return { type: 'point', lat: Number(arr[0]), lon: Number(arr[1]) };
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // Comma or space separated numbers
   const nums = clean.replace(/[^\d.\-+,]/g, ' ')
-                    .split(/[\s,]+/)
-                    .filter(Boolean)
-                    .map(Number);
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    .map(Number);
 
   if (nums.length === 4) {
     // BBOX: [minLon, minLat, maxLon, maxLat]
@@ -164,7 +170,7 @@ window.parseCoordinateInput = function(raw) {
   return null;
 };
 
-window.executeTeleport = function() {
+window.executeTeleport = function () {
   const topInput = document.getElementById('teleportCoordInputTop');
   const sideInput = document.getElementById('teleportCoordInput');
   const val = (topInput && topInput.value.trim()) || (sideInput && sideInput.value.trim());
@@ -192,7 +198,7 @@ window.executeTeleport = function() {
 
 window.executeFastTravel = window.executeTeleport;
 
-window.teleportToPreset = function(presetStr) {
+window.teleportToPreset = function (presetStr) {
   if (!presetStr) return;
   const parts = presetStr.split(',');
   if (parts.length < 3) return;
@@ -216,7 +222,7 @@ window.teleportToPreset = function(presetStr) {
   teleportToPoint(lat, lon, zoom, label);
 };
 
-window.teleportToPoint = function(lat, lon, zoom = 15, label = '') {
+window.teleportToPoint = function (lat, lon, zoom = 15, label = '') {
   if (!map) return;
 
   // Hyperspace warp animation on map container & tactical toast
@@ -230,7 +236,7 @@ window.teleportToPoint = function(lat, lon, zoom = 15, label = '') {
       window.showTacticalToast(`COORDINATES LOCKED // ORBIT TRANSIT: [${lat.toFixed(4)}°, ${lon.toFixed(4)}°]`);
     }
     window.tacticalAudio?.playLockOnChirp?.();
-  } catch (err) {}
+  } catch (err) { }
 
   // Fly animation
   map.flyTo([lat, lon], zoom, {
@@ -272,7 +278,7 @@ window.teleportToPoint = function(lat, lon, zoom = 15, label = '') {
   activeTeleportMarker.bindPopup(popupContent).openPopup();
 };
 
-window.teleportToBbox = function(bbox) {
+window.teleportToBbox = function (bbox) {
   if (!map || !bbox || bbox.length !== 4) return;
   const [minLon, minLat, maxLon, maxLat] = bbox;
 
@@ -309,7 +315,7 @@ window.teleportToBbox = function(bbox) {
   `).openPopup();
 };
 
-window.clearTeleportMarker = function() {
+window.clearTeleportMarker = function () {
   if (activeTeleportMarker && map) {
     map.removeLayer(activeTeleportMarker);
     activeTeleportMarker = null;
@@ -320,13 +326,13 @@ window.clearTeleportMarker = function() {
   }
 };
 
-window.prepareIngestFromPoint = function(lat, lon) {
+window.prepareIngestFromPoint = function (lat, lon) {
   // Generate ~5km x 5km box around point (approx 0.045 deg)
   const d = 0.0225;
   prepareIngestFromBbox(lon - d, lat - d, lon + d, lat + d);
 };
 
-window.prepareIngestFromBbox = function(minLon, minLat, maxLon, maxLat) {
+window.prepareIngestFromBbox = function (minLon, minLat, maxLon, maxLat) {
   const geojsonPoly = {
     type: "Polygon",
     coordinates: [[
@@ -357,7 +363,7 @@ window.prepareIngestFromBbox = function(minLon, minLat, maxLon, maxLat) {
   openIngestModal();
 };
 
-window.switchBasemap = function(type) {
+window.switchBasemap = function (type) {
   if (!basemapLayers[type] || !map) return;
 
   // Switch Active Button Style
@@ -376,7 +382,7 @@ window.switchBasemap = function(type) {
 // 3. DATABASE INGESTION COVERAGE OVERLAY
 // ============================================================
 
-window.loadCoverageRegions = async function() {
+window.loadCoverageRegions = async function () {
   try {
     const res = await fetch(`${API_BASE}/api/v1/coverage`);
     if (!res.ok) throw new Error(`HTTP error ${res.status}`);
@@ -462,7 +468,7 @@ window.loadCoverageRegions = async function() {
   }
 };
 
-window.onSelectRegion = function(regionId) {
+window.onSelectRegion = function (regionId) {
   if (!coverageData || !coverageData.features) return;
 
   if (regionId === 'all') {
@@ -477,7 +483,7 @@ window.onSelectRegion = function(regionId) {
   }
 };
 
-window.fitAllAois = function() {
+window.fitAllAois = function () {
   if (coverageLayerGroup && coverageLayerGroup.getLayers().length > 0) {
     map.fitBounds(coverageLayerGroup.getBounds(), { padding: [40, 40], maxZoom: 13 });
   }
@@ -488,7 +494,7 @@ window.fitAllAois = function() {
 // ============================================================
 
 function setupLeafletDraw() {
-  map.on(L.Draw.Event.CREATED, function(e) {
+  map.on(L.Draw.Event.CREATED, function (e) {
     const layer = e.layer;
     if (currentDrawLayer) {
       map.removeLayer(currentDrawLayer);
@@ -497,7 +503,7 @@ function setupLeafletDraw() {
     map.addLayer(currentDrawLayer);
 
     const geojson = layer.toGeoJSON();
-    
+
     // Auto-populate GeoJSON Input in Ingest Modal
     const geoInput = document.getElementById('geojsonInput');
     if (geoInput) {
@@ -520,7 +526,7 @@ function setupLeafletDraw() {
   });
 }
 
-window.startLeafletDraw = function() {
+window.startLeafletDraw = function () {
   closeIngestModal();
   const polygonDrawer = new L.Draw.Polygon(map, {
     shapeOptions: {
@@ -535,7 +541,7 @@ window.startLeafletDraw = function() {
   polygonDrawer.enable();
 };
 
-window.triggerDrawFromModal = function() {
+window.triggerDrawFromModal = function () {
   closeIngestModal();
   startLeafletDraw();
 };
@@ -549,7 +555,7 @@ let currentIngestionSensor = 'sentinel2'; // 'sentinel2' or 'maxar'
 let selectedYears = 2;
 let selectedGeoTiffFiles = [];
 
-window.setIngestionSensor = function(sensor) {
+window.setIngestionSensor = function (sensor) {
   currentIngestionSensor = sensor;
   const cardSentinel = document.getElementById('sensorCardSentinel');
   const cardMaxar = document.getElementById('sensorCardMaxar');
@@ -593,12 +599,12 @@ window.setIngestionSensor = function(sensor) {
   }
 };
 
-window.setMaxarEpochPreset = function(preset) {
+window.setMaxarEpochPreset = function (preset) {
   document.querySelectorAll('#maxarTimelineGroup .timeline-chip').forEach(btn => btn.classList.remove('active'));
   const activeBtn = document.getElementById(
     preset === '2020_2026' ? 'chipMaxar2020_2026' :
-    preset === '2022_2026' ? 'chipMaxar2022_2026' :
-    preset === 'all' ? 'chipMaxarAll' : 'chipMaxarCustom'
+      preset === '2022_2026' ? 'chipMaxar2022_2026' :
+        preset === 'all' ? 'chipMaxarAll' : 'chipMaxarCustom'
   );
   if (activeBtn) activeBtn.classList.add('active');
 
@@ -617,11 +623,11 @@ window.setMaxarEpochPreset = function(preset) {
   }
 };
 
-window.selectSensorFilter = function(val) {
+window.selectSensorFilter = function (val) {
   const pSent = document.getElementById('pillSensorSentinel');
   const pMax = document.getElementById('pillSensorMaxar');
   const pAll = document.getElementById('pillSensorAll');
-  
+
   if (pSent) {
     pSent.style.background = (val === 'Sentinel-2') ? 'rgba(6,182,212,0.2)' : 'rgba(255,255,255,0.03)';
     pSent.style.borderColor = (val === 'Sentinel-2') ? 'var(--accent-cyan)' : 'var(--border-color)';
@@ -647,15 +653,15 @@ window.selectSensorFilter = function(val) {
   directSelects.forEach(s => s.value = val);
 };
 
-window.onDirectSensorChange = function(val) {
+window.onDirectSensorChange = function (val) {
   selectSensorFilter(val);
 };
 
-window.syncDirectSensor = function(val) {
+window.syncDirectSensor = function (val) {
   selectSensorFilter(val || '');
 };
 
-window.handleGeoTiffFilesSelected = function(files) {
+window.handleGeoTiffFilesSelected = function (files) {
   if (!files || files.length === 0) return;
   selectedGeoTiffFiles = Array.from(files);
   const summaryEl = document.getElementById('selectedFilesSummary');
@@ -666,7 +672,7 @@ window.handleGeoTiffFilesSelected = function(files) {
   }
 };
 
-window.openIngestModal = function() {
+window.openIngestModal = function () {
   const modal = document.getElementById('ingestModal');
   if (!modal) return;
   modal.classList.add('open');
@@ -696,11 +702,11 @@ window.openIngestModal = function() {
   }
 };
 
-window.closeIngestModal = function() {
+window.closeIngestModal = function () {
   document.getElementById('ingestModal').classList.remove('open');
 };
 
-window.switchIngestMode = function(mode) {
+window.switchIngestMode = function (mode) {
   currentIngestMode = mode;
   document.getElementById('tabAoiBtn').classList.toggle('active', mode === 'aoi');
   document.getElementById('tabFileBtn').classList.toggle('active', mode === 'file');
@@ -708,7 +714,7 @@ window.switchIngestMode = function(mode) {
   document.getElementById('fileFormSection').style.display = (mode === 'file') ? 'flex' : 'none';
 };
 
-window.setTimelineYears = function(years) {
+window.setTimelineYears = function (years) {
   selectedYears = years;
   document.querySelectorAll('#sentinelTimelineGroup .timeline-chip').forEach(btn => btn.classList.remove('active'));
   if (event && event.target && event.target.classList.contains('timeline-chip')) {
@@ -733,7 +739,7 @@ window.setTimelineYears = function(years) {
   }
 };
 
-window.setCustomTimeline = function() {
+window.setCustomTimeline = function () {
   document.querySelectorAll('#sentinelTimelineGroup .timeline-chip').forEach(btn => btn.classList.remove('active'));
   if (event && event.target) event.target.classList.add('active');
 };
@@ -755,8 +761,8 @@ function animateProgressBar() {
   bar.style.width = '10%';
 
   const isMaxar = currentIngestionSensor === 'maxar';
-  label.innerText = isMaxar 
-    ? '[PHASE 1/4] Connecting to Maxar Wayback Archive & Selecting Epochs...' 
+  label.innerText = isMaxar
+    ? '[PHASE 1/4] Connecting to Maxar Wayback Archive & Selecting Epochs...'
     : '[PHASE 1/5] Querying STAC Catalog & Selecting Granules...';
   subtext.innerText = isMaxar
     ? 'Selecting 2020 baseline and contemporary sub-meter orthorectified releases...'
@@ -817,7 +823,7 @@ function stopProgressBar(success, message) {
   }
 }
 
-window.startIngestion = async function() {
+window.startIngestion = async function () {
   const submitBtn = document.getElementById('submitIngestBtn');
   const alertBox = document.getElementById('ingestSuccessAlert');
   alertBox.style.display = 'none';
@@ -888,7 +894,7 @@ window.startIngestion = async function() {
 
         // Step 2: Poll every 3 seconds for job completion
         const progressStages = [
-          { minPct: 0,  label: '[PHASE 1/4] Connecting to Maxar Wayback Archive...', sub: 'Resolving release IDs for selected epochs...' },
+          { minPct: 0, label: '[PHASE 1/4] Connecting to Maxar Wayback Archive...', sub: 'Resolving release IDs for selected epochs...' },
           { minPct: 10, label: '[PHASE 2/4] Streaming WMTS Tiles & Stitching Canvas...', sub: 'Downloading sub-meter optical imagery from Esri Wayback...' },
           { minPct: 30, label: '[PHASE 3/4] Slicing 512x512 GeoTIFF Tiles...', sub: 'Polygon intersection & VARI index computation...' },
           { minPct: 60, label: '[PHASE 4/4] RemoteCLIP Embeddings -> Qdrant & PostgreSQL...', sub: 'Indexing tile vectors into maxar_tile_embeddings...' },
@@ -1092,20 +1098,20 @@ let currentInspectingTile = null;
 let mapTileHighlightLayer = null;
 let activeSensorFilter = 'Sentinel-2';
 
-window.selectSensorFilter = function(sensorName) {
+window.selectSensorFilter = function (sensorName) {
   if (window.playTacticalClick) window.playTacticalClick();
   activeSensorFilter = (sensorName !== undefined && sensorName !== null) ? sensorName : '';
-  
+
   // Update Pills visual styling
   const pSentinel = document.getElementById('pillSensorSentinel');
   const pMaxar = document.getElementById('pillSensorMaxar');
   const pAll = document.getElementById('pillSensorAll');
-  
+
   const inactiveStyle = "background: rgba(255,255,255,0.03); border: 1.5px solid var(--border-color); color: var(--text-secondary); font-size: 12px; font-weight: 600; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;";
   const activeSentinelStyle = "background: rgba(6,182,212,0.18); border: 1.5px solid var(--accent-cyan); color: #fff; font-size: 12px; font-weight: 600; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 0 12px rgba(6,182,212,0.25);";
   const activeMaxarStyle = "background: rgba(245,158,11,0.18); border: 1.5px solid var(--accent-amber); color: #fff; font-size: 12px; font-weight: 600; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 0 12px rgba(245,158,11,0.25);";
   const activeAllStyle = "background: rgba(99,102,241,0.18); border: 1.5px solid var(--accent-indigo); color: #fff; font-size: 12px; font-weight: 600; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 0 12px rgba(99,102,241,0.25);";
-  
+
   if (pSentinel) pSentinel.style.cssText = (activeSensorFilter === 'Sentinel-2') ? activeSentinelStyle : inactiveStyle;
   if (pMaxar) pMaxar.style.cssText = (activeSensorFilter === 'Maxar') ? activeMaxarStyle : inactiveStyle;
   if (pAll) pAll.style.cssText = (!activeSensorFilter || activeSensorFilter === '') ? activeAllStyle : inactiveStyle;
@@ -1117,15 +1123,15 @@ window.selectSensorFilter = function(sensorName) {
   if (directSelect) directSelect.value = activeSensorFilter;
 };
 
-window.syncDirectSensor = function(val) {
+window.syncDirectSensor = function (val) {
   selectSensorFilter(val);
 };
 
-window.onDirectSensorChange = function(val) {
+window.onDirectSensorChange = function (val) {
   selectSensorFilter(val);
 };
 
-window.toggleSearchFilterPopover = function() {
+window.toggleSearchFilterPopover = function () {
   if (window.playTacticalClick) window.playTacticalClick();
   const popover = document.getElementById('searchFilterPopover');
   if (!popover) return;
@@ -1133,15 +1139,15 @@ window.toggleSearchFilterPopover = function() {
   popover.style.display = isHidden ? 'block' : 'none';
 };
 
-window.resetSearchFilters = function() {
+window.resetSearchFilters = function () {
   if (window.playTacticalClick) window.playTacticalClick();
   const topK = document.getElementById('filterTopK');
   if (topK) topK.value = 5;
   const topKLabel = document.getElementById('topKValueLabel');
   if (topKLabel) topKLabel.innerText = '5';
-  
+
   selectSensorFilter('Sentinel-2');
-  
+
   const sDate = document.getElementById('filterStartDate');
   if (sDate) sDate.value = '';
   const eDate = document.getElementById('filterEndDate');
@@ -1154,7 +1160,7 @@ window.resetSearchFilters = function() {
   if (badge) badge.style.display = 'none';
 };
 
-window.onSearchImageSelected = function(event) {
+window.onSearchImageSelected = function (event) {
   const file = event.target.files[0];
   if (!file) return;
 
@@ -1167,7 +1173,7 @@ window.onSearchImageSelected = function(event) {
   }
 };
 
-window.clearAttachedSearchImage = function() {
+window.clearAttachedSearchImage = function () {
   attachedSearchFile = null;
   const fileInput = document.getElementById('searchImageFileInput');
   if (fileInput) fileInput.value = '';
@@ -1175,7 +1181,7 @@ window.clearAttachedSearchImage = function() {
   if (preview) preview.style.display = 'none';
 };
 
-window.applyQuickPrompt = function(promptText) {
+window.applyQuickPrompt = function (promptText) {
   const input = document.getElementById('searchPromptInput');
   if (input) {
     if (window.playTacticalLockChirp) window.playTacticalLockChirp();
@@ -1201,7 +1207,7 @@ function getCurrentUserId() {
   return uid;
 }
 
-window.regenerateUserIdentity = function() {
+window.regenerateUserIdentity = function () {
   const newUid = 'analyst_' + Math.random().toString(36).substring(2, 10);
   if (confirm(`Switch analyst identity to "${newUid}"?\nThis starts an isolated session separate from current chats.`)) {
     localStorage.setItem('canopus_user_id', newUid);
@@ -1212,7 +1218,7 @@ window.regenerateUserIdentity = function() {
   }
 };
 
-window.toggleChatSidebar = function() {
+window.toggleChatSidebar = function () {
   const sidebar = document.getElementById('chatSidebar');
   const wrapper = document.querySelector('.retrieval-layout-wrapper');
   const floatBtn = document.getElementById('floatingSidebarBtn');
@@ -1245,7 +1251,7 @@ function formatRelativeTime(dateStr) {
   return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-window.loadUserConversations = async function() {
+window.loadUserConversations = async function () {
   const uid = getCurrentUserId();
   const listEl = document.getElementById('chatHistoryList');
   const countBadge = document.getElementById('chatCountBadge');
@@ -1316,7 +1322,7 @@ function renderConversationsList(conversations) {
   listEl.innerHTML = html;
 }
 
-window.filterConversationsList = function(q) {
+window.filterConversationsList = function (q) {
   const query = (q || '').trim().toLowerCase();
   if (!query) {
     renderConversationsList(cachedConversations);
@@ -1326,7 +1332,7 @@ window.filterConversationsList = function(q) {
   renderConversationsList(filtered);
 };
 
-window.startNewChat = function() {
+window.startNewChat = function () {
   if (window.playTacticalClick) window.playTacticalClick();
   currentConversationId = null;
   const feed = document.getElementById('retrievalChatFeed');
@@ -1343,7 +1349,7 @@ window.startNewChat = function() {
   document.querySelectorAll('.chat-history-item').forEach(el => el.classList.remove('active'));
 };
 
-window.selectConversation = async function(conversationId) {
+window.selectConversation = async function (conversationId) {
   if (!conversationId) return;
   if (window.playTacticalLockChirp) window.playTacticalLockChirp();
   const uid = getCurrentUserId();
@@ -1421,7 +1427,7 @@ window.selectConversation = async function(conversationId) {
   }
 };
 
-window.renameConversation = async function(e, conversationId) {
+window.renameConversation = async function (e, conversationId) {
   if (e) e.stopPropagation();
   const conv = cachedConversations.find(c => c.conversation_id === conversationId);
   const currentTitle = conv ? conv.title : '';
@@ -1442,7 +1448,7 @@ window.renameConversation = async function(e, conversationId) {
   }
 };
 
-window.deleteConversation = async function(e, conversationId) {
+window.deleteConversation = async function (e, conversationId) {
   if (e) e.stopPropagation();
   if (!confirm('Are you sure you want to delete this search session? This will remove all retrieved tiles and queries permanently.')) return;
 
@@ -1484,7 +1490,7 @@ function initChatSystem() {
   loadUserConversations();
 }
 
-window.submitSemanticSearch = async function() {
+window.submitSemanticSearch = async function () {
   const textInput = document.getElementById('searchPromptInput');
   const promptText = textInput ? textInput.value.trim() : '';
 
@@ -1503,7 +1509,7 @@ window.submitSemanticSearch = async function() {
   // 1. Gather Filters
   let rawTopK = parseInt(document.getElementById('filterTopK')?.value || '5', 10);
   const topK = isNaN(rawTopK) ? 5 : Math.min(100, Math.max(1, rawTopK));
-  
+
   const directSensor = document.getElementById('directSensorSelect')?.value;
   const popoverSensor = document.getElementById('filterSensor')?.value?.trim();
   const rawSensor = activeSensorFilter !== undefined ? activeSensorFilter : ((directSensor && directSensor !== "") ? directSensor : popoverSensor);
@@ -1911,7 +1917,7 @@ function renderAssistantResultsBubble(response, queryInfo) {
 }
 
 // Fallback image generator for missing/mock tile previews
-window.getTileThumbnailUrl = function(item) {
+window.getTileThumbnailUrl = function (item) {
   if (!item) return '';
   if (item.thumbnail_url && !item.thumbnail_url.includes('/null/')) {
     let t = item.thumbnail_url.trim();
@@ -1932,7 +1938,7 @@ window.getTileThumbnailUrl = function(item) {
   return createTileSvgDataUri(item.tile_id);
 };
 
-window.handleTileThumbError = function(img, tileId) {
+window.handleTileThumbError = function (img, tileId) {
   if (!img) return;
   const currentSrc = img.src || '';
   if (currentSrc.includes('_thumb.jpg')) {
@@ -1976,7 +1982,7 @@ function createTileSvgDataUri(tileId) {
 // 9. TILE INSPECTION MODAL & MAP HANDOFF
 // ============================================================
 
-window.openTileInspect = function(tileId) {
+window.openTileInspect = function (tileId) {
   if (window.playTacticalLockChirp) window.playTacticalLockChirp();
   // Comprehensive lookup across all tile stores
   let item = (window.__tileMap && window.__tileMap.get(tileId))
@@ -2026,7 +2032,7 @@ window.openTileInspect = function(tileId) {
   // Set Title & Subtitle
   const titleEl = document.getElementById('inspectTileTitle');
   if (titleEl) titleEl.innerText = `Tile: ${item.tile_id}`;
-  
+
   const subTitleEl = document.getElementById('inspectTileSubtitle');
   if (subTitleEl) subTitleEl.innerText = `${item.sensor || (isMaxar ? 'Maxar WorldView' : 'Sentinel-2 L2A')} • Scene: ${item.scene_id || 'N/A'}`;
 
@@ -2118,8 +2124,8 @@ window.openTileInspect = function(tileId) {
 
   const metaCoords = document.getElementById('inspectMetaCoords');
   if (metaCoords) {
-    metaCoords.innerText = (item.centroid_lat && item.centroid_lon) 
-      ? `${item.centroid_lat.toFixed(4)}° N, ${item.centroid_lon.toFixed(4)}° E` 
+    metaCoords.innerText = (item.centroid_lat && item.centroid_lon)
+      ? `${item.centroid_lat.toFixed(4)}° N, ${item.centroid_lon.toFixed(4)}° E`
       : 'N/A';
   }
 
@@ -2174,7 +2180,7 @@ window.openTileInspect = function(tileId) {
   }
 };
 
-window.closeTileInspect = function() {
+window.closeTileInspect = function () {
   if (window.playTacticalClick) window.playTacticalClick();
   const modal = document.getElementById('tileInspectModal');
   if (modal) modal.style.setProperty('display', 'none', 'important');
@@ -2198,7 +2204,7 @@ function displayFloatingFeedbackToast(msg) {
   }
 }
 
-window.quickCardFeedback = async function(tileId, isRelevant, btnElem, searchLogId) {
+window.quickCardFeedback = async function (tileId, isRelevant, btnElem, searchLogId) {
   const card = btnElem ? btnElem.closest('.result-card') : null;
   const logId = searchLogId || window.currentSearchLogId || null;
   const inputEl = document.getElementById('searchPromptInput');
@@ -2267,7 +2273,7 @@ window.quickCardFeedback = async function(tileId, isRelevant, btnElem, searchLog
   }
 };
 
-window.quickModalFeedback = async function(isRelevant) {
+window.quickModalFeedback = async function (isRelevant) {
   if (!currentInspectingTile || !currentInspectingTile.tile_id) return;
   const tileId = currentInspectingTile.tile_id;
   const logId = window.currentSearchLogId || null;
@@ -2323,14 +2329,14 @@ window.quickModalFeedback = async function(isRelevant) {
   }
 };
 
-window.inspectOpenInMapClicked = function() {
+window.inspectOpenInMapClicked = function () {
   if (!currentInspectingTile) return;
   const item = currentInspectingTile;
   closeTileInspect();
   openTileInMap(item.tile_id, item.centroid_lat, item.centroid_lon, item.geometry_geojson);
 };
 
-window.inspectFindSimilarClicked = function() {
+window.inspectFindSimilarClicked = function () {
   if (!currentInspectingTile) return;
   const tileId = currentInspectingTile.tile_id;
   closeTileInspect();
@@ -2342,7 +2348,7 @@ window.inspectFindSimilarClicked = function() {
 // ============================================================
 window.__lastDiscoveredTiles = [];
 
-window.discoverSimilarFromTile = async function(tileId) {
+window.discoverSimilarFromTile = async function (tileId) {
   if (!tileId) return;
 
   const chatFeed = document.getElementById('retrievalChatFeed') || document.getElementById('chatFeed');
@@ -2529,7 +2535,7 @@ window.discoverSimilarFromTile = async function(tileId) {
   }
 };
 
-window.showDiscoveryResultsModal = function(seedTileId, results) {
+window.showDiscoveryResultsModal = function (seedTileId, results) {
   let modal = document.getElementById('discoveryModalOverlay');
   if (!modal) {
     modal = document.createElement('div');
@@ -2639,12 +2645,12 @@ window.showDiscoveryResultsModal = function(seedTileId, results) {
   modal.style.display = 'flex';
 };
 
-window.closeDiscoveryModal = function() {
+window.closeDiscoveryModal = function () {
   const modal = document.getElementById('discoveryModalOverlay');
   if (modal) modal.style.display = 'none';
 };
 
-window.openAllOnMap = function(tiles) {
+window.openAllOnMap = function (tiles) {
   if (!tiles || tiles.length === 0) {
     alert('No tiles available to plot on map.');
     return;
@@ -2663,7 +2669,7 @@ window.openAllOnMap = function(tiles) {
   window.location.href = `/?discovery=true`;
 };
 
-window.renderDiscoveryPinsOnMap = function(tiles) {
+window.renderDiscoveryPinsOnMap = function (tiles) {
   if (!map) {
     // Retry if map is still initializing
     setTimeout(() => window.renderDiscoveryPinsOnMap(tiles), 300);
@@ -2672,7 +2678,7 @@ window.renderDiscoveryPinsOnMap = function(tiles) {
   if (!tiles || tiles.length === 0) return;
 
   if (discoveryMapLayerGroup) {
-    try { map.removeLayer(discoveryMapLayerGroup); } catch (e) {}
+    try { map.removeLayer(discoveryMapLayerGroup); } catch (e) { }
   }
   discoveryMapLayerGroup = L.featureGroup().addTo(map);
 
@@ -2743,7 +2749,7 @@ window.renderDiscoveryPinsOnMap = function(tiles) {
             }
           }).addTo(discoveryMapLayerGroup);
         }
-      } catch (e) {}
+      } catch (e) { }
     }
   });
 
@@ -2752,7 +2758,7 @@ window.renderDiscoveryPinsOnMap = function(tiles) {
   }
 };
 
-window.openTileInMap = function(tileId, centroidLat, centroidLon, geometryGeoJson) {
+window.openTileInMap = function (tileId, centroidLat, centroidLon, geometryGeoJson) {
   // If not on map page, navigate to map page with query params
   if (!document.getElementById('leafletMap')) {
     const params = new URLSearchParams();
@@ -2824,7 +2830,7 @@ function checkUrlParamsForTileHighlight() {
         }, 500);
         return;
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   if (tileId && lat && lon && map) {
@@ -2839,11 +2845,82 @@ function escapeHtml(str) {
   return str.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
+
+
 // ============================================================
-// 10. INITIALIZE ON DOM LOAD
+// CANOPUS THEME MODE CONTROLLER (DARK / BRIGHT LIGHT)
 // ============================================================
+function initThemeSystem() {
+  const saved = localStorage.getItem('canopus_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateThemeButtonUI(saved);
+}
+window.initThemeSystem = initThemeSystem;
+
+function toggleThemeMode() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('canopus_theme', next);
+  updateThemeButtonUI(next);
+}
+window.toggleThemeMode = toggleThemeMode;
+
+window.updateThemeButtonUI = function (theme) {
+  const btn = document.getElementById('themeToggleBtn');
+  const label = document.getElementById('themeToggleLabel');
+  const sunIcons = document.querySelectorAll('.theme-icon-sun');
+  const moonIcons = document.querySelectorAll('.theme-icon-moon');
+  if (!btn) return;
+  if (theme === 'light') {
+    if (label) label.innerText = 'DARK';
+    sunIcons.forEach(i => i.style.display = 'none');
+    moonIcons.forEach(i => i.style.display = 'inline-block');
+    btn.setAttribute('title', 'Switch to Dark Mode');
+  } else {
+    if (label) label.innerText = 'LIGHT';
+    sunIcons.forEach(i => i.style.display = 'inline-block');
+    moonIcons.forEach(i => i.style.display = 'none');
+    btn.setAttribute('title', 'Switch to Light Mode');
+  }
+};
+
+// Immediate application upon load
+if (typeof document !== 'undefined') {
+  const initialTheme = localStorage.getItem('canopus_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', initialTheme);
+}
+
+// Update header tile count on any page
+window.updateGlobalArchiveTileCount = async function updateGlobalArchiveTileCount() {
+  const el = document.getElementById('archiveTileCount');
+  if (!el) return;
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/coverage`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const count = data.total_tiles || 0;
+    if (window.animateNumberCount) {
+      window.animateNumberCount(el, 0, count, 600, ' TILES ONLINE');
+    } else {
+      el.innerText = `${count} TILES ONLINE`;
+    }
+  } catch (err) {
+    console.debug('Tile counter fetch fallback:', err);
+  }
+};
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize Bright/Dark theme
+  if (typeof initThemeSystem === 'function') {
+    initThemeSystem();
+  }
+
+  // Update header tile count on every page
+  if (typeof updateGlobalArchiveTileCount === 'function') {
+    updateGlobalArchiveTileCount();
+  }
+
   if (document.getElementById('leafletMap')) {
     initMap();
     checkUrlParamsForTileHighlight();

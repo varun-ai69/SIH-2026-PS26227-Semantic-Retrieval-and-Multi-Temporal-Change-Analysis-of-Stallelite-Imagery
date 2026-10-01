@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +9,9 @@
   <link rel="stylesheet" href="/frontend/effects.css?v=20260928_v4">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
   <style>
     .nav-item.active {
       background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.25));
@@ -55,7 +58,8 @@
     }
 
     /* Guaranteed Self-Contained Clustering Layout */
-    html, body {
+    html,
+    body {
       height: 100vh;
       margin: 0;
       padding: 0;
@@ -65,6 +69,7 @@
       flex-direction: column;
       font-family: 'Inter', sans-serif;
     }
+
     .content-container {
       flex: 1;
       height: calc(100vh - 64px);
@@ -72,8 +77,9 @@
       overflow-x: hidden;
       display: block;
       background: radial-gradient(circle at 50% 0%, rgba(6, 182, 212, 0.05) 0%, transparent 60%),
-                  radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+        radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
     }
+
     .clustering-container {
       max-width: 1440px;
       margin: 0 auto;
@@ -82,11 +88,13 @@
       flex-direction: column;
       gap: 24px;
     }
+
     .clustering-hud-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 16px;
     }
+
     .clustering-hud-card {
       background: rgba(13, 18, 31, 0.75);
       backdrop-filter: blur(16px);
@@ -98,11 +106,13 @@
       gap: 6px;
       transition: all 0.25s ease;
     }
+
     .clustering-hud-card:hover {
       border-color: #06b6d4;
       box-shadow: 0 4px 20px rgba(6, 182, 212, 0.15);
       transform: translateY(-2px);
     }
+
     .clustering-hud-label {
       font-size: 11px;
       font-weight: 600;
@@ -114,21 +124,25 @@
       align-items: center;
       gap: 6px;
     }
+
     .clustering-hud-val {
       font-size: 24px;
       font-weight: 800;
       color: #fff;
       letter-spacing: -0.5px;
     }
+
     .clustering-hud-sub {
       font-size: 12px;
       color: #94a3b8;
     }
+
     .cluster-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 20px;
     }
+
     .cluster-card {
       background: rgba(13, 18, 31, 0.85);
       backdrop-filter: blur(14px);
@@ -141,11 +155,13 @@
       cursor: pointer;
       position: relative;
     }
+
     .cluster-card:hover {
       border-color: #06b6d4;
       box-shadow: 0 8px 30px rgba(6, 182, 212, 0.2);
       transform: translateY(-3px);
     }
+
     .cluster-thumb-wrap {
       width: 100%;
       height: 180px;
@@ -153,12 +169,14 @@
       background: #000;
       overflow: hidden;
     }
+
     .cluster-thumb-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: transform 0.4s ease;
     }
+
     .cluster-badge {
       position: absolute;
       top: 12px;
@@ -173,6 +191,7 @@
       border: 1px solid rgba(6, 182, 212, 0.5);
       font-family: 'JetBrains Mono', monospace;
     }
+
     .cluster-count-badge {
       position: absolute;
       top: 12px;
@@ -184,6 +203,7 @@
       padding: 4px 10px;
       border-radius: 9999px;
     }
+
     .cluster-body {
       padding: 16px;
       display: flex;
@@ -191,12 +211,14 @@
       gap: 10px;
       flex: 1;
     }
+
     .cluster-title {
       font-size: 14px;
       font-weight: 700;
       color: #fff;
       line-height: 1.4;
     }
+
     .cluster-meta-row {
       font-size: 11px;
       color: #64748b;
@@ -204,6 +226,7 @@
       display: flex;
       justify-content: space-between;
     }
+
     .cluster-actions {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -212,6 +235,7 @@
       padding-top: 12px;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
     }
+
     .cluster-toolbar {
       display: flex;
       justify-content: space-between;
@@ -225,11 +249,13 @@
       padding: 12px 18px;
       margin-bottom: 20px;
     }
+
     .cluster-filter-pills {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
     }
+
     .cluster-pill {
       padding: 6px 14px;
       border-radius: 9999px;
@@ -241,7 +267,9 @@
       cursor: pointer;
       transition: all 0.2s ease;
     }
-    .cluster-pill:hover, .cluster-pill.active {
+
+    .cluster-pill:hover,
+    .cluster-pill.active {
       background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(99, 102, 241, 0.2));
       border-color: #06b6d4;
       color: #38bdf8;
@@ -261,6 +289,7 @@
       border-radius: 0 10px 10px 0;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
+
     .timeline-date-title {
       font-size: 13px;
       font-weight: 700;
@@ -271,11 +300,13 @@
       gap: 8px;
       letter-spacing: 0.5px;
     }
+
     .timeline-badge-group {
       display: flex;
       align-items: center;
       gap: 8px;
     }
+
     .timeline-date-count {
       font-size: 11px;
       background: rgba(6, 182, 212, 0.2);
@@ -286,6 +317,7 @@
       font-weight: 700;
       font-family: 'JetBrains Mono', monospace;
     }
+
     .timeline-date-sensor {
       font-size: 11px;
       background: rgba(255, 255, 255, 0.05);
@@ -294,6 +326,7 @@
       padding: 2px 8px;
       border-radius: 12px;
     }
+
     .date-pill {
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid rgba(255, 255, 255, 0.1);
@@ -308,16 +341,20 @@
       align-items: center;
       gap: 6px;
     }
-    .date-pill:hover, .date-pill.active {
+
+    .date-pill:hover,
+    .date-pill.active {
       background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.25));
       border-color: #06b6d4;
       color: #38bdf8;
       box-shadow: 0 0 12px rgba(6, 182, 212, 0.2);
     }
+
     .date-pill.active {
       font-weight: 700;
       border-color: #38bdf8;
     }
+
     .view-mode-pill {
       border: none;
       background: transparent;
@@ -331,6 +368,7 @@
       gap: 5px;
       transition: all 0.2s ease;
     }
+
     .view-mode-pill.active {
       background: #06b6d4 !important;
       color: #070a12 !important;
@@ -348,13 +386,13 @@
       const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">' +
         '<rect width="512" height="512" fill="#0d1424"/>' +
         '<defs>' +
-          '<radialGradient id="grad" cx="50%" cy="50%" r="50%">' +
-            '<stop offset="0%" stop-color="#1e293b"/>' +
-            '<stop offset="100%" stop-color="#070a12"/>' +
-          '</radialGradient>' +
-          '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">' +
-            '<path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(6,182,212,0.12)" stroke-width="1"/>' +
-          '</pattern>' +
+        '<radialGradient id="grad" cx="50%" cy="50%" r="50%">' +
+        '<stop offset="0%" stop-color="#1e293b"/>' +
+        '<stop offset="100%" stop-color="#070a12"/>' +
+        '</radialGradient>' +
+        '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">' +
+        '<path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(6,182,212,0.12)" stroke-width="1"/>' +
+        '</pattern>' +
         '</defs>' +
         '<rect width="512" height="512" fill="url(#grad)"/>' +
         '<rect width="512" height="512" fill="url(#grid)"/>' +
@@ -364,16 +402,27 @@
         '<text x="256" y="240" font-family="monospace" font-size="28" fill="#38bdf8" text-anchor="middle" font-weight="bold">SATELLITE TILE</text>' +
         '<text x="256" y="275" font-family="monospace" font-size="14" fill="#94a3b8" text-anchor="middle">512x512 HIGH-RES</text>' +
         '<text x="256" y="315" font-family="monospace" font-size="11" fill="#64748b" text-anchor="middle">' + cleanId + '</text>' +
-      '</svg>';
+        '</svg>';
       img.src = 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
     }
   </script>
 </head>
+
 <body>
-  <!-- Global Application Header -->  <header>
+  <!-- Global Application Header -->
+  <header>
     <a href="/" class="logo-section">
       <div class="logo-badge">
-        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M5 3v4" />
+          <path d="M19 17v4" />
+          <path d="M3 5h4" />
+          <path d="M17 19h4" />
+          <path d="M15 9l5-5" />
+          <path d="M9 15l-5 5" />
+        </svg>
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
         <span class="logo-title">CANOPUS</span>
@@ -385,19 +434,48 @@
     <!-- Multi-Page Navigation -->
     <nav class="nav-links">
       <a href="/" class="nav-item" id="nav-map">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map &amp; Coverage
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+          <line x1="9" y1="3" x2="9" y2="18" />
+          <line x1="15" y1="6" x2="15" y2="21" />
+        </svg>Map &amp; Coverage
       </a>
       <a href="/retrieval.html" class="nav-item" id="nav-retrieval">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>Semantic Retrieval
       </a>
       <a href="/change.html" class="nav-item" id="nav-change">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+          <path d="M16 16h5v5" />
+        </svg>Change Detection
       </a>
       <a href="/clustering.html" class="nav-item active" id="nav-clustering">
-        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
+        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="6" cy="6" r="2" />
+          <circle cx="18" cy="6" r="2" />
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+        </svg>Clustering
       </a>
       <a href="/review.html" class="nav-item" id="nav-review">
-        <svg class="ui-icon width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
+        <svg class="ui-icon width=" 15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>Review Tool
       </a>
     </nav>
 
@@ -405,18 +483,27 @@
     <div class="header-status">
       <!-- Live UTC Mission Clock -->
       <div class="mission-clock-pill" title="Synchronized Satellite Orbital Time (UTC)">
-        <svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+          stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
         <span class="mission-clock-time" id="liveUtcClock">00:00:00 UTC</span>
       </div>
 
       <!-- Air-Gapped Offline / Online Sovereign Network Mode Pill -->
-      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()" title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
+      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()"
+        title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
         <div class="mode-dot"></div>
         <span>ONLINE</span>
       </div>
 
       <a href="/?openIngest=1" class="ingest-aoi-nav-btn" style="text-decoration: none;">
-        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Ingest New AOI
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg> Ingest New AOI
       </a>
       <div class="status-pill" id="archiveStatusPill">
         <div class="status-dot"></div>
@@ -433,7 +520,12 @@
       <section class="clustering-hud-grid">
         <div class="clustering-hud-card">
           <div class="clustering-hud-label">
-            <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="8"/><rect x="10" y="8" width="4" height="12"/><rect x="17" y="4" width="4" height="16"/></svg>
+            <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="12" width="4" height="8" />
+              <rect x="10" y="8" width="4" height="12" />
+              <rect x="17" y="4" width="4" height="16" />
+            </svg>
             Total Discovered Clusters
           </div>
           <div class="clustering-hud-val" id="hudTotalClusters">--</div>
@@ -441,7 +533,16 @@
         </div>
         <div class="clustering-hud-card">
           <div class="clustering-hud-label">
-            <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+            <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#818cf8"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M5 3v4" />
+              <path d="M19 17v4" />
+              <path d="M3 5h4" />
+              <path d="M17 19h4" />
+              <path d="M15 9l5-5" />
+              <path d="M9 15l-5 5" />
+            </svg>
             Clustered Archive Tiles
           </div>
           <div class="clustering-hud-val" id="hudClusteredTiles">--</div>
@@ -449,7 +550,12 @@
         </div>
         <div class="clustering-hud-card">
           <div class="clustering-hud-label">
-            <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
             Embedding Space
           </div>
           <div class="clustering-hud-val" style="font-size: 18px; color: #38bdf8;">RemoteCLIP (512-D)</div>
@@ -457,11 +563,23 @@
         </div>
         <div class="clustering-hud-card">
           <div class="clustering-hud-label">
-            <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c084fc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+            <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c084fc"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="2" />
+              <rect x="9" y="9" width="6" height="6" />
+              <line x1="9" y1="1" x2="9" y2="4" />
+              <line x1="15" y1="1" x2="15" y2="4" />
+              <line x1="9" y1="20" x2="9" y2="23" />
+              <line x1="15" y1="20" x2="15" y2="23" />
+              <line x1="20" y1="9" x2="23" y2="9" />
+              <line x1="20" y1="14" x2="23" y2="14" />
+              <line x1="1" y1="9" x2="4" y2="9" />
+              <line x1="1" y1="14" x2="4" y2="14" />
+            </svg>
             Cluster Engine
           </div>
-          <div class="clustering-hud-val" style="font-size: 18px; color: #c084fc;">HDBSCAN</div>
-          <div class="clustering-hud-sub" id="hudLastComputed">Hierarchical Density-Based Spatial Clustering</div>
+          <div class="clustering-hud-val" style="font-size: 18px; color: #c084fc;">K-Means &bull; 8 Partitions</div>
+          <div class="clustering-hud-sub" id="hudLastComputed">RemoteCLIP Latent Space (Auto-Classified)</div>
         </div>
       </section>
 
@@ -469,13 +587,20 @@
       <section id="clustersOverviewSection">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
           <div>
-            <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin: 0;">Discovered Terrain & Infrastructure Clusters</h2>
+            <h2 style="font-size: 18px; font-weight: 800; color: #fff; margin: 0;">Discovered Terrain & Infrastructure
+              Clusters</h2>
             <p style="font-size: 12px; color: var(--text-secondary); margin: 4px 0 0 0;">
-              Groups visually and semantically coherent tiles across multiple geographic regions without spatial boundary restrictions.
+              Groups visually and semantically coherent tiles across multiple geographic regions without spatial
+              boundary restrictions.
             </p>
           </div>
-          <button class="map-btn primary" id="recomputeClusterBtn" onclick="triggerClusteringRecompute()" style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px;">
-            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Recompute Clusters
+          <button class="map-btn primary" id="recomputeClusterBtn" onclick="triggerClusteringRecompute()"
+            style="font-weight: 700; display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px;">
+            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 4v6h-6" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg> Recompute Clusters
           </button>
         </div>
 
@@ -483,29 +608,68 @@
         <div class="cluster-toolbar">
           <div class="cluster-filter-pills">
             <button class="cluster-pill active" onclick="filterClustersByCategory('all', this)">
-              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> All Clusters
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg> All Clusters
             </button>
             <button class="cluster-pill" onclick="filterClustersByCategory('vegetat', this)">
-              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg> Vegetative & Fields
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4ade80"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+                <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+              </svg> Vegetative & Fields
             </button>
             <button class="cluster-pill" onclick="filterClustersByCategory('water', this)">
-              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></svg> Water & Coastal
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+                <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+                <path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
+              </svg> Water & Coastal
             </button>
             <button class="cluster-pill" onclick="filterClustersByCategory('urban', this)">
-              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><line x1="8" y1="6" x2="8.01" y2="6"/><line x1="16" y1="6" x2="16.01" y2="6"/><line x1="12" y1="6" x2="12.01" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/></svg> Urban & Built-Up
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#f59e0b"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+                <path d="M9 22v-4h6v4" />
+                <line x1="8" y1="6" x2="8.01" y2="6" />
+                <line x1="16" y1="6" x2="16.01" y2="6" />
+                <line x1="12" y1="6" x2="12.01" y2="6" />
+                <line x1="8" y1="10" x2="8.01" y2="10" />
+                <line x1="16" y1="10" x2="16.01" y2="10" />
+                <line x1="12" y1="10" x2="12.01" y2="10" />
+                <line x1="8" y1="14" x2="8.01" y2="14" />
+                <line x1="16" y1="14" x2="16.01" y2="14" />
+                <line x1="12" y1="14" x2="12.01" y2="14" />
+              </svg> Urban & Built-Up
             </button>
             <button class="cluster-pill" onclick="filterClustersByCategory('arid', this)">
-              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fb7185" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg> Arid & Transition
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fb7185"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+              </svg> Arid & Transition
             </button>
             <button class="cluster-pill" onclick="filterClustersByCategory('industr', this)">
-              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/></svg> Industrial & Logistics
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#a78bfa"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+              </svg> Industrial & Logistics
             </button>
           </div>
           <div style="display: flex; gap: 10px; align-items: center;">
-            <input type="text" id="clusterSearchInput" placeholder="Search clusters by name or ID..." oninput="handleClusterSearch(this.value)" 
+            <input type="text" id="clusterSearchInput" placeholder="Search clusters by name or ID..."
+              oninput="handleClusterSearch(this.value)"
               style="background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: #fff; border-radius: var(--radius-full); padding: 7px 16px; font-size: 12px; outline: none; width: 260px; font-family: 'Inter', sans-serif;">
-            <button class="map-btn" onclick="loadClustersWorkbench()" style="padding: 7px 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
-              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Refresh
+            <button class="map-btn" onclick="loadClustersWorkbench()"
+              style="padding: 7px 14px; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 4v6h-6" />
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+              </svg> Refresh
             </button>
           </div>
         </div>
@@ -521,7 +685,8 @@
 
       <!-- Section 2: Cluster Member Tiles Drill-Down (Hidden by default) -->
       <section id="clusterDrilldownSection" style="display: none;">
-        <div style="background: rgba(13, 18, 31, 0.85); backdrop-filter: blur(14px); border: 1px solid var(--border-active); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px;">
+        <div
+          style="background: rgba(13, 18, 31, 0.85); backdrop-filter: blur(14px); border: 1px solid var(--border-active); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
             <div>
               <div style="display: flex; align-items: center; gap: 8px;">
@@ -530,7 +695,8 @@
                 </button>
                 <span class="cluster-badge" id="drilldownClusterBadge" style="position: static;">Cluster X</span>
               </div>
-              <h3 id="drilldownClusterTitle" style="font-size: 16px; font-weight: 700; color: #38bdf8; margin: 8px 0 4px 0;">
+              <h3 id="drilldownClusterTitle"
+                style="font-size: 16px; font-weight: 700; color: #38bdf8; margin: 8px 0 4px 0;">
                 Cluster Members
               </h3>
               <p id="drilldownClusterSubtitle" style="font-size: 12px; color: var(--text-muted); margin: 0;">
@@ -538,30 +704,53 @@
               </p>
             </div>
             <div style="display: flex; gap: 10px;">
-              <button class="map-btn primary" id="viewClusterOnMapBtn" onclick="viewCurrentClusterOnMap()" style="padding: 8px 16px; font-weight: 700; background: #06b6d4; color: #000; display: inline-flex; align-items: center; gap: 6px;">
-                <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> View Entire Cluster on Map
+              <button class="map-btn primary" id="viewClusterOnMapBtn" onclick="viewCurrentClusterOnMap()"
+                style="padding: 8px 16px; font-weight: 700; background: #06b6d4; color: #000; display: inline-flex; align-items: center; gap: 6px;">
+                <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+                  <line x1="9" y1="3" x2="9" y2="18" />
+                  <line x1="15" y1="6" x2="15" y2="21" />
+                </svg> View Entire Cluster on Map
               </button>
             </div>
           </div>
         </div>
 
         <!-- Date / Timeline Toolbar & Group Filter -->
-        <div id="clusterTimelineToolbar" style="background: rgba(13, 18, 31, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-lg); padding: 12px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div id="clusterTimelineToolbar"
+          style="background: rgba(13, 18, 31, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-lg); padding: 12px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;" id="clusterDatePills">
             <!-- Dynamic Date Filter Pills Injected Here -->
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <div class="view-mode-toggle" style="display: flex; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; padding: 2px;">
-              <button id="viewGroupedBtn" class="view-mode-pill active" onclick="setClusterViewMode('grouped')" title="Group cards by acquisition date">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <div class="view-mode-toggle"
+              style="display: flex; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: 6px; padding: 2px;">
+              <button id="viewGroupedBtn" class="view-mode-pill active" onclick="setClusterViewMode('grouped')"
+                title="Group cards by acquisition date">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                  <line x1="16" y1="2" x2="16" y2="6" />
+                  <line x1="8" y1="2" x2="8" y2="6" />
+                  <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
                 Timeline Groups
               </button>
-              <button id="viewFlatBtn" class="view-mode-pill" onclick="setClusterViewMode('flat')" title="Flat list of all cards sorted chronologically">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              <button id="viewFlatBtn" class="view-mode-pill" onclick="setClusterViewMode('flat')"
+                title="Flat list of all cards sorted chronologically">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="8" y1="6" x2="21" y2="6" />
+                  <line x1="8" y1="12" x2="21" y2="12" />
+                  <line x1="8" y1="18" x2="21" y2="18" />
+                  <line x1="3" y1="6" x2="3.01" y2="6" />
+                  <line x1="3" y1="12" x2="3.01" y2="12" />
+                  <line x1="3" y1="18" x2="3.01" y2="18" />
+                </svg>
                 Flat Grid
               </button>
             </div>
-            <select id="clusterDateSortSelect" onchange="changeClusterDateSort(this.value)" style="background: rgba(15,23,42,0.8); border: 1px solid var(--border-color); color: #38bdf8; border-radius: 6px; padding: 5px 8px; font-size: 11px; font-family: monospace; outline: none; cursor: pointer;">
+            <select id="clusterDateSortSelect" onchange="changeClusterDateSort(this.value)"
+              style="background: rgba(15,23,42,0.8); border: 1px solid var(--border-color); color: #38bdf8; border-radius: 6px; padding: 5px 8px; font-size: 11px; font-family: monospace; outline: none; cursor: pointer;">
               <option value="desc">Date: Latest First (2025 &rarr; 2021)</option>
               <option value="asc">Date: Oldest First (2021 &rarr; 2025)</option>
             </select>
@@ -578,16 +767,23 @@
   </main>
 
   <!-- Tile Inspect & Lineage Modal (Reused Component - Guaranteed Hidden on Load) -->
-  <div class="inspect-modal-backdrop modal-overlay modal-backdrop" id="tileInspectModal" style="display: none !important;">
+  <div class="inspect-modal-backdrop modal-overlay modal-backdrop" id="tileInspectModal"
+    style="display: none !important;">
     <div class="modal-card inspect-modal-card">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 12px;">
-          <div class="logo-badge" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-            <svg class="ui-icon icon-cyan" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <div class="logo-badge"
+            style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+            <svg class="ui-icon icon-cyan" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+              stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
           </div>
           <div>
             <h3 id="inspectTileTitle" style="font-size: 16px; font-weight: 700;">Tile Inspection & Lineage</h3>
-            <span id="inspectTileSubtitle" style="font-size: 12px; color: var(--text-muted);">RemoteCLIP Embedded Tile</span>
+            <span id="inspectTileSubtitle" style="font-size: 12px; color: var(--text-muted);">RemoteCLIP Embedded
+              Tile</span>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeTileInspect()">&times;</button>
@@ -603,23 +799,41 @@
             Spectral indices and feature breakdown.
           </div>
           <div class="inspect-action-buttons">
-            <button class="map-btn primary" id="inspectOpenMapBtn" onclick="inspectOpenInMapClicked()" style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+            <button class="map-btn primary" id="inspectOpenMapBtn" onclick="inspectOpenInMapClicked()"
+              style="display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+                <line x1="9" y1="3" x2="9" y2="18" />
+                <line x1="15" y1="6" x2="15" y2="21" />
+              </svg>
               Open in Map View
             </button>
-            <button class="map-btn" id="inspectFindSimilarBtn" onclick="inspectFindSimilarClicked()" style="background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25)); border-color: var(--accent-cyan); color: #38bdf8; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-              <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <button class="map-btn" id="inspectFindSimilarBtn" onclick="inspectFindSimilarClicked()"
+              style="background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25)); border-color: var(--accent-cyan); color: #38bdf8; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+                stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
               Find Similar Sites (Discovery)
             </button>
-            <a id="inspectDownloadTifBtn" href="#" download class="map-btn" style="text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <a id="inspectDownloadTifBtn" href="#" download class="map-btn"
+              style="text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
               Download GeoTIFF (.tif)
             </a>
           </div>
         </div>
 
         <div class="inspect-details-column">
-          <h4 style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin-bottom: 10px;">Multi-Spectral Indices</h4>
+          <h4 style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin-bottom: 10px;">
+            Multi-Spectral Indices</h4>
           <div class="spectral-meter-card">
             <div class="spectral-meter-row">
               <span class="meter-label" id="inspectLabelNdvi">Vegetation Index (NDVI)</span>
@@ -648,14 +862,33 @@
             </div>
           </div>
 
-          <h4 style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin: 16px 0 10px 0;">Tile Metadata & Coordinates</h4>
+          <h4 style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin: 16px 0 10px 0;">Tile
+            Metadata & Coordinates</h4>
           <table class="inspect-metadata-table">
-            <tr><td>Tile Identifier</td><td class="mono-val" id="inspectMetaTileId">--</td></tr>
-            <tr><td>Scene / Orbit</td><td class="mono-val" id="inspectMetaSceneId">--</td></tr>
-            <tr><td>Acquisition Date</td><td class="mono-val" id="inspectMetaDate">--</td></tr>
-            <tr><td>Centroid WGS84</td><td class="mono-val" id="inspectMetaCoords">--</td></tr>
-            <tr><td>Cloud Coverage</td><td class="mono-val" id="inspectMetaCloud">--</td></tr>
-            <tr><td>Quality Confidence</td><td class="mono-val" id="inspectMetaQuality">--</td></tr>
+            <tr>
+              <td>Tile Identifier</td>
+              <td class="mono-val" id="inspectMetaTileId">--</td>
+            </tr>
+            <tr>
+              <td>Scene / Orbit</td>
+              <td class="mono-val" id="inspectMetaSceneId">--</td>
+            </tr>
+            <tr>
+              <td>Acquisition Date</td>
+              <td class="mono-val" id="inspectMetaDate">--</td>
+            </tr>
+            <tr>
+              <td>Centroid WGS84</td>
+              <td class="mono-val" id="inspectMetaCoords">--</td>
+            </tr>
+            <tr>
+              <td>Cloud Coverage</td>
+              <td class="mono-val" id="inspectMetaCloud">--</td>
+            </tr>
+            <tr>
+              <td>Quality Confidence</td>
+              <td class="mono-val" id="inspectMetaQuality">--</td>
+            </tr>
           </table>
         </div>
       </div>
@@ -664,7 +897,7 @@
 
 
 
-  <script src="/frontend/app.js?v=20260919_app_final"></script>
+  <script src="/frontend/app.js?v=20261001_tilecount_fix_v3"></script>
   <script>
     let activeClusters = [];
     let currentFilter = 'all';
@@ -742,7 +975,13 @@
       if (currentFilter !== 'all') {
         filtered = filtered.filter(c => {
           const lbl = (c.label || '').toLowerCase();
-          return lbl.includes(currentFilter);
+          if (lbl.includes(currentFilter)) return true;
+          if (currentFilter === 'industr' && (lbl.includes('logistics') || lbl.includes('airport') || lbl.includes('warehouse') || lbl.includes('tarmac') || lbl.includes('corridor'))) return true;
+          if (currentFilter === 'water' && (lbl.includes('aquatic') || lbl.includes('port') || lbl.includes('dock') || lbl.includes('coastal') || lbl.includes('marine') || lbl.includes('basin'))) return true;
+          if (currentFilter === 'urban' && (lbl.includes('residential') || lbl.includes('commercial') || lbl.includes('city') || lbl.includes('built-up') || lbl.includes('suburban') || lbl.includes('parking'))) return true;
+          if (currentFilter === 'vegetat' && (lbl.includes('agricultural') || lbl.includes('forest') || lbl.includes('crop') || lbl.includes('woodland') || lbl.includes('canopy') || lbl.includes('farmland') || lbl.includes('fields'))) return true;
+          if (currentFilter === 'arid' && (lbl.includes('scrub') || lbl.includes('soil') || lbl.includes('barren') || lbl.includes('desert') || lbl.includes('transition'))) return true;
+          return false;
         });
       }
 
@@ -817,7 +1056,7 @@
       }
 
       try {
-        const res = await fetch('/api/v1/clusters/recompute', { method: 'POST' });
+        const res = await fetch('/api/v1/clusters/recompute?n_clusters=8&method=kmeans', { method: 'POST' });
         if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const data = await res.json();
         if (window.showTacticalToast) {
@@ -1117,12 +1356,13 @@
     });
   </script>
   <!-- Ambient Effects & Starfield -->
-  <script src="/frontend/effects.js?v=20260928_live_clock_v6"></script>
+  <script src="/frontend/effects.js?v=20261001_sat_cursor_v2"></script>
   <!-- Air-Gapped Offline / Online Sovereign Network Manager -->
-  <script src="/frontend/offline.js?v=20260928_offline_v6"></script>
+  <script src="/frontend/offline.js?v=20261001_sat_cursor_v2"></script>
   <!-- Tactical Audio Synthesizer -->
-  <script src="/frontend/audio.js?v=20260928_v6"></script>
+  <script src="/frontend/audio.js?v=20261001_sat_cursor_v2"></script>
   <!-- Tactical Satellite Cursor Engine -->
-  <script src="/frontend/cursor.js?v=20260928_v6"></script>
+  <script src="/frontend/cursor.js?v=20261001_sat_cursor_v2"></script>
 </body>
+
 </html>

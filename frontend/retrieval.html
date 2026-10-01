@@ -1,23 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Canopus — Multimodal Semantic Satellite Image Retrieval</title>
-  
+
   <!-- Leaflet CSS for Footprint previews if needed -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
   <!-- App Stylesheet with cache buster -->
   <link rel="stylesheet" href="/frontend/index.css?v=20260928_minimal_v4">
   <link rel="stylesheet" href="/frontend/effects.css?v=20260928_v4">
-  
+
   <style>
     /* Scope UI Icon SVG styling cleanly so tactical cursor, badges, and fallback SVGs retain fills & gradients */
     * {
       box-sizing: border-box;
     }
+
     svg.ui-icon,
     .nav-item svg,
     .sensor-pill svg,
@@ -42,6 +44,7 @@
       max-height: 24px !important;
       display: inline-block !important;
     }
+
     svg.ui-icon *,
     .nav-item svg *,
     .sensor-pill svg *,
@@ -51,6 +54,7 @@
     .quick-prompt-chip svg * {
       fill: none !important;
     }
+
     /* Explicitly protect tactical cursor and graphics */
     #tactical-cursor-root svg,
     #tactical-cursor-root svg *,
@@ -58,6 +62,7 @@
     .satellite-svg * {
       box-sizing: content-box !important;
     }
+
     .ui-icon {
       display: inline-block !important;
       vertical-align: middle !important;
@@ -74,17 +79,60 @@
       stroke-linejoin: round !important;
       flex-shrink: 0 !important;
     }
-    .ui-icon.icon-sm { width: 14px !important; height: 14px !important; min-width: 14px !important; min-height: 14px !important; }
-    .ui-icon.icon-md { width: 18px !important; height: 18px !important; min-width: 18px !important; min-height: 18px !important; }
-    .ui-icon.icon-lg { width: 22px !important; height: 22px !important; min-width: 22px !important; min-height: 22px !important; }
-    .ui-icon.icon-cyan { stroke: #06b6d4 !important; color: #06b6d4 !important; }
-    .ui-icon.icon-indigo { stroke: #6366f1 !important; color: #6366f1 !important; }
-    .ui-icon.icon-emerald { stroke: #10b981 !important; color: #10b981 !important; }
-    .ui-icon.icon-amber { stroke: #f59e0b !important; color: #f59e0b !important; }
-    .ui-icon.icon-rose { stroke: #f43f5e !important; color: #f43f5e !important; }
+
+    .ui-icon.icon-sm {
+      width: 14px !important;
+      height: 14px !important;
+      min-width: 14px !important;
+      min-height: 14px !important;
+    }
+
+    .ui-icon.icon-md {
+      width: 18px !important;
+      height: 18px !important;
+      min-width: 18px !important;
+      min-height: 18px !important;
+    }
+
+    .ui-icon.icon-lg {
+      width: 22px !important;
+      height: 22px !important;
+      min-width: 22px !important;
+      min-height: 22px !important;
+    }
+
+    .ui-icon.icon-cyan {
+      stroke: #06b6d4 !important;
+      color: #06b6d4 !important;
+    }
+
+    .ui-icon.icon-indigo {
+      stroke: #6366f1 !important;
+      color: #6366f1 !important;
+    }
+
+    .ui-icon.icon-emerald {
+      stroke: #10b981 !important;
+      color: #10b981 !important;
+    }
+
+    .ui-icon.icon-amber {
+      stroke: #f59e0b !important;
+      color: #f59e0b !important;
+    }
+
+    .ui-icon.icon-rose {
+      stroke: #f43f5e !important;
+      color: #f43f5e !important;
+    }
 
     /* Nav icons */
-    .nav-item svg { width: 15px !important; height: 15px !important; margin-right: 6px; }
+    .nav-item svg {
+      width: 15px !important;
+      height: 15px !important;
+      margin-right: 6px;
+    }
+
     .nav-item.active {
       background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.25));
       border-color: var(--border-active);
@@ -92,10 +140,15 @@
     }
 
     /* Sensor Pills */
-    .sensor-pill svg { width: 15px !important; height: 15px !important; }
-    
+    .sensor-pill svg {
+      width: 15px !important;
+      height: 15px !important;
+    }
+
     /* Input buttons */
-    .filter-toggle-btn svg, .image-upload-trigger-btn svg, .retrieval-submit-btn svg {
+    .filter-toggle-btn svg,
+    .image-upload-trigger-btn svg,
+    .retrieval-submit-btn svg {
       width: 16px !important;
       height: 16px !important;
     }
@@ -157,6 +210,7 @@
       padding: 24px;
       animation: fadeIn 0.25s ease;
     }
+
     .discovery-modal-content {
       background: #0d121f;
       border: 1px solid var(--border-active, rgba(6, 182, 212, 0.5));
@@ -169,6 +223,7 @@
       box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 40px rgba(6, 182, 212, 0.25);
       overflow: hidden;
     }
+
     .discovery-modal-header {
       padding: 16px 24px;
       background: rgba(19, 27, 46, 0.9);
@@ -177,6 +232,7 @@
       justify-content: space-between;
       align-items: center;
     }
+
     .discovery-modal-body {
       padding: 22px;
       overflow-y: auto;
@@ -185,6 +241,7 @@
       flex-direction: column;
       gap: 18px;
     }
+
     .discovery-seed-box {
       display: flex;
       gap: 16px;
@@ -194,6 +251,7 @@
       border-radius: 10px;
       padding: 14px 18px;
     }
+
     .discovery-results-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -210,13 +268,13 @@
       const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">' +
         '<rect width="512" height="512" fill="#0d1424"/>' +
         '<defs>' +
-          '<radialGradient id="grad" cx="50%" cy="50%" r="50%">' +
-            '<stop offset="0%" stop-color="#1e293b"/>' +
-            '<stop offset="100%" stop-color="#070a12"/>' +
-          '</radialGradient>' +
-          '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">' +
-            '<path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(6,182,212,0.12)" stroke-width="1"/>' +
-          '</pattern>' +
+        '<radialGradient id="grad" cx="50%" cy="50%" r="50%">' +
+        '<stop offset="0%" stop-color="#1e293b"/>' +
+        '<stop offset="100%" stop-color="#070a12"/>' +
+        '</radialGradient>' +
+        '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">' +
+        '<path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(6,182,212,0.12)" stroke-width="1"/>' +
+        '</pattern>' +
         '</defs>' +
         '<rect width="512" height="512" fill="url(#grad)"/>' +
         '<rect width="512" height="512" fill="url(#grid)"/>' +
@@ -226,23 +284,40 @@
         '<text x="256" y="240" font-family="monospace" font-size="28" fill="#38bdf8" text-anchor="middle" font-weight="bold">SENTINEL-2</text>' +
         '<text x="256" y="275" font-family="monospace" font-size="14" fill="#94a3b8" text-anchor="middle">512x512 MULTI-SPECTRAL</text>' +
         '<text x="256" y="300" font-family="monospace" font-size="12" fill="#06b6d4" text-anchor="middle">' + cleanId + '</text>' +
-      '</svg>';
+        '</svg>';
       img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
   </script>
 </head>
+
 <body>
 
   <!-- Top Aerospace Navigation Bar -->
   <header>
     <div style="display: flex; align-items: center; gap: 10px;">
-      <button class="header-sidebar-toggle-btn" id="headerSidebarToggleBtn" onclick="toggleChatSidebar()" title="Toggle History Sidebar (Alt+S)" style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.35); color: #38bdf8; width: 36px; height: 36px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; flex-shrink: 0;">
-        <svg class="ui-icon icon-cyan" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m14 9-3 3 3 3"/></svg>
+      <button class="header-sidebar-toggle-btn" id="headerSidebarToggleBtn" onclick="toggleChatSidebar()"
+        title="Toggle History Sidebar (Alt+S)"
+        style="background: rgba(6,182,212,0.12); border: 1px solid rgba(6,182,212,0.35); color: #38bdf8; width: 36px; height: 36px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; flex-shrink: 0;">
+        <svg class="ui-icon icon-cyan" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+          <line x1="9" y1="3" x2="9" y2="21" />
+          <path d="m14 9-3 3 3 3" />
+        </svg>
       </button>
 
       <a href="/" class="logo-section">
         <div class="logo-badge">
-          <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+          <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M5 3v4" />
+            <path d="M19 17v4" />
+            <path d="M3 5h4" />
+            <path d="M17 19h4" />
+            <path d="M15 9l5-5" />
+            <path d="M9 15l-5 5" />
+          </svg>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <span class="logo-title">CANOPUS</span>
@@ -255,19 +330,48 @@
     <!-- Multi-Page Navigation -->
     <nav class="nav-links">
       <a href="/" class="nav-item" id="nav-map">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map &amp; Coverage
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+          <line x1="9" y1="3" x2="9" y2="18" />
+          <line x1="15" y1="6" x2="15" y2="21" />
+        </svg>Map &amp; Coverage
       </a>
       <a href="/retrieval.html" class="nav-item active" id="nav-retrieval">
-        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
+        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>Semantic Retrieval
       </a>
       <a href="/change.html" class="nav-item" id="nav-change">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+          <path d="M16 16h5v5" />
+        </svg>Change Detection
       </a>
       <a href="/clustering.html" class="nav-item" id="nav-clustering">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="6" cy="6" r="2" />
+          <circle cx="18" cy="6" r="2" />
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+        </svg>Clustering
       </a>
       <a href="/review.html" class="nav-item" id="nav-review">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>Review Tool
       </a>
     </nav>
 
@@ -275,18 +379,27 @@
     <div class="header-status">
       <!-- Live UTC Mission Clock -->
       <div class="mission-clock-pill" title="Synchronized Satellite Orbital Time (UTC)">
-        <svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+          stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
         <span class="mission-clock-time" id="liveUtcClock">00:00:00 UTC</span>
       </div>
 
       <!-- Air-Gapped Offline / Online Sovereign Network Mode Pill -->
-      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()" title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
+      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()"
+        title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
         <div class="mode-dot"></div>
         <span>ONLINE</span>
       </div>
 
       <a href="/?openIngest=1" class="ingest-aoi-nav-btn" style="text-decoration: none;">
-        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Ingest New AOI
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg> Ingest New AOI
       </a>
       <div class="status-pill" id="archiveStatusPill">
         <div class="status-dot"></div>
@@ -303,18 +416,32 @@
       <!-- Sidebar Top Actions -->
       <div class="chat-sidebar-header">
         <button class="new-chat-btn" id="newChatBtn" onclick="startNewChat()">
-          <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
           <span>New Chat</span>
         </button>
         <button class="sidebar-toggle-btn" onclick="toggleChatSidebar()" title="Collapse Sidebar">
-          <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m14 9-3 3 3 3"/></svg>
+          <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+            <line x1="9" y1="3" x2="9" y2="21" />
+            <path d="m14 9-3 3 3 3" />
+          </svg>
         </button>
       </div>
 
       <!-- Search / Filter Past Chats -->
       <div class="chat-search-box">
-        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="chatSearchInput" placeholder="Filter conversations..." oninput="filterConversationsList(this.value)">
+        <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" id="chatSearchInput" placeholder="Filter conversations..."
+          oninput="filterConversationsList(this.value)">
       </div>
 
       <!-- Conversations Section Title -->
@@ -326,7 +453,10 @@
       <!-- Conversations Scrollable Feed -->
       <div class="chat-history-list" id="chatHistoryList">
         <div class="chat-history-empty" id="chatHistoryEmpty">
-          <svg class="ui-icon icon-cyan" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <svg class="ui-icon icon-cyan" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+            stroke-width="1.5">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
           <div>No saved searches yet.</div>
           <div style="font-size: 11px; opacity: 0.7;">Submit your first query to begin a persistent session.</div>
         </div>
@@ -336,14 +466,23 @@
       <div class="chat-sidebar-footer">
         <div class="user-identity-badge">
           <div class="user-identity-icon">
-            <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+              stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
           </div>
           <div class="user-identity-info">
             <div class="user-id-title" id="analystIdLabel">Analyst: Loading...</div>
             <div class="user-id-sub">Private & Isolated Session</div>
           </div>
           <button class="user-reset-btn" onclick="regenerateUserIdentity()" title="Generate New Isolated User ID">
-            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2">
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+              <path d="M16 16h5v5" />
+            </svg>
           </button>
         </div>
       </div>
@@ -352,174 +491,301 @@
     <!-- Main Workspace Area -->
     <main class="retrieval-workspace-main">
       <!-- Floating Sidebar Expand Button (visible when sidebar is collapsed) -->
-      <button class="floating-sidebar-btn" id="floatingSidebarBtn" onclick="toggleChatSidebar()" title="Show Past Conversations">
-        <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><path d="m12 9 3 3-3 3"/></svg>
+      <button class="floating-sidebar-btn" id="floatingSidebarBtn" onclick="toggleChatSidebar()"
+        title="Show Past Conversations">
+        <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+          stroke-width="2">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+          <line x1="9" y1="3" x2="9" y2="21" />
+          <path d="m12 9 3 3-3 3" />
+        </svg>
         <span>History</span>
       </button>
 
       <div class="retrieval-container">
-        
+
         <!-- Chat History Feed -->
         <div class="chat-feed" id="retrievalChatFeed">
-        
-        <!-- Welcome Greeting Bubble -->
-        <div class="chat-message assistant">
-          <div class="chat-avatar">
-            <svg class="ui-icon icon-md" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
-          </div>
-          <div class="chat-bubble">
-            <div class="chat-bubble-header">
-              <span class="assistant-name">Canopus Neural Search Agent</span>
-              <span class="assistant-meta">RemoteCLIP ViT-B-32 &bull; 512-dim Cosine Sim &bull; PostGIS GIST</span>
-            </div>
-            <div class="chat-text">
-              Welcome to the <strong>Multimodal Semantic Retrieval Workspace</strong>. You can query the multi-temporal satellite archive using natural language descriptions, complex geographic tactical concepts, or by uploading reference satellite images. Each query executes an end-to-end neural encoding and HNSW vector search pipeline.
-            </div>
 
-            <!-- Starter Prompt Suggestions -->
-            <div class="quick-prompts-title">Instant Tactical Queries:</div>
-            <div class="quick-prompts-grid">
-              <button class="quick-prompt-chip" onclick="applyQuickPrompt('Airstrip runway with visible hangars and aircraft parking')">
-                <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg> Airstrips & Hangars
-              </button>
-              <button class="quick-prompt-chip" onclick="applyQuickPrompt('River bend with bridge infrastructure and transport corridors')">
-                <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M2 12h20"/><path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6"/><path d="M4 6v6"/><path d="M20 6v6"/><path d="M4 6h16"/></svg> River Bend & Bridges
-              </button>
-              <button class="quick-prompt-chip" onclick="applyQuickPrompt('Industrial construction site with heavy storage yards')">
-                <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg> Industrial Yards
-              </button>
-              <button class="quick-prompt-chip" onclick="applyQuickPrompt('Dense agricultural crop fields with irrigation patterns')">
-                <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg> Agricultural Crops
-              </button>
-              <button class="quick-prompt-chip" onclick="applyQuickPrompt('Dense urban residential buildings and road networks')">
-                <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Urban Built-Up
-              </button>
-              <button class="quick-prompt-chip" onclick="applyQuickPrompt('Open barren land with vehicle movement tracks')">
-                <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg> Barren Terrain
-              </button>
+          <!-- Welcome Greeting Bubble -->
+          <div class="chat-message assistant">
+            <div class="chat-avatar">
+              <svg class="ui-icon icon-md" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M5 3v4" />
+                <path d="M19 17v4" />
+                <path d="M3 5h4" />
+                <path d="M17 19h4" />
+                <path d="M15 9l5-5" />
+                <path d="M9 15l-5 5" />
+              </svg>
+            </div>
+            <div class="chat-bubble">
+              <div class="chat-bubble-header">
+                <span class="assistant-name">Canopus Neural Search Agent</span>
+                <span class="assistant-meta">RemoteCLIP ViT-B-32 &bull; 512-dim Cosine Sim &bull; PostGIS GIST</span>
+              </div>
+              <div class="chat-text">
+                Welcome to the <strong>Multimodal Semantic Retrieval Workspace</strong>. You can query the
+                multi-temporal satellite archive using natural language descriptions, complex geographic tactical
+                concepts, or by uploading reference satellite images. Each query executes an end-to-end neural encoding
+                and HNSW vector search pipeline.
+              </div>
+
+              <!-- Starter Prompt Suggestions -->
+              <div class="quick-prompts-title">Instant Tactical Queries:</div>
+              <div class="quick-prompts-grid">
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('Airstrip runway with visible hangars and aircraft parking')">
+                  <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="#06b6d4" stroke-width="2">
+                    <path
+                      d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" />
+                  </svg> Airstrips & Hangars
+                </button>
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('River bend with bridge infrastructure and transport corridors')">
+                  <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="#06b6d4" stroke-width="2">
+                    <path d="M2 12h20" />
+                    <path d="M20 12v6a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-6" />
+                    <path d="M4 6v6" />
+                    <path d="M20 6v6" />
+                    <path d="M4 6h16" />
+                  </svg> River Bend & Bridges
+                </button>
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('Industrial construction site with heavy storage yards')">
+                  <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="#06b6d4" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                  </svg> Industrial Yards
+                </button>
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('Dense agricultural crop fields with irrigation patterns')">
+                  <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="#06b6d4" stroke-width="2">
+                    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+                    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+                  </svg> Agricultural Crops
+                </button>
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('Dense urban residential buildings and road networks')">
+                  <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="#06b6d4" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                  </svg> Urban Built-Up
+                </button>
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('Open barren land with vehicle movement tracks')">
+                  <svg class="ui-icon icon-sm icon-cyan" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="#06b6d4" stroke-width="2">
+                    <path d="m8 3 4 8 5-5 5 15H2L8 3z" />
+                  </svg> Barren Terrain
+                </button>
+              </div>
             </div>
           </div>
+
         </div>
 
-      </div>
+        <!-- Sticky Bottom Input Bar -->
+        <div class="retrieval-input-wrapper">
 
-      <!-- Sticky Bottom Input Bar -->
-      <div class="retrieval-input-wrapper">
-        
-        <!-- Image Attachment Preview Chip -->
-        <div class="image-attachment-chip" id="searchImageAttachmentPreview" style="display: none;">
-          <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          <span id="attachedImageName" style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">reference_image.jpg</span>
-          <button class="remove-attachment-btn" onclick="clearAttachedSearchImage()">&times;</button>
-        </div>
+          <!-- Image Attachment Preview Chip -->
+          <div class="image-attachment-chip" id="searchImageAttachmentPreview" style="display: none;">
+            <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+              stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            <span id="attachedImageName"
+              style="font-family: 'JetBrains Mono', monospace; font-size: 11px;">reference_image.jpg</span>
+            <button class="remove-attachment-btn" onclick="clearAttachedSearchImage()">&times;</button>
+          </div>
 
-        <!-- Filter Configuration Popover Panel -->
-        <div class="search-filter-popover" id="searchFilterPopover" style="display: none;">
-          <div class="popover-header">
-            <h4>
-              <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-              Retrieval & Collection Filters
-            </h4>
-            <button class="popover-close-btn" onclick="toggleSearchFilterPopover()" title="Close Filters">
-              <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          <!-- Filter Configuration Popover Panel -->
+          <div class="search-filter-popover" id="searchFilterPopover" style="display: none;">
+            <div class="popover-header">
+              <h4>
+                <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+                  stroke-width="2">
+                  <line x1="4" y1="21" x2="4" y2="14" />
+                  <line x1="4" y1="10" x2="4" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12" y2="3" />
+                  <line x1="20" y1="21" x2="20" y2="16" />
+                  <line x1="20" y1="12" x2="20" y2="3" />
+                  <line x1="1" y1="14" x2="7" y2="14" />
+                  <line x1="9" y1="8" x2="15" y2="8" />
+                  <line x1="17" y1="16" x2="23" y2="16" />
+                </svg>
+                Retrieval & Collection Filters
+              </h4>
+              <button class="popover-close-btn" onclick="toggleSearchFilterPopover()" title="Close Filters">
+                <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <div class="popover-grid">
+              <div class="form-group">
+                <label>Top Results (top_k): <span id="topKValueLabel"
+                    style="color: var(--accent-cyan); font-weight: 700;">5</span></label>
+                <input type="range" id="filterTopK" min="1" max="20" value="5"
+                  oninput="document.getElementById('topKValueLabel').innerText = this.value">
+              </div>
+              <div class="form-group">
+                <label>Target Sensor Collection</label>
+                <select id="filterSensor" onchange="syncDirectSensor(this.value)">
+                  <option value="Sentinel-2" selected>Sentinel-2 (10m Multi-Spectral)</option>
+                  <option value="Maxar">Maxar High-Res (0.5m Optical)</option>
+                  <option value="">All Sensors (Combined Multi-Sensor)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Acquisition Date From</label>
+                <input type="date" id="filterStartDate">
+              </div>
+              <div class="form-group">
+                <label>Acquisition Date To</label>
+                <input type="date" id="filterEndDate">
+              </div>
+              <div class="form-group">
+                <label>Min Quality (0.0 - 1.0)</label>
+                <input type="number" id="filterMinQuality" min="0.0" max="100.0" step="0.05" placeholder="e.g. 0.8"
+                  value="0.0">
+              </div>
+              <div class="form-group">
+                <label>Max Cloud Cover (%)</label>
+                <input type="number" id="filterMaxCloud" min="0" max="100" value="100">
+              </div>
+            </div>
+            <div class="popover-actions">
+              <button class="map-btn" style="padding: 6px 14px; font-size: 11.5px;" onclick="resetSearchFilters()">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
+                <span>Reset</span>
+              </button>
+              <button class="map-btn primary" style="padding: 6px 18px; font-size: 11.5px;"
+                onclick="toggleSearchFilterPopover()">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>Apply Filters</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Prominent Sensor Switcher Segmented Bar -->
+          <div class="sensor-switcher-pills"
+            style="display: flex; gap: 8px; margin-bottom: 10px; justify-content: center; flex-wrap: wrap;">
+            <button type="button" class="sensor-pill active" id="pillSensorSentinel"
+              onclick="selectSensorFilter('Sentinel-2')"
+              style="background: rgba(6,182,212,0.18); border: 1.5px solid var(--accent-cyan); color: #fff; font-size: 12px; font-weight: 600; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 0 12px rgba(6,182,212,0.25);">
+              <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+                stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M5 3v4" />
+                <path d="M19 17v4" />
+                <path d="M3 5h4" />
+                <path d="M17 19h4" />
+                <path d="M15 9l5-5" />
+                <path d="M9 15l-5 5" />
+              </svg>
+              Sentinel-2 (10m Multi-Spectral)
+            </button>
+            <button type="button" class="sensor-pill" id="pillSensorMaxar" onclick="selectSensorFilter('Maxar')"
+              style="background: rgba(255,255,255,0.03); border: 1.5px solid var(--border-color); color: var(--text-secondary); font-size: 12px; font-weight: 600; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+              <svg class="ui-icon icon-amber" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b"
+                stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="22" y1="12" x2="18" y2="12" />
+                <line x1="6" y1="12" x2="2" y2="12" />
+                <line x1="12" y1="6" x2="12" y2="2" />
+                <line x1="12" y1="22" x2="12" y2="18" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              Maxar (0.5m High-Res)
+            </button>
+            <button type="button" class="sensor-pill" id="pillSensorAll" onclick="selectSensorFilter('')"
+              style="background: rgba(255,255,255,0.03); border: 1.5px solid var(--border-color); color: var(--text-secondary); font-size: 12px; font-weight: 600; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+              <svg class="ui-icon icon-indigo" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366f1"
+                stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+              All Sensors
             </button>
           </div>
-          <div class="popover-grid">
-            <div class="form-group">
-              <label>Top Results (top_k): <span id="topKValueLabel" style="color: var(--accent-cyan); font-weight: 700;">5</span></label>
-              <input type="range" id="filterTopK" min="1" max="20" value="5" oninput="document.getElementById('topKValueLabel').innerText = this.value">
-            </div>
-            <div class="form-group">
-              <label>Target Sensor Collection</label>
-              <select id="filterSensor" onchange="syncDirectSensor(this.value)">
-                <option value="Sentinel-2" selected>Sentinel-2 (10m Multi-Spectral)</option>
-                <option value="Maxar">Maxar High-Res (0.5m Optical)</option>
-                <option value="">All Sensors (Combined Multi-Sensor)</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Acquisition Date From</label>
-              <input type="date" id="filterStartDate">
-            </div>
-            <div class="form-group">
-              <label>Acquisition Date To</label>
-              <input type="date" id="filterEndDate">
-            </div>
-            <div class="form-group">
-              <label>Min Quality (0.0 - 1.0)</label>
-              <input type="number" id="filterMinQuality" min="0.0" max="100.0" step="0.05" placeholder="e.g. 0.8" value="0.0">
-            </div>
-            <div class="form-group">
-              <label>Max Cloud Cover (%)</label>
-              <input type="number" id="filterMaxCloud" min="0" max="100" value="100">
-            </div>
-          </div>
-          <div class="popover-actions">
-            <button class="map-btn" style="padding: 6px 14px; font-size: 11.5px;" onclick="resetSearchFilters()">
-              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-              <span>Reset</span>
+
+          <!-- Main Input Row -->
+          <div class="retrieval-input-bar">
+
+            <!-- Filter Trigger -->
+            <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleSearchFilterPopover()"
+              title="Adjust search filters (top_k, date, sensor)">
+              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <line x1="4" y1="21" x2="4" y2="14" />
+                <line x1="4" y1="10" x2="4" y2="3" />
+                <line x1="12" y1="21" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12" y2="3" />
+                <line x1="20" y1="21" x2="20" y2="16" />
+                <line x1="20" y1="12" x2="20" y2="3" />
+                <line x1="1" y1="14" x2="7" y2="14" />
+                <line x1="9" y1="8" x2="15" y2="8" />
+                <line x1="17" y1="16" x2="23" y2="16" />
+              </svg>
             </button>
-            <button class="map-btn primary" style="padding: 6px 18px; font-size: 11.5px;" onclick="toggleSearchFilterPopover()">
-              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>Apply Filters</span>
+
+            <!-- Hidden sync direct select -->
+            <select id="directSensorSelect" class="filter-select" style="display: none;"
+              onchange="onDirectSensorChange(this.value)">
+              <option value="Sentinel-2" selected>Sentinel-2 (10m)</option>
+              <option value="Maxar">Maxar (0.5m)</option>
+              <option value="">All Sensors</option>
+            </select>
+
+            <!-- Reference Image Upload Trigger -->
+            <input type="file" id="searchImageFileInput" accept="image/*,.tif,.tiff" style="display: none;"
+              onchange="onSearchImageSelected(event)">
+            <button class="image-upload-trigger-btn" onclick="document.getElementById('searchImageFileInput').click()"
+              title="Search by Reference Satellite Image">
+              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
             </button>
+
+            <!-- Text Prompt Input -->
+            <input type="text" id="searchPromptInput" class="retrieval-text-input"
+              placeholder="Search tactical features (e.g. 'find airstrips near river bends', 'dense forest with water bodies')..."
+              onkeydown="if(event.key === 'Enter') submitSemanticSearch()">
+
+            <!-- Submit Button -->
+            <button class="retrieval-submit-btn radar-submit-btn" id="submitSearchBtn" onclick="submitSemanticSearch()">
+              <span>Search</span>
+              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </button>
+
           </div>
         </div>
-
-        <!-- Prominent Sensor Switcher Segmented Bar -->
-        <div class="sensor-switcher-pills" style="display: flex; gap: 8px; margin-bottom: 10px; justify-content: center; flex-wrap: wrap;">
-          <button type="button" class="sensor-pill active" id="pillSensorSentinel" onclick="selectSensorFilter('Sentinel-2')" style="background: rgba(6,182,212,0.18); border: 1.5px solid var(--accent-cyan); color: #fff; font-size: 12px; font-weight: 600; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 0 12px rgba(6,182,212,0.25);">
-            <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
-            Sentinel-2 (10m Multi-Spectral)
-          </button>
-          <button type="button" class="sensor-pill" id="pillSensorMaxar" onclick="selectSensorFilter('Maxar')" style="background: rgba(255,255,255,0.03); border: 1.5px solid var(--border-color); color: var(--text-secondary); font-size: 12px; font-weight: 600; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
-            <svg class="ui-icon icon-amber" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/><line x1="12" y1="22" x2="12" y2="18"/><circle cx="12" cy="12" r="3"/></svg>
-            Maxar (0.5m High-Res)
-          </button>
-          <button type="button" class="sensor-pill" id="pillSensorAll" onclick="selectSensorFilter('')" style="background: rgba(255,255,255,0.03); border: 1.5px solid var(--border-color); color: var(--text-secondary); font-size: 12px; font-weight: 600; border-radius: 20px; padding: 6px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
-            <svg class="ui-icon icon-indigo" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/></svg>
-            All Sensors
-          </button>
-        </div>
-
-        <!-- Main Input Row -->
-        <div class="retrieval-input-bar">
-          
-          <!-- Filter Trigger -->
-          <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleSearchFilterPopover()" title="Adjust search filters (top_k, date, sensor)">
-            <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-          </button>
-
-          <!-- Hidden sync direct select -->
-          <select id="directSensorSelect" class="filter-select" style="display: none;" onchange="onDirectSensorChange(this.value)">
-            <option value="Sentinel-2" selected>Sentinel-2 (10m)</option>
-            <option value="Maxar">Maxar (0.5m)</option>
-            <option value="">All Sensors</option>
-          </select>
-
-          <!-- Reference Image Upload Trigger -->
-          <input type="file" id="searchImageFileInput" accept="image/*,.tif,.tiff" style="display: none;" onchange="onSearchImageSelected(event)">
-          <button class="image-upload-trigger-btn" onclick="document.getElementById('searchImageFileInput').click()" title="Search by Reference Satellite Image">
-            <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          </button>
-
-          <!-- Text Prompt Input -->
-          <input 
-            type="text" 
-            id="searchPromptInput" 
-            class="retrieval-text-input" 
-            placeholder="Search tactical features (e.g. 'find airstrips near river bends', 'dense forest with water bodies')..."
-            onkeydown="if(event.key === 'Enter') submitSemanticSearch()"
-          >
-
-          <!-- Submit Button -->
-          <button class="retrieval-submit-btn radar-submit-btn" id="submitSearchBtn" onclick="submitSemanticSearch()">
-            <span>Search</span>
-            <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </button>
-
-        </div>
-      </div>
 
       </div>
     </main>
@@ -532,10 +798,16 @@
     <div class="modal-card inspect-modal-card">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <svg class="ui-icon icon-md icon-cyan" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg class="ui-icon icon-md icon-cyan" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+            stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
           <div>
-            <h3 id="inspectTileTitle" style="font-size: 16px; font-weight: 700; color: #fff;">Tile Inspection & Lineage</h3>
-            <span id="inspectTileSubtitle" style="font-size: 12px; color: var(--text-muted);">Sentinel-2 L2A &bull; 512x512 GeoTIFF</span>
+            <h3 id="inspectTileTitle" style="font-size: 16px; font-weight: 700; color: #fff;">Tile Inspection & Lineage
+            </h3>
+            <span id="inspectTileSubtitle" style="font-size: 12px; color: var(--text-muted);">Sentinel-2 L2A &bull;
+              512x512 GeoTIFF</span>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeTileInspect()">&times;</button>
@@ -545,49 +817,93 @@
         <!-- Image Preview Column -->
         <div class="inspect-image-column">
           <div class="inspect-img-wrap">
-            <img id="inspectTileImage" src="" alt="Inspect Tile Preview" onerror="handleTileThumbError(this, document.getElementById('inspectTileTitle').innerText)">
+            <img id="inspectTileImage" src="" alt="Inspect Tile Preview"
+              onerror="handleTileThumbError(this, document.getElementById('inspectTileTitle').innerText)">
             <div class="inspect-score-badge" id="inspectScoreBadge">--% Match</div>
           </div>
 
           <!-- Spot Description -->
           <div class="inspect-description-box" id="inspectDescriptionBox">
-            This location shows sparse vegetation (NDVI 0.18), no significant water (NDWI -0.05), and built-up areas likely dominant (NDBI 0.22)
+            This location shows sparse vegetation (NDVI 0.18), no significant water (NDWI -0.05), and built-up areas
+            likely dominant (NDBI 0.22)
           </div>
 
           <div class="inspect-action-buttons">
             <button class="map-btn primary" id="inspectOpenMapBtn" onclick="inspectOpenInMapClicked()">
-              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg> Open in Map View
+              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+                <line x1="9" y1="3" x2="9" y2="18" />
+                <line x1="15" y1="6" x2="15" y2="21" />
+              </svg> Open in Map View
             </button>
-            <button class="map-btn" id="inspectFindSimilarBtn" onclick="inspectFindSimilarClicked()" style="background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25)); border-color: var(--accent-cyan); color: #38bdf8; font-weight: 600;">
-              <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 12 21.5 2.5"/><circle cx="12" cy="12" r="2"/></svg> Find Similar Sites (Discovery)
+            <button class="map-btn" id="inspectFindSimilarBtn" onclick="inspectFindSimilarClicked()"
+              style="background: linear-gradient(135deg, rgba(6,182,212,0.25), rgba(99,102,241,0.25)); border-color: var(--accent-cyan); color: #38bdf8; font-weight: 600;">
+              <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+                stroke-width="2">
+                <path d="M12 2a10 10 0 1 0 10 10" />
+                <path d="M12 12 21.5 2.5" />
+                <circle cx="12" cy="12" r="2" />
+              </svg> Find Similar Sites (Discovery)
             </button>
-            <a id="inspectDownloadTifBtn" href="#" download class="map-btn" style="text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
-              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download GeoTIFF (.tif)
+            <a id="inspectDownloadTifBtn" href="#" download class="map-btn"
+              style="text-decoration: none; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg> Download GeoTIFF (.tif)
             </a>
           </div>
 
           <!-- Quick Analyst Verification (Accept / Reject) -->
-          <div style="margin-top: 14px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px;">
-            <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; font-family: monospace;">Analyst Verification (Accept / Reject)</div>
+          <div
+            style="margin-top: 14px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 8px;">
+            <div
+              style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; font-family: monospace;">
+              Analyst Verification (Accept / Reject)</div>
             <div style="display: flex; gap: 8px;">
-              <button id="inspectAcceptBtn" class="map-btn" style="flex: 1; background: rgba(16,185,129,0.2); border-color: #10b981; color: #34d399; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" onclick="quickModalFeedback(true)">
-                <svg class="ui-icon icon-emerald" width="14" height="14" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg> Accept (Target)
+              <button id="inspectAcceptBtn" class="map-btn"
+                style="flex: 1; background: rgba(16,185,129,0.2); border-color: #10b981; color: #34d399; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 4px;"
+                onclick="quickModalFeedback(true)">
+                <svg class="ui-icon icon-emerald" width="14" height="14" viewBox="0 0 24 24">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg> Accept (Target)
               </button>
-              <button id="inspectRejectBtn" class="map-btn" style="flex: 1; background: rgba(244,63,94,0.2); border-color: #f43f5e; color: #fb7185; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 4px;" onclick="quickModalFeedback(false)">
-                <svg class="ui-icon icon-rose" width="14" height="14" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Reject (Noise)
+              <button id="inspectRejectBtn" class="map-btn"
+                style="flex: 1; background: rgba(244,63,94,0.2); border-color: #f43f5e; color: #fb7185; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 4px;"
+                onclick="quickModalFeedback(false)">
+                <svg class="ui-icon icon-rose" width="14" height="14" viewBox="0 0 24 24">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg> Reject (Noise)
               </button>
             </div>
-            <a href="/review.html" style="font-size: 11px; color: #94a3b8; text-align: center; text-decoration: underline; margin-top: 2px; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">Open Full Analyst Review Workbench <svg class="ui-icon icon-cyan" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>
+            <a href="/review.html"
+              style="font-size: 11px; color: #94a3b8; text-align: center; text-decoration: underline; margin-top: 2px; display: inline-flex; align-items: center; justify-content: center; gap: 4px;">Open
+              Full Analyst Review Workbench <svg class="ui-icon icon-cyan" width="11" height="11" viewBox="0 0 24 24"
+                fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg></a>
           </div>
         </div>
 
         <!-- Spectral & Lineage Column -->
         <div class="inspect-details-column">
-          <h4 style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-            <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <h4
+            style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+              stroke-width="2">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
             Multi-Spectral Indices
           </h4>
-          
+
           <div class="spectral-meter-card">
             <div class="spectral-meter-row">
               <span class="meter-label" id="inspectLabelNdvi">NDVI (Vegetation)</span>
@@ -618,8 +934,14 @@
             </div>
           </div>
 
-          <h4 style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin-top: 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
-            <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <h4
+            style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin-top: 16px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+            <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+              stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
             Geospatial & Metadata Lineage
           </h4>
           <table class="inspect-metadata-table">
@@ -658,16 +980,17 @@
   </div>
 
   <!-- Leaflet JS & Shared App JS with cache buster -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-  <script src="/frontend/app.js?v=20260928_app_v6"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="/frontend/app.js?v=20261001_tilecount_fix_v3"></script>
   <!-- Ambient Effects & Starfield -->
-  <script src="/frontend/effects.js?v=20260928_live_clock_v6"></script>
+  <script src="/frontend/effects.js?v=20261001_sat_cursor_v2"></script>
   <!-- Air-Gapped Offline / Online Sovereign Network Manager -->
-  <script src="/frontend/offline.js?v=20260928_offline_v6"></script>
+  <script src="/frontend/offline.js?v=20261001_sat_cursor_v2"></script>
   <!-- Tactical Audio Synthesizer -->
-  <script src="/frontend/audio.js?v=20260928_v6"></script>
+  <script src="/frontend/audio.js?v=20261001_sat_cursor_v2"></script>
   <!-- Tactical Satellite Cursor Engine -->
-  <script src="/frontend/cursor.js?v=20260928_v6"></script>
+  <script src="/frontend/cursor.js?v=20261001_sat_cursor_v2"></script>
 </body>
+
 </html>

@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Canopus — Multi-Temporal Earth Observation & Semantic Retrieval</title>
-  
+
   <!-- Leaflet CSS & Leaflet Draw CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
-  
+
   <!-- App Stylesheet -->
   <link rel="stylesheet" href="/frontend/index.css?v=20260928_minimal_v4">
   <link rel="stylesheet" href="/frontend/effects.css?v=20260928_v4">
@@ -23,13 +24,13 @@
       const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">' +
         '<rect width="512" height="512" fill="#0d1424"/>' +
         '<defs>' +
-          '<radialGradient id="grad" cx="50%" cy="50%" r="50%">' +
-            '<stop offset="0%" stop-color="#1e293b"/>' +
-            '<stop offset="100%" stop-color="#070a12"/>' +
-          '</radialGradient>' +
-          '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">' +
-            '<path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(6,182,212,0.12)" stroke-width="1"/>' +
-          '</pattern>' +
+        '<radialGradient id="grad" cx="50%" cy="50%" r="50%">' +
+        '<stop offset="0%" stop-color="#1e293b"/>' +
+        '<stop offset="100%" stop-color="#070a12"/>' +
+        '</radialGradient>' +
+        '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">' +
+        '<path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(6,182,212,0.12)" stroke-width="1"/>' +
+        '</pattern>' +
         '</defs>' +
         '<rect width="512" height="512" fill="url(#grad)"/>' +
         '<rect width="512" height="512" fill="url(#grid)"/>' +
@@ -39,18 +40,27 @@
         '<text x="256" y="240" font-family="monospace" font-size="28" fill="#38bdf8" text-anchor="middle" font-weight="bold">SENTINEL-2</text>' +
         '<text x="256" y="275" font-family="monospace" font-size="14" fill="#94a3b8" text-anchor="middle">512x512 MULTI-SPECTRAL</text>' +
         '<text x="256" y="300" font-family="monospace" font-size="12" fill="#06b6d4" text-anchor="middle">' + cleanId + '</text>' +
-      '</svg>';
+        '</svg>';
       img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
   </script>
 </head>
+
 <body>
 
   <!-- Top Aerospace Navigation Bar -->
   <header>
     <a href="/" class="logo-section">
       <div class="logo-badge">
-        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M5 3v4" />
+          <path d="M19 17v4" />
+          <path d="M3 5h4" />
+          <path d="M17 19h4" />
+          <path d="M15 9l5-5" />
+          <path d="M9 15l-5 5" />
+        </svg>
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
         <span class="logo-title">CANOPUS</span>
@@ -62,19 +72,43 @@
     <!-- Navigation Pages -->
     <nav class="nav-links">
       <a href="/" class="nav-item active" id="nav-map">
-        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map &amp; Coverage
+        <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24">
+          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+          <line x1="9" y1="3" x2="9" y2="18" />
+          <line x1="15" y1="6" x2="15" y2="21" />
+        </svg>Map &amp; Coverage
       </a>
       <a href="/retrieval.html" class="nav-item" id="nav-retrieval">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>Semantic Retrieval
       </a>
       <a href="/change.html" class="nav-item" id="nav-change">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24">
+          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+          <path d="M16 16h5v5" />
+        </svg>Change Detection
       </a>
       <a href="/clustering.html" class="nav-item" id="nav-clustering">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="6" cy="6" r="2" />
+          <circle cx="18" cy="6" r="2" />
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+        </svg>Clustering
       </a>
       <a href="/review.html" class="nav-item" id="nav-review">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>Review Tool
       </a>
     </nav>
 
@@ -82,18 +116,27 @@
     <div class="header-status">
       <!-- Live UTC Mission Clock -->
       <div class="mission-clock-pill" title="Synchronized Satellite Orbital Time (UTC)">
-        <svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+          stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
         <span class="mission-clock-time" id="liveUtcClock">00:00:00 UTC</span>
       </div>
 
       <!-- Air-Gapped Offline / Online Sovereign Network Mode Pill -->
-      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()" title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
+      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()"
+        title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
         <div class="mode-dot"></div>
         <span>ONLINE</span>
       </div>
 
       <button class="ingest-aoi-nav-btn" onclick="openIngestModal()">
-        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Ingest New AOI
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg> Ingest New AOI
       </button>
       <div class="status-pill" id="archiveStatusPill">
         <div class="status-dot"></div>
@@ -115,55 +158,86 @@
       <div id="offlineMapCover" style="display: none;">
         <div class="offline-cover-card">
           <div class="offline-shield-icon">
-            <svg class="ui-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              <line x1="8" y1="12" x2="16" y2="12"/>
+            <svg class="ui-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <line x1="8" y1="12" x2="16" y2="12" />
             </svg>
           </div>
           <div class="offline-cover-title">AIR-GAPPED OFFLINE MODE ACTIVE</div>
           <div class="offline-cover-subtitle">
-            External web tile basemaps (Carto/OSM/Esri) and live STAC satellite catalog discovery are paused to ensure zero outbound network emissions.
-            All core neural intelligence modules remain <strong>100% operational locally</strong> from your sovereign archive.
+            External web tile basemaps (Carto/OSM/Esri) and live STAC satellite catalog discovery are paused to ensure
+            zero outbound network emissions.
+            All core neural intelligence modules remain <strong>100% operational locally</strong> from your sovereign
+            archive.
           </div>
 
           <div class="offline-module-matrix">
             <div class="offline-module-item active">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
               <span>Semantic Retrieval (RemoteCLIP) &bull; Local</span>
             </div>
             <div class="offline-module-item active">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
               <span>Terrain Clustering (HDBSCAN) &bull; Local</span>
             </div>
             <div class="offline-module-item active">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
               <span>Multi-Temporal Change Engine &bull; Local</span>
             </div>
             <div class="offline-module-item active">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
               <span>Analyst Review &amp; Provenance &bull; Local</span>
             </div>
             <div class="offline-module-item paused">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
               <span>Cloud STAC Sentinel-2 Ingest &bull; Paused</span>
             </div>
             <div class="offline-module-item paused">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
               <span>Maxar Wayback WMTS &bull; Paused</span>
             </div>
           </div>
 
           <div class="offline-actions-row">
             <button class="offline-btn-primary" onclick="window.setNetworkMode(false)">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12.55a11 11 0 0 1 14.08 0" />
+                <path d="M1.42 9a16 16 0 0 1 21.16 0" />
+                <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+                <line x1="12" y1="20" x2="12.01" y2="20" />
+              </svg>
               Connect to Internet / Go Online to Ingest AOI
             </button>
             <a href="/retrieval.html" class="offline-btn-secondary">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
               Semantic Retrieval
             </a>
             <a href="/clustering.html" class="offline-btn-secondary">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="4" />
+                <circle cx="6" cy="6" r="2" />
+                <circle cx="18" cy="6" r="2" />
+              </svg>
               Clustering
             </a>
           </div>
@@ -189,7 +263,8 @@
           <div style="margin-top: 12px;">
             <h4 style="margin-bottom: 6px;">BASEMAP LAYER</h4>
             <div class="basemap-switcher">
-              <button class="basemap-option active" id="bm-satellite" onclick="switchBasemap('satellite')">Satellite</button>
+              <button class="basemap-option active" id="bm-satellite"
+                onclick="switchBasemap('satellite')">Satellite</button>
               <button class="basemap-option" id="bm-hybrid" onclick="switchBasemap('hybrid')">Hybrid</button>
               <button class="basemap-option" id="bm-dark" onclick="switchBasemap('dark')">Dark Canvas</button>
               <button class="basemap-option" id="bm-osm" onclick="switchBasemap('osm')">OpenStreetMap</button>
@@ -202,25 +277,24 @@
               <h4 style="margin: 0; display: flex; align-items: center; gap: 5px;">
                 COORDINATE TELEPORT
               </h4>
-              <span style="font-size: 10px; color: var(--accent-cyan); font-family: monospace;" id="teleportFormatHint">Lat, Lon</span>
+              <span style="font-size: 10px; color: var(--accent-cyan); font-family: monospace;"
+                id="teleportFormatHint">Lat, Lon</span>
             </div>
 
             <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-              <input 
-                type="text" 
-                id="teleportCoordInput" 
-                placeholder="e.g. 34.455, 73.315 or [minLon,minLat,maxLon,maxLat]" 
-                class="teleport-input"
-                onkeydown="if(event.key === 'Enter') executeTeleport()"
-              />
-              <button class="map-btn primary" onclick="executeTeleport()" style="white-space: nowrap; padding: 6px 14px; font-weight: 600;">
+              <input type="text" id="teleportCoordInput"
+                placeholder="e.g. 34.455, 73.315 or [minLon,minLat,maxLon,maxLat]" class="teleport-input"
+                onkeydown="if(event.key === 'Enter') executeTeleport()" />
+              <button class="map-btn primary" onclick="executeTeleport()"
+                style="white-space: nowrap; padding: 6px 14px; font-weight: 600;">
                 Teleport
               </button>
             </div>
 
             <!-- Quick Teleport Strategic Presets Dropdown -->
             <div>
-              <select id="teleportPresetSelect" class="region-select" onchange="teleportToPreset(this.value)" style="font-size: 11px; padding: 7px 10px;">
+              <select id="teleportPresetSelect" class="region-select" onchange="teleportToPreset(this.value)"
+                style="font-size: 11px; padding: 7px 10px;">
                 <option value="">Strategic Location Presets...</option>
                 <optgroup label="United States [US]">
                   <option value="36.9450,-76.3250,15,Norfolk Naval Station (VA)">Naval Station Norfolk (VA)</option>
@@ -268,9 +342,15 @@
 
       <!-- Live Mouse Coordinates HUD -->
       <div id="mouseCoordsHud" class="mouse-coords-hud">
-        <span class="hud-coord-item"><svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24"><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"/><circle cx="12" cy="10" r="3"/></svg> <span id="hudLatLon">Lat: --.----° | Lon: --.----°</span></span>
+        <span class="hud-coord-item"><svg class="ui-icon icon-cyan" width="13" height="13" viewBox="0 0 24 24">
+            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg> <span id="hudLatLon">Lat: --.----° | Lon: --.----°</span></span>
         <span class="hud-coord-sep">|</span>
-        <span class="hud-coord-item"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Zoom: <span id="hudZoom">5</span></span>
+        <span class="hud-coord-item"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg> Zoom: <span id="hudZoom">5</span></span>
       </div>
     </div>
 
@@ -279,14 +359,22 @@
          ============================================================ -->
     <div class="view-panel" id="view-retrieval">
       <div class="retrieval-container">
-        
+
         <!-- Chat History Stream -->
         <div class="chat-feed" id="retrievalChatFeed">
-          
+
           <!-- Welcome Greeting & Example Prompts -->
           <div class="chat-message assistant">
             <div class="chat-avatar" style="display: flex; align-items: center; justify-content: center;">
-              <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+              <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M5 3v4" />
+                <path d="M19 17v4" />
+                <path d="M3 5h4" />
+                <path d="M17 19h4" />
+                <path d="M15 9l5-5" />
+                <path d="M9 15l-5 5" />
+              </svg>
             </div>
             <div class="chat-bubble">
               <div class="chat-bubble-header">
@@ -294,28 +382,36 @@
                 <span class="assistant-meta">RemoteCLIP ViT-B-32 &bull; Qdrant 512-dim</span>
               </div>
               <div class="chat-text">
-                Welcome to the <strong>Multimodal Semantic Retrieval</strong> workspace. You can search the satellite tile archive using natural language concepts, descriptions of terrain features, or by uploading reference satellite images.
+                Welcome to the <strong>Multimodal Semantic Retrieval</strong> workspace. You can search the satellite
+                tile archive using natural language concepts, descriptions of terrain features, or by uploading
+                reference satellite images.
               </div>
 
               <!-- Quick Prompt Suggestions -->
               <div class="quick-prompts-title">Try searching for:</div>
               <div class="quick-prompts-grid">
-                <button class="quick-prompt-chip" onclick="applyQuickPrompt('Airstrip runway with visible hangars and aircraft parking')">
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('Airstrip runway with visible hangars and aircraft parking')">
                   Airstrips & Hangars
                 </button>
-                <button class="quick-prompt-chip" onclick="applyQuickPrompt('River bend with bridge infrastructure and transport corridors')">
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('River bend with bridge infrastructure and transport corridors')">
                   River Bend & Bridges
                 </button>
-                <button class="quick-prompt-chip" onclick="applyQuickPrompt('Industrial construction site with heavy storage yards')">
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('Industrial construction site with heavy storage yards')">
                   Industrial Construction
                 </button>
-                <button class="quick-prompt-chip" onclick="applyQuickPrompt('Dense agricultural crop fields with irrigation patterns')">
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('Dense agricultural crop fields with irrigation patterns')">
                   Agricultural Crop Fields
                 </button>
-                <button class="quick-prompt-chip" onclick="applyQuickPrompt('Dense urban residential buildings and road networks')">
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('Dense urban residential buildings and road networks')">
                   Urban Built-Up Settlement
                 </button>
-                <button class="quick-prompt-chip" onclick="applyQuickPrompt('Open barren land with vehicle movement tracks')">
+                <button class="quick-prompt-chip"
+                  onclick="applyQuickPrompt('Open barren land with vehicle movement tracks')">
                   Open Barren Land Tracks
                 </button>
               </div>
@@ -326,7 +422,7 @@
 
         <!-- Sticky Bottom Chat Input Bar -->
         <div class="retrieval-input-wrapper">
-          
+
           <!-- Image Attachment Preview Chip (if attached) -->
           <div class="image-attachment-chip" id="searchImageAttachmentPreview" style="display: none;">
             <span id="attachedImageName">reference_image.jpg</span>
@@ -337,17 +433,33 @@
           <div class="search-filter-popover" id="searchFilterPopover" style="display: none;">
             <div class="popover-header">
               <h4>
-                <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                <svg class="ui-icon icon-cyan" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+                  stroke-width="2">
+                  <line x1="4" y1="21" x2="4" y2="14" />
+                  <line x1="4" y1="10" x2="4" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="12" />
+                  <line x1="12" y1="8" x2="12" y2="3" />
+                  <line x1="20" y1="21" x2="20" y2="16" />
+                  <line x1="20" y1="12" x2="20" y2="3" />
+                  <line x1="1" y1="14" x2="7" y2="14" />
+                  <line x1="9" y1="8" x2="15" y2="8" />
+                  <line x1="17" y1="16" x2="23" y2="16" />
+                </svg>
                 Retrieval & Collection Filters
               </h4>
               <button class="popover-close-btn" onclick="toggleSearchFilterPopover()" title="Close Filters">
-                <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" fill="none">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
               </button>
             </div>
             <div class="popover-grid">
               <div class="form-group">
-                <label>Top Results (top_k): <span id="topKValueLabel" style="color: var(--accent-cyan); font-weight: 700;">5</span></label>
-                <input type="range" id="filterTopK" min="1" max="20" value="5" oninput="document.getElementById('topKValueLabel').innerText = this.value">
+                <label>Top Results (top_k): <span id="topKValueLabel"
+                    style="color: var(--accent-cyan); font-weight: 700;">5</span></label>
+                <input type="range" id="filterTopK" min="1" max="20" value="5"
+                  oninput="document.getElementById('topKValueLabel').innerText = this.value">
               </div>
               <div class="form-group">
                 <label>Sensor Constraint</label>
@@ -367,7 +479,8 @@
               </div>
               <div class="form-group">
                 <label>Min Quality (0.0 - 1.0)</label>
-                <input type="number" id="filterMinQuality" min="0.0" max="100.0" step="0.05" placeholder="e.g. 0.8" value="0.0">
+                <input type="number" id="filterMinQuality" min="0.0" max="100.0" step="0.05" placeholder="e.g. 0.8"
+                  value="0.0">
               </div>
               <div class="form-group">
                 <label>Max Cloud Cover (%)</label>
@@ -376,11 +489,17 @@
             </div>
             <div class="popover-actions">
               <button class="map-btn" style="padding: 6px 14px; font-size: 11.5px;" onclick="resetSearchFilters()">
-                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" />
+                </svg>
                 <span>Reset</span>
               </button>
-              <button class="map-btn primary" style="padding: 6px 18px; font-size: 11.5px;" onclick="toggleSearchFilterPopover()">
-                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+              <button class="map-btn primary" style="padding: 6px 18px; font-size: 11.5px;"
+                onclick="toggleSearchFilterPopover()">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
                 <span>Apply Filters</span>
               </button>
             </div>
@@ -388,38 +507,50 @@
 
           <!-- Main Input Row -->
           <div class="retrieval-input-bar">
-            
+
             <!-- Filter Drawer Trigger Button -->
-            <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleSearchFilterPopover()" title="Adjust search filters (top_k, date, sensor)">
-              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <button class="filter-toggle-btn" id="filterToggleBtn" onclick="toggleSearchFilterPopover()"
+              title="Adjust search filters (top_k, date, sensor)">
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3" />
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+              </svg>
               <span class="filter-badge" id="filterCountBadge" style="display: none;">0</span>
             </button>
 
             <!-- Direct Dataset / Sensor Switcher -->
-            <select id="directSensorSelect" class="filter-select" style="background: rgba(15,23,42,0.9); border: 1px solid var(--border-color); color: var(--accent-cyan); font-size: 11px; font-weight: 600; border-radius: 6px; padding: 6px 8px; cursor: pointer;" onchange="onDirectSensorChange(this.value)">
+            <select id="directSensorSelect" class="filter-select"
+              style="background: rgba(15,23,42,0.9); border: 1px solid var(--border-color); color: var(--accent-cyan); font-size: 11px; font-weight: 600; border-radius: 6px; padding: 6px 8px; cursor: pointer;"
+              onchange="onDirectSensorChange(this.value)">
               <option value="Sentinel-2" selected>Sentinel-2 (10m)</option>
               <option value="Maxar">Maxar (0.5m)</option>
             </select>
 
             <!-- Image File Upload Trigger -->
-            <input type="file" id="searchImageFileInput" accept="image/*,.tif,.tiff" style="display: none;" onchange="onSearchImageSelected(event)">
-            <button class="image-upload-trigger-btn" onclick="document.getElementById('searchImageFileInput').click()" title="Search by Reference Image">
-              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <input type="file" id="searchImageFileInput" accept="image/*,.tif,.tiff" style="display: none;"
+              onchange="onSearchImageSelected(event)">
+            <button class="image-upload-trigger-btn" onclick="document.getElementById('searchImageFileInput').click()"
+              title="Search by Reference Image">
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
             </button>
 
             <!-- Text Prompt Input -->
-            <input 
-              type="text" 
-              id="searchPromptInput" 
-              class="retrieval-text-input" 
+            <input type="text" id="searchPromptInput" class="retrieval-text-input"
               placeholder="Ask anything (e.g. 'find airstrips near river bends', 'dense forest with water bodies')..."
-              onkeydown="if(event.key === 'Enter') submitSemanticSearch()"
-            >
+              onkeydown="if(event.key === 'Enter') submitSemanticSearch()">
 
             <!-- Submit Button -->
             <button class="retrieval-submit-btn radar-submit-btn" id="submitSearchBtn" onclick="submitSemanticSearch()">
               <span>Search</span>
-              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
             </button>
 
           </div>
@@ -435,7 +566,12 @@
       <div class="coming-soon-wrapper">
         <div class="coming-soon-card">
           <div class="coming-soon-icon">
-            <svg class="ui-icon icon-cyan" width="36" height="36" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            <svg class="ui-icon icon-cyan" width="36" height="36" viewBox="0 0 24 24">
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+              <path d="M16 16h5v5" />
+            </svg>
           </div>
           <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
             <span class="status-pill status-confirmed">STUDIO OPERATIONAL</span>
@@ -443,7 +579,8 @@
           </div>
           <h2>Multi-Temporal Change Detection Studio</h2>
           <p>
-            Bi-temporal and multi-year structural change analysis comparing baseline historical observations against contemporary satellite rasters with automated spectral difference indexing and split wipe-reveal comparator.
+            Bi-temporal and multi-year structural change analysis comparing baseline historical observations against
+            contemporary satellite rasters with automated spectral difference indexing and split wipe-reveal comparator.
           </p>
           <div class="badge-cluster">
             <span class="feature-tag">Interactive Split Wipe Slider</span>
@@ -453,9 +590,14 @@
             <span class="feature-tag">Prithvi Step Detection</span>
           </div>
           <div style="margin-top: 20px;">
-            <a href="/change.html" class="map-btn primary" style="padding: 10px 24px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(6,182,212,0.4);">
+            <a href="/change.html" class="map-btn primary"
+              style="padding: 10px 24px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(6,182,212,0.4);">
               <span>Launch Change Detection Studio</span>
-              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
             </a>
           </div>
         </div>
@@ -469,7 +611,13 @@
       <div class="coming-soon-wrapper">
         <div class="coming-soon-card">
           <div class="coming-soon-icon">
-            <svg class="ui-icon icon-cyan" width="36" height="36" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+            <svg class="ui-icon icon-cyan" width="36" height="36" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="6" cy="6" r="2" />
+              <circle cx="18" cy="6" r="2" />
+              <circle cx="6" cy="18" r="2" />
+              <circle cx="18" cy="18" r="2" />
+            </svg>
           </div>
           <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
             <span class="status-pill status-confirmed">WORKBENCH OPERATIONAL</span>
@@ -477,7 +625,8 @@
           </div>
           <h2>Terrain & Feature Clustering Workbench</h2>
           <p>
-            Unsupervised semantic grouping of land-use patterns across ingested sectors using high-dimensional vector clustering, canonical medoid beacon exemplars, and spectral signature profiling.
+            Unsupervised semantic grouping of land-use patterns across ingested sectors using high-dimensional vector
+            clustering, canonical medoid beacon exemplars, and spectral signature profiling.
           </p>
           <div class="badge-cluster">
             <span class="feature-tag">k-Means Vector Partitioning</span>
@@ -486,9 +635,14 @@
             <span class="feature-tag">Defense Terrain Classification</span>
           </div>
           <div style="margin-top: 20px;">
-            <a href="/clustering.html" class="map-btn primary" style="padding: 10px 24px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(6,182,212,0.4);">
+            <a href="/clustering.html" class="map-btn primary"
+              style="padding: 10px 24px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(6,182,212,0.4);">
               <span>Launch Clustering Workbench</span>
-              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
             </a>
           </div>
         </div>
@@ -502,7 +656,13 @@
       <div class="coming-soon-wrapper">
         <div class="coming-soon-card">
           <div class="coming-soon-icon">
-            <svg class="ui-icon icon-cyan" width="36" height="36" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <svg class="ui-icon icon-cyan" width="36" height="36" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
           </div>
           <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
             <span class="status-pill status-confirmed">CONSOLE OPERATIONAL</span>
@@ -510,7 +670,8 @@
           </div>
           <h2>Analyst Review & Verification Console</h2>
           <p>
-            Quality assessment and intelligence evaluation workbench allowing defense analysts to record tactile decisions, confirm change events, eliminate false alarms, and audit human-in-the-loop decisions.
+            Quality assessment and intelligence evaluation workbench allowing defense analysts to record tactile
+            decisions, confirm change events, eliminate false alarms, and audit human-in-the-loop decisions.
           </p>
           <div class="badge-cluster">
             <span class="feature-tag">Holographic Stamp Verdicts</span>
@@ -519,9 +680,14 @@
             <span class="feature-tag">GeoTIFF & PDF Export</span>
           </div>
           <div style="margin-top: 20px;">
-            <a href="/review.html" class="map-btn primary" style="padding: 10px 24px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(6,182,212,0.4);">
+            <a href="/review.html" class="map-btn primary"
+              style="padding: 10px 24px; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 0 20px rgba(6,182,212,0.4);">
               <span>Launch Analyst Review Console</span>
-              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
             </a>
           </div>
         </div>
@@ -555,45 +721,55 @@
              ENTRY POINT A FORM (AOI Polygon + Timeline)
              ========================================== -->
         <div id="aoiFormSection" style="display: flex; flex-direction: column; gap: 16px;">
-          
+
           <!-- Sensor Source Segmented Cards -->
           <div class="form-group">
-            <label class="form-label" style="font-weight: 600; color: var(--accent-cyan); margin-bottom: 8px; display: block;">Select Satellite Imagery Source:</label>
+            <label class="form-label"
+              style="font-weight: 600; color: var(--accent-cyan); margin-bottom: 8px; display: block;">Select Satellite
+              Imagery Source:</label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-              <div 
-                id="sensorCardSentinel" 
-                class="sensor-source-card active" 
-                onclick="setIngestionSensor('sentinel2')"
-                style="border: 2px solid var(--accent-blue); background: rgba(56,189,248,0.12); border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;"
-              >
+              <div id="sensorCardSentinel" class="sensor-source-card active" onclick="setIngestionSensor('sentinel2')"
+                style="border: 2px solid var(--accent-blue); background: rgba(56,189,248,0.12); border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <svg class="ui-icon icon-cyan" width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+                  <svg class="ui-icon icon-cyan" width="22" height="22" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M5 3v4" />
+                    <path d="M19 17v4" />
+                    <path d="M3 5h4" />
+                    <path d="M17 19h4" />
+                    <path d="M15 9l5-5" />
+                    <path d="M9 15l-5 5" />
+                  </svg>
                   <div>
                     <div style="font-weight: 700; font-size: 13px; color: #fff;">Sentinel-2 Multi-Spectral</div>
-                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">10m GSD &bull; 13 Spectral Bands &bull; Cloud Mask &bull; NDVI/NDWI/NDBI</div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">10m GSD &bull; 13
+                      Spectral Bands &bull; Cloud Mask &bull; NDVI/NDWI/NDBI</div>
                   </div>
                 </div>
               </div>
 
-              <div 
-                id="sensorCardMaxar" 
-                class="sensor-source-card" 
-                onclick="setIngestionSensor('maxar')"
-                style="border: 2px solid var(--border-color); background: rgba(255,255,255,0.02); border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;"
-              >
+              <div id="sensorCardMaxar" class="sensor-source-card" onclick="setIngestionSensor('maxar')"
+                style="border: 2px solid var(--border-color); background: rgba(255,255,255,0.02); border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;">
                 <div style="display: flex; align-items: center; gap: 8px;">
-                  <svg class="ui-icon icon-cyan" width="22" height="22" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <svg class="ui-icon icon-cyan" width="22" height="22" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
                   <div>
                     <div style="font-weight: 700; font-size: 13px; color: #fff;">Maxar High-Res Optical</div>
-                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">0.3m–0.5m Sub-Meter &bull; Wayback 2020–2026 Archive &bull; True Color RGB &bull; VARI</div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">0.3m–0.5m Sub-Meter
+                      &bull; Wayback 2020–2026 Archive &bull; True Color RGB &bull; VARI</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div id="aoiDescriptionText" style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; background: rgba(255,255,255,0.02); padding: 10px 12px; border-radius: 6px; border-left: 3px solid var(--accent-cyan);">
-            Define an AOI polygon and choose the historical timeline (e.g. 1–10 years). The pipeline fetches all covering Sentinel-2 scenes, cleans cloud/shadow masks, normalizes, slices 512x512 tiles, computes indices (NDVI/NDWI/NDBI), and embeds into Qdrant & PostgreSQL.
+          <div id="aoiDescriptionText"
+            style="font-size: 13px; color: var(--text-secondary); line-height: 1.5; background: rgba(255,255,255,0.02); padding: 10px 12px; border-radius: 6px; border-left: 3px solid var(--accent-cyan);">
+            Define an AOI polygon and choose the historical timeline (e.g. 1–10 years). The pipeline fetches all
+            covering Sentinel-2 scenes, cleans cloud/shadow masks, normalizes, slices 512x512 tiles, computes indices
+            (NDVI/NDWI/NDBI), and embeds into Qdrant & PostgreSQL.
           </div>
 
           <!-- Drawing & GeoJSON Controls -->
@@ -605,7 +781,8 @@
 
           <div class="form-group">
             <label class="form-label">GeoJSON Polygon Coordinates (Auto-populated on draw or paste):</label>
-            <textarea id="geojsonInput" class="geojson-textarea" placeholder='{"type": "Polygon", "coordinates": [[[68.18, 25.47], [68.46, 25.47], [68.47, 25.25], [68.17, 25.28], [68.18, 25.47]]]}'></textarea>
+            <textarea id="geojsonInput" class="geojson-textarea"
+              placeholder='{"type": "Polygon", "coordinates": [[[68.18, 25.47], [68.46, 25.47], [68.47, 25.25], [68.17, 25.28], [68.18, 25.47]]]}'></textarea>
           </div>
 
           <!-- Sentinel-2 Timeline Selection -->
@@ -623,12 +800,17 @@
 
           <!-- Maxar Timeline Selection (2020 - 2026 Archive) -->
           <div class="form-group" id="maxarTimelineGroup" style="display: none;">
-            <label class="form-label" style="color: var(--accent-cyan);">Maxar Wayback Historical Epochs (2020 – 2026 Archive):</label>
+            <label class="form-label" style="color: var(--accent-cyan);">Maxar Wayback Historical Epochs (2020 – 2026
+              Archive):</label>
             <div class="timeline-chips">
-              <button class="timeline-chip active" id="chipMaxar2020_2026" onclick="setMaxarEpochPreset('2020_2026')">2020 Baseline vs 2026 Contemporary</button>
-              <button class="timeline-chip" id="chipMaxar2022_2026" onclick="setMaxarEpochPreset('2022_2026')">2022 vs 2026</button>
-              <button class="timeline-chip" id="chipMaxarAll" onclick="setMaxarEpochPreset('all')">2020, 2022, 2024, 2026 (All Epochs)</button>
-              <button class="timeline-chip" id="chipMaxarCustom" onclick="setMaxarEpochPreset('custom')">Custom Dates</button>
+              <button class="timeline-chip active" id="chipMaxar2020_2026"
+                onclick="setMaxarEpochPreset('2020_2026')">2020 Baseline vs 2026 Contemporary</button>
+              <button class="timeline-chip" id="chipMaxar2022_2026" onclick="setMaxarEpochPreset('2022_2026')">2022 vs
+                2026</button>
+              <button class="timeline-chip" id="chipMaxarAll" onclick="setMaxarEpochPreset('all')">2020, 2022, 2024,
+                2026 (All Epochs)</button>
+              <button class="timeline-chip" id="chipMaxarCustom" onclick="setMaxarEpochPreset('custom')">Custom
+                Dates</button>
             </div>
           </div>
 
@@ -657,7 +839,8 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div class="form-group">
               <label class="form-label">Region ID Tag:</label>
-              <input type="text" id="aoiRegionId" class="modal-text-input" placeholder="e.g. region_kutch_border_2024" />
+              <input type="text" id="aoiRegionId" class="modal-text-input"
+                placeholder="e.g. region_kutch_border_2024" />
             </div>
             <div class="form-group">
               <label class="form-label">Region Name:</label>
@@ -671,27 +854,38 @@
              ========================================== -->
         <div id="fileFormSection" style="display: none; flex-direction: column; gap: 16px;">
           <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
-            100% Offline Ingestion for evaluation GeoTIFF files. Supports <strong>single multi-band rasters</strong> or <strong>multiple separate band files</strong> (e.g. Landsat 8/9 B2, B3, B4, B5, B6 folder).
+            100% Offline Ingestion for evaluation GeoTIFF files. Supports <strong>single multi-band rasters</strong> or
+            <strong>multiple separate band files</strong> (e.g. Landsat 8/9 B2, B3, B4, B5, B6 folder).
           </div>
 
           <!-- File Upload Zone (Supports Multiple Files) -->
           <div class="form-group">
             <label class="form-label">Upload GeoTIFF File(s):</label>
-            <div id="fileDropZone" style="border: 2px dashed var(--border-color); border-radius: var(--radius-sm); padding: 18px; text-align: center; background: rgba(255,255,255,0.02); cursor: pointer; transition: border-color 0.2s;" onclick="document.getElementById('geoTiffFilesInput').click()">
-              <input type="file" id="geoTiffFilesInput" multiple accept=".tif,.tiff,.jp2" style="display: none;" onchange="handleGeoTiffFilesSelected(this.files)" />
+            <div id="fileDropZone"
+              style="border: 2px dashed var(--border-color); border-radius: var(--radius-sm); padding: 18px; text-align: center; background: rgba(255,255,255,0.02); cursor: pointer; transition: border-color 0.2s;"
+              onclick="document.getElementById('geoTiffFilesInput').click()">
+              <input type="file" id="geoTiffFilesInput" multiple accept=".tif,.tiff,.jp2" style="display: none;"
+                onchange="handleGeoTiffFilesSelected(this.files)" />
               <div style="margin-bottom: 6px;">
-                <svg class="ui-icon icon-cyan" width="28" height="28" viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <svg class="ui-icon icon-cyan" width="28" height="28" viewBox="0 0 24 24">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                </svg>
               </div>
-              <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Click or drag GeoTIFF files here</div>
-              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Supports single multi-band .tif or multiple per-band .tif files (e.g. Landsat B2-B6)</div>
+              <div style="font-size: 13px; font-weight: 500; color: var(--text-primary);">Click or drag GeoTIFF files
+                here</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Supports single multi-band .tif
+                or multiple per-band .tif files (e.g. Landsat B2-B6)</div>
             </div>
-            <div id="selectedFilesSummary" style="display: none; margin-top: 8px; font-size: 12px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; word-break: break-all;"></div>
+            <div id="selectedFilesSummary"
+              style="display: none; margin-top: 8px; font-size: 12px; color: var(--accent-cyan); font-family: 'JetBrains Mono', monospace; word-break: break-all;">
+            </div>
           </div>
 
           <!-- Or Server-Side Local Path -->
           <div class="form-group">
             <label class="form-label">Or Server Local Path / Directory (Optional):</label>
-            <input type="text" id="filePathInput" class="modal-text-input" placeholder="e.g. data/evaluation/eval_scene_01.tif or folder path" />
+            <input type="text" id="filePathInput" class="modal-text-input"
+              placeholder="e.g. data/evaluation/eval_scene_01.tif or folder path" />
           </div>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -733,7 +927,8 @@
              ========================================== -->
         <div class="progress-card" id="ingestProgressCard" style="display: none;">
           <div class="progress-header">
-            <span id="ingestStepLabel" style="color: var(--accent-cyan); font-weight: 600;">Initializing Ingestion...</span>
+            <span id="ingestStepLabel" style="color: var(--accent-cyan); font-weight: 600;">Initializing
+              Ingestion...</span>
             <span id="ingestTimer">0s</span>
           </div>
           <div class="progress-track">
@@ -745,13 +940,15 @@
         </div>
 
         <!-- Success Notification -->
-        <div id="ingestSuccessAlert" style="display: none; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); padding: 12px; border-radius: var(--radius-sm); color: #34d399; font-size: 12px; font-family: 'JetBrains Mono', monospace;">
+        <div id="ingestSuccessAlert"
+          style="display: none; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); padding: 12px; border-radius: var(--radius-sm); color: #34d399; font-size: 12px; font-family: 'JetBrains Mono', monospace;">
         </div>
 
         <!-- Actions -->
         <div class="modal-actions">
           <button class="map-btn" onclick="closeIngestModal()">Cancel</button>
-          <button class="map-btn primary" id="submitIngestBtn" style="padding: 10px 24px; font-weight: 600;" onclick="startIngestion()">
+          <button class="map-btn primary" id="submitIngestBtn" style="padding: 10px 24px; font-weight: 600;"
+            onclick="startIngestion()">
             Start Ingestion Pipeline
           </button>
         </div>
@@ -766,10 +963,14 @@
     <div class="modal-card inspect-modal-card">
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
           <div>
             <h3 id="inspectTileTitle" style="font-size: 16px; font-weight: 700;">Tile Inspection & Lineage</h3>
-            <span id="inspectTileSubtitle" style="font-size: 12px; color: var(--text-muted);">Sentinel-2 L2A &bull; 512x512 GeoTIFF</span>
+            <span id="inspectTileSubtitle" style="font-size: 12px; color: var(--text-muted);">Sentinel-2 L2A &bull;
+              512x512 GeoTIFF</span>
           </div>
         </div>
         <button class="modal-close-btn" onclick="closeTileInspect()">&times;</button>
@@ -785,14 +986,16 @@
 
           <!-- Spot Description Callout -->
           <div class="inspect-description-box" id="inspectDescriptionBox">
-            "This location shows sparse vegetation (NDVI 0.18), no significant water (NDWI -0.05), and built-up areas likely dominant (NDBI 0.22)"
+            "This location shows sparse vegetation (NDVI 0.18), no significant water (NDWI -0.05), and built-up areas
+            likely dominant (NDBI 0.22)"
           </div>
 
           <div class="inspect-action-buttons">
             <button class="map-btn primary" id="inspectOpenMapBtn" onclick="inspectOpenInMapClicked()">
               Open in Map View
             </button>
-            <a id="inspectDownloadTifBtn" href="#" download class="map-btn" style="text-decoration: none; text-align: center;">
+            <a id="inspectDownloadTifBtn" href="#" download class="map-btn"
+              style="text-decoration: none; text-align: center;">
               Download GeoTIFF (.tif)
             </a>
           </div>
@@ -800,8 +1003,9 @@
 
         <!-- Metadata & Indices Column -->
         <div class="inspect-details-column">
-          <h4 style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin-bottom: 10px;">Multi-Spectral Indices</h4>
-          
+          <h4 style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin-bottom: 10px;">
+            Multi-Spectral Indices</h4>
+
           <!-- Spectral Meters -->
           <div class="spectral-meter-card">
             <div class="spectral-meter-row">
@@ -833,7 +1037,9 @@
             </div>
           </div>
 
-          <h4 style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin-top: 16px; margin-bottom: 10px;">Geospatial & Metadata Lineage</h4>
+          <h4
+            style="color: var(--accent-cyan); font-size: 13px; text-transform: uppercase; margin-top: 16px; margin-bottom: 10px;">
+            Geospatial & Metadata Lineage</h4>
           <table class="inspect-metadata-table">
             <tr>
               <td>Tile Identifier:</td>
@@ -870,19 +1076,20 @@
   </div>
 
   <!-- Leaflet JS & Leaflet Draw JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-  
+
   <!-- App JS -->
-  <script src="/frontend/app.js?v=20260928_app_v6"></script>
+  <script src="/frontend/app.js?v=20261001_tilecount_fix_v3"></script>
   <!-- Ambient Effects & Starfield -->
-  <script src="/frontend/effects.js?v=20260928_live_clock_v6"></script>
+  <script src="/frontend/effects.js?v=20261001_sat_cursor_v2"></script>
   <!-- Air-Gapped Offline / Online Sovereign Network Manager -->
-  <script src="/frontend/offline.js?v=20260928_offline_v6"></script>
+  <script src="/frontend/offline.js?v=20261001_sat_cursor_v2"></script>
   <!-- Tactical Audio Synthesizer -->
-  <script src="/frontend/audio.js?v=20260928_v6"></script>
+  <script src="/frontend/audio.js?v=20261001_sat_cursor_v2"></script>
   <!-- Tactical Satellite Cursor Engine -->
-  <script src="/frontend/cursor.js?v=20260928_v6"></script>
+  <script src="/frontend/cursor.js?v=20261001_sat_cursor_v2"></script>
 </body>
+
 </html>

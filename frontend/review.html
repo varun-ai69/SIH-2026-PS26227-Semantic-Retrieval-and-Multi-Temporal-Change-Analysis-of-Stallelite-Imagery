@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,6 +15,7 @@
     * {
       box-sizing: border-box;
     }
+
     svg.ui-icon,
     .nav-item svg,
     .cursor-toggle-btn svg,
@@ -27,10 +29,12 @@
       vertical-align: middle !important;
       display: inline-block !important;
     }
+
     #tactical-cursor-root svg,
     #tactical-cursor-root svg * {
       box-sizing: content-box !important;
     }
+
     .ui-icon {
       width: 16px !important;
       height: 16px !important;
@@ -39,12 +43,33 @@
       stroke: currentColor !important;
       fill: none !important;
     }
-    .ui-icon.icon-cyan { stroke: #06b6d4 !important; color: #06b6d4 !important; }
-    .ui-icon.icon-emerald { stroke: #10b981 !important; color: #10b981 !important; }
-    .ui-icon.icon-rose { stroke: #f43f5e !important; color: #f43f5e !important; }
-    .ui-icon.icon-amber { stroke: #f59e0b !important; color: #f59e0b !important; }
 
-    .nav-item svg { width: 15px !important; height: 15px !important; margin-right: 6px; }
+    .ui-icon.icon-cyan {
+      stroke: #06b6d4 !important;
+      color: #06b6d4 !important;
+    }
+
+    .ui-icon.icon-emerald {
+      stroke: #10b981 !important;
+      color: #10b981 !important;
+    }
+
+    .ui-icon.icon-rose {
+      stroke: #f43f5e !important;
+      color: #f43f5e !important;
+    }
+
+    .ui-icon.icon-amber {
+      stroke: #f59e0b !important;
+      color: #f59e0b !important;
+    }
+
+    .nav-item svg {
+      width: 15px !important;
+      height: 15px !important;
+      margin-right: 6px;
+    }
+
     .nav-item.active {
       background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.25));
       border-color: var(--border-active, #06b6d4);
@@ -60,6 +85,7 @@
       background: rgba(11, 17, 32, 0.95);
       border-bottom: 1px solid rgba(148, 163, 184, 0.15);
     }
+
     .bench-tab-btn {
       display: flex;
       align-items: center;
@@ -75,17 +101,20 @@
       cursor: pointer;
       transition: all 0.2s ease;
     }
+
     .bench-tab-btn:hover {
       color: #f1f5f9;
       border-color: rgba(6, 182, 212, 0.4);
       background: rgba(6, 182, 212, 0.08);
     }
+
     .bench-tab-btn.active {
       color: #38bdf8;
       background: rgba(6, 182, 212, 0.18);
       border-color: #06b6d4;
       box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
     }
+
     .bench-tab-badge {
       font-size: 10px;
       padding: 2px 6px;
@@ -93,6 +122,7 @@
       background: rgba(148, 163, 184, 0.2);
       color: #cbd5e1;
     }
+
     .bench-tab-btn.active .bench-tab-badge {
       background: rgba(6, 182, 212, 0.3);
       color: #38bdf8;
@@ -115,6 +145,7 @@
       display: flex;
       flex-direction: column;
     }
+
     .sidebar-mode-toggle {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -123,6 +154,7 @@
       background: rgba(15, 23, 42, 0.8);
       border-bottom: 1px solid rgba(148, 163, 184, 0.12);
     }
+
     .query-mode-btn {
       display: flex;
       align-items: center;
@@ -138,16 +170,19 @@
       cursor: pointer;
       transition: all 0.2s;
     }
+
     .query-mode-btn.active {
       background: rgba(6, 182, 212, 0.2);
       border-color: #06b6d4;
       color: #38bdf8;
       box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
     }
+
     .query-search-filter {
       padding: 10px 14px;
       border-bottom: 1px solid rgba(148, 163, 184, 0.1);
     }
+
     .query-search-input {
       width: 100%;
       background: rgba(15, 23, 42, 0.8);
@@ -158,9 +193,11 @@
       font-size: 12px;
       outline: none;
     }
+
     .query-search-input:focus {
       border-color: #06b6d4;
     }
+
     .query-list-container {
       flex: 1;
       overflow-y: auto;
@@ -169,6 +206,7 @@
       flex-direction: column;
       gap: 8px;
     }
+
     .query-item-card {
       background: rgba(15, 23, 42, 0.6);
       border: 1px solid rgba(148, 163, 184, 0.12);
@@ -180,21 +218,25 @@
       flex-direction: column;
       gap: 6px;
     }
+
     .query-item-card:hover {
       background: rgba(6, 182, 212, 0.08);
       border-color: rgba(6, 182, 212, 0.4);
     }
+
     .query-item-card.active {
       background: rgba(6, 182, 212, 0.16);
       border-color: #06b6d4;
       box-shadow: 0 0 14px rgba(6, 182, 212, 0.2);
     }
+
     .query-card-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
     }
+
     .query-card-title {
       font-size: 13px;
       font-weight: 600;
@@ -204,29 +246,65 @@
       text-overflow: ellipsis;
       max-width: 220px;
     }
+
     .query-card-time {
       font-size: 10px;
       color: #64748b;
       font-family: monospace;
     }
+
     .query-card-stats {
       display: flex;
       align-items: center;
       gap: 6px;
       font-size: 11px;
     }
+
     .stat-pill {
       padding: 1px 6px;
       border-radius: 4px;
       font-size: 10px;
       font-family: monospace;
     }
-    .stat-pill.hits { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .stat-pill.noise { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
-    .stat-pill.total { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.2); }
-    .stat-pill.sensor-maxar { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); font-weight: 600; }
-    .stat-pill.sensor-sentinel { background: rgba(6, 182, 212, 0.18); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4); font-weight: 600; }
-    .stat-pill.query-id { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.4); font-weight: 700; }
+
+    .stat-pill.hits {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .stat-pill.noise {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+
+    .stat-pill.total {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .stat-pill.sensor-maxar {
+      background: rgba(245, 158, 11, 0.18);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      font-weight: 600;
+    }
+
+    .stat-pill.sensor-sentinel {
+      background: rgba(6, 182, 212, 0.18);
+      color: #38bdf8;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      font-weight: 600;
+    }
+
+    .stat-pill.query-id {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      font-weight: 700;
+    }
 
     /* Right Content Area */
     .review-content {
@@ -236,6 +314,7 @@
       overflow: hidden;
       background: #070a13;
     }
+
     .content-action-bar {
       display: flex;
       align-items: center;
@@ -246,11 +325,13 @@
       flex-wrap: wrap;
       gap: 12px;
     }
+
     .active-query-title-block {
       display: flex;
       flex-direction: column;
       gap: 3px;
     }
+
     .active-query-text {
       font-size: 16px;
       font-weight: 700;
@@ -260,6 +341,7 @@
       align-items: center;
       gap: 8px;
     }
+
     .active-query-meta {
       font-size: 11px;
       color: #64748b;
@@ -271,6 +353,7 @@
       align-items: center;
       gap: 8px;
     }
+
     .filter-chip {
       padding: 5px 12px;
       border-radius: 6px;
@@ -281,10 +364,12 @@
       cursor: pointer;
       transition: all 0.2s;
     }
+
     .filter-chip:hover {
       background: rgba(6, 182, 212, 0.1);
       color: #38bdf8;
     }
+
     .filter-chip.active {
       background: rgba(6, 182, 212, 0.25);
       border-color: #06b6d4;
@@ -306,11 +391,13 @@
       box-shadow: 0 0 14px rgba(37, 99, 235, 0.35);
       transition: all 0.2s;
     }
+
     .rocchio-btn:hover {
       background: linear-gradient(135deg, #0369a1, #1d4ed8);
       box-shadow: 0 0 18px rgba(37, 99, 235, 0.55);
       transform: translateY(-1px);
     }
+
     .rocchio-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
@@ -323,11 +410,13 @@
       overflow-y: auto;
       padding: 20px 24px;
     }
+
     .retrieved-tiles-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
       gap: 18px;
     }
+
     .tile-review-card {
       background: rgba(15, 23, 42, 0.7);
       border: 1px solid rgba(148, 163, 184, 0.16);
@@ -338,20 +427,24 @@
       position: relative;
       transition: all 0.25s ease;
     }
+
     .tile-review-card:hover {
       transform: translateY(-3px);
       border-color: rgba(6, 182, 212, 0.45);
       box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6);
     }
+
     .tile-review-card.status-positive {
       border: 2px solid #10b981 !important;
       box-shadow: 0 0 18px rgba(16, 185, 129, 0.35) !important;
     }
+
     .tile-review-card.status-negative {
       border: 2px solid #f43f5e !important;
       opacity: 0.65;
       box-shadow: 0 0 18px rgba(244, 63, 94, 0.25) !important;
     }
+
     .tile-img-container {
       position: relative;
       width: 100%;
@@ -359,15 +452,18 @@
       background: #020617;
       overflow: hidden;
     }
+
     .tile-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: transform 0.3s;
     }
+
     .tile-review-card:hover .tile-img {
       transform: scale(1.04);
     }
+
     .tile-score-tag {
       position: absolute;
       top: 8px;
@@ -382,6 +478,7 @@
       font-family: monospace;
       font-weight: 600;
     }
+
     .tile-feedback-indicator {
       position: absolute;
       top: 8px;
@@ -394,12 +491,14 @@
       letter-spacing: 0.5px;
       display: none;
     }
+
     .tile-review-card.status-positive .tile-feedback-indicator {
       display: block;
       background: #10b981;
       color: #ffffff;
       box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
     }
+
     .tile-review-card.status-negative .tile-feedback-indicator {
       display: block;
       background: #f43f5e;
@@ -414,6 +513,7 @@
       gap: 8px;
       flex: 1;
     }
+
     .tile-card-id {
       font-family: monospace;
       font-size: 11px;
@@ -422,6 +522,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
+
     .tile-card-meta-row {
       display: flex;
       align-items: center;
@@ -429,6 +530,7 @@
       font-size: 11px;
       color: #94a3b8;
     }
+
     .tile-action-btns-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -437,6 +539,7 @@
       padding-top: 8px;
       border-top: 1px solid rgba(148, 163, 184, 0.1);
     }
+
     .btn-tactical-accept {
       background: rgba(16, 185, 129, 0.12);
       border: 1px solid rgba(16, 185, 129, 0.35);
@@ -452,11 +555,13 @@
       gap: 5px;
       transition: all 0.2s;
     }
+
     .btn-tactical-accept:hover {
       background: #10b981;
       color: #ffffff;
       box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
     }
+
     .btn-tactical-reject {
       background: rgba(244, 63, 94, 0.12);
       border: 1px solid rgba(244, 63, 94, 0.35);
@@ -472,6 +577,7 @@
       gap: 5px;
       transition: all 0.2s;
     }
+
     .btn-tactical-reject:hover {
       background: #f43f5e;
       color: #ffffff;
@@ -489,6 +595,7 @@
       padding: 40px;
       background: radial-gradient(circle at center, rgba(6, 182, 212, 0.05) 0%, #070a13 70%);
     }
+
     .coming-soon-box {
       max-width: 560px;
       background: rgba(15, 23, 42, 0.7);
@@ -504,6 +611,7 @@
       overflow-y: auto;
       padding: 24px;
     }
+
     .audit-table {
       width: 100%;
       border-collapse: collapse;
@@ -513,6 +621,7 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
     .audit-table th {
       background: rgba(15, 23, 42, 0.95);
       color: #94a3b8;
@@ -521,12 +630,14 @@
       padding: 12px 14px;
       border-bottom: 1px solid rgba(148, 163, 184, 0.2);
     }
+
     .audit-table td {
       padding: 11px 14px;
       color: #cbd5e1;
       border-bottom: 1px solid rgba(148, 163, 184, 0.08);
       font-family: monospace;
     }
+
     .audit-table tr:hover {
       background: rgba(6, 182, 212, 0.05);
     }
@@ -542,6 +653,7 @@
       z-index: 99999;
       pointer-events: none;
     }
+
     .tactical-toast {
       background: rgba(11, 17, 32, 0.95);
       backdrop-filter: blur(10px);
@@ -557,9 +669,17 @@
       animation: toastSlideIn 0.25s ease-out;
       pointer-events: auto;
     }
+
     @keyframes toastSlideIn {
-      from { transform: translateY(20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
     /* Change Review Bench Specific Styles */
@@ -574,15 +694,18 @@
       flex-direction: column;
       gap: 6px;
     }
+
     .change-run-card:hover {
       background: rgba(6, 182, 212, 0.08);
       border-color: rgba(6, 182, 212, 0.4);
     }
+
     .change-run-card.active {
       background: rgba(6, 182, 212, 0.16);
       border-color: #06b6d4;
       box-shadow: 0 0 14px rgba(6, 182, 212, 0.2);
     }
+
     .candidate-card {
       background: rgba(15, 23, 42, 0.75);
       border: 1px solid rgba(148, 163, 184, 0.18);
@@ -593,23 +716,28 @@
       gap: 14px;
       transition: all 0.25s ease;
     }
+
     .candidate-card:hover {
       border-color: rgba(6, 182, 212, 0.4);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
     }
+
     .candidate-card.status-confirmed {
       border: 2px solid #10b981 !important;
       box-shadow: 0 0 16px rgba(16, 185, 129, 0.25) !important;
     }
+
     .candidate-card.status-rejected {
       border: 2px solid #f43f5e !important;
       opacity: 0.7;
       box-shadow: 0 0 16px rgba(244, 63, 94, 0.2) !important;
     }
+
     .candidate-card.status-unsure {
       border: 2px solid #f59e0b !important;
       box-shadow: 0 0 16px rgba(245, 158, 11, 0.25) !important;
     }
+
     .candidate-card-header {
       display: flex;
       align-items: center;
@@ -617,6 +745,7 @@
       gap: 12px;
       flex-wrap: wrap;
     }
+
     .severity-badge {
       display: inline-flex;
       align-items: center;
@@ -628,29 +757,34 @@
       letter-spacing: 0.5px;
       font-family: monospace;
     }
+
     .severity-critical {
       background: rgba(244, 63, 94, 0.2);
       color: #fb7185;
       border: 1px solid rgba(244, 63, 94, 0.45);
       box-shadow: 0 0 10px rgba(244, 63, 94, 0.25);
     }
+
     .severity-high {
       background: rgba(245, 158, 11, 0.2);
       color: #fbbf24;
       border: 1px solid rgba(245, 158, 11, 0.45);
       box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
     }
+
     .severity-moderate {
       background: rgba(6, 182, 212, 0.2);
       color: #38bdf8;
       border: 1px solid rgba(6, 182, 212, 0.45);
       box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
     }
+
     .evidence-comparison-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
+
     .evidence-viewport {
       position: relative;
       width: 100%;
@@ -664,6 +798,7 @@
       align-items: center;
       justify-content: center;
     }
+
     .evidence-viewport img {
       width: 100%;
       height: 100%;
@@ -672,9 +807,11 @@
       transition: transform 0.3s ease;
       cursor: zoom-in;
     }
+
     .evidence-viewport:hover img {
       transform: scale(1.02);
     }
+
     .evidence-label-tag {
       position: absolute;
       top: 10px;
@@ -691,6 +828,7 @@
       letter-spacing: 0.3px;
       z-index: 2;
     }
+
     .patch-box-indicator {
       position: absolute;
       top: 10px;
@@ -705,6 +843,7 @@
       font-weight: 700;
       z-index: 2;
     }
+
     .candidate-metrics-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -716,6 +855,7 @@
       font-size: 11px;
       border: 1px solid rgba(148, 163, 184, 0.1);
     }
+
     .candidate-action-bar {
       display: flex;
       align-items: center;
@@ -725,11 +865,13 @@
       padding-top: 10px;
       border-top: 1px solid rgba(148, 163, 184, 0.1);
     }
+
     .decision-btn-group {
       display: flex;
       align-items: center;
       gap: 8px;
     }
+
     .btn-tactical-unsure {
       background: rgba(245, 158, 11, 0.12);
       border: 1px solid rgba(245, 158, 11, 0.35);
@@ -744,11 +886,13 @@
       gap: 6px;
       transition: all 0.2s;
     }
+
     .btn-tactical-unsure:hover {
       background: #f59e0b;
       color: #ffffff;
       box-shadow: 0 0 12px rgba(245, 158, 11, 0.5);
     }
+
     .candidate-note-box {
       flex: 1;
       min-width: 240px;
@@ -756,6 +900,7 @@
       align-items: center;
       gap: 6px;
     }
+
     .candidate-note-input {
       flex: 1;
       background: rgba(15, 23, 42, 0.8);
@@ -766,9 +911,11 @@
       font-size: 11px;
       outline: none;
     }
+
     .candidate-note-input:focus {
       border-color: #06b6d4;
     }
+
     .candidate-note-save-btn {
       background: rgba(6, 182, 212, 0.15);
       border: 1px solid rgba(6, 182, 212, 0.35);
@@ -780,6 +927,7 @@
       cursor: pointer;
       transition: all 0.2s;
     }
+
     .candidate-note-save-btn:hover {
       background: #06b6d4;
       color: #ffffff;
@@ -795,6 +943,7 @@
       scrollbar-width: thin;
       scrollbar-color: rgba(6, 182, 212, 0.4) rgba(15, 23, 42, 0.6);
     }
+
     .timeline-epoch-card {
       min-width: 140px;
       max-width: 160px;
@@ -809,17 +958,20 @@
       transition: all 0.2s ease;
       position: relative;
     }
+
     .timeline-epoch-card:hover {
       border-color: #06b6d4;
       background: rgba(6, 182, 212, 0.1);
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
     }
+
     .timeline-epoch-card.active-bracket {
       border-color: #f59e0b;
       box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
       background: rgba(245, 158, 11, 0.08);
     }
+
     .epoch-thumb-box {
       width: 100%;
       aspect-ratio: 1 / 1;
@@ -829,12 +981,14 @@
       border: 1px solid rgba(148, 163, 184, 0.15);
       position: relative;
     }
+
     .epoch-thumb-box img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: transform 0.2s;
     }
+
     .timeline-epoch-card:hover .epoch-thumb-box img {
       transform: scale(1.04);
     }
@@ -850,6 +1004,7 @@
       gap: 14px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     }
+
     .run-decision-bar {
       display: flex;
       align-items: center;
@@ -874,6 +1029,7 @@
       justify-content: center;
       padding: 24px;
     }
+
     .image-lightbox-content {
       position: relative;
       max-width: 90vw;
@@ -887,6 +1043,7 @@
       flex-direction: column;
       align-items: center;
     }
+
     .image-lightbox-content img {
       max-width: 100%;
       max-height: 80vh;
@@ -904,13 +1061,13 @@
       const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">' +
         '<rect width="512" height="512" fill="#0d1424"/>' +
         '<defs>' +
-          '<radialGradient id="grad" cx="50%" cy="50%" r="50%">' +
-            '<stop offset="0%" stop-color="#1e293b"/>' +
-            '<stop offset="100%" stop-color="#070a12"/>' +
-          '</radialGradient>' +
-          '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">' +
-            '<path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(6,182,212,0.12)" stroke-width="1"/>' +
-          '</pattern>' +
+        '<radialGradient id="grad" cx="50%" cy="50%" r="50%">' +
+        '<stop offset="0%" stop-color="#1e293b"/>' +
+        '<stop offset="100%" stop-color="#070a12"/>' +
+        '</radialGradient>' +
+        '<pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">' +
+        '<path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(6,182,212,0.12)" stroke-width="1"/>' +
+        '</pattern>' +
         '</defs>' +
         '<rect width="512" height="512" fill="url(#grad)"/>' +
         '<rect width="512" height="512" fill="url(#grid)"/>' +
@@ -920,16 +1077,26 @@
         '<text x="256" y="240" font-family="monospace" font-size="28" fill="#38bdf8" text-anchor="middle" font-weight="bold">SENTINEL-2</text>' +
         '<text x="256" y="275" font-family="monospace" font-size="14" fill="#94a3b8" text-anchor="middle">512x512 MULTI-SPECTRAL</text>' +
         '<text x="256" y="300" font-family="monospace" font-size="12" fill="#06b6d4" text-anchor="middle">' + cleanId + '</text>' +
-      '</svg>';
+        '</svg>';
       img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
     }
   </script>
 </head>
-<body>  <!-- Top Aerospace Navigation Bar (Standard Across All Pages) -->
+
+<body> <!-- Top Aerospace Navigation Bar (Standard Across All Pages) -->
   <header>
     <a href="/" class="logo-section">
       <div class="logo-badge">
-        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/><path d="M15 9l5-5"/><path d="M9 15l-5 5"/></svg>
+        <svg class="ui-icon icon-cyan" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M5 3v4" />
+          <path d="M19 17v4" />
+          <path d="M3 5h4" />
+          <path d="M17 19h4" />
+          <path d="M15 9l5-5" />
+          <path d="M9 15l-5 5" />
+        </svg>
       </div>
       <div style="display: flex; align-items: center; gap: 8px;">
         <span class="logo-title">CANOPUS</span>
@@ -941,19 +1108,48 @@
     <!-- Multi-Page Navigation -->
     <nav class="nav-links">
       <a href="/" class="nav-item" id="nav-map">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>Map &amp; Coverage
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+          <line x1="9" y1="3" x2="9" y2="18" />
+          <line x1="15" y1="6" x2="15" y2="21" />
+        </svg>Map &amp; Coverage
       </a>
       <a href="/retrieval.html" class="nav-item" id="nav-retrieval">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Semantic Retrieval
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>Semantic Retrieval
       </a>
       <a href="/change.html" class="nav-item" id="nav-change">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>Change Detection
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+          <path d="M3 3v5h5" />
+          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+          <path d="M16 16h5v5" />
+        </svg>Change Detection
       </a>
       <a href="/clustering.html" class="nav-item" id="nav-clustering">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>Clustering
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="6" cy="6" r="2" />
+          <circle cx="18" cy="6" r="2" />
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="18" cy="18" r="2" />
+        </svg>Clustering
       </a>
       <a href="/review.html" class="nav-item active" id="nav-review">
-        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Review Tool
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>Review Tool
       </a>
     </nav>
 
@@ -961,17 +1157,26 @@
     <div class="header-status">
       <!-- Live Mission Clock -->
       <div class="mission-clock-pill" title="Synchronized Satellite UTC Time">
-        <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
         <span id="liveUtcClock">00:00:00 UTC</span>
       </div>
 
       <!-- Air-Gapped Offline / Online Sovereign Network Mode Pill -->
-      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()" title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
+      <div class="network-mode-pill" id="networkModeBtn" onclick="toggleNetworkMode()"
+        title="Network Mode: Online (Click to toggle Air-Gapped Offline)">
         <div class="mode-dot"></div>
         <span>ONLINE</span>
       </div>
       <a href="/?openIngest=1" class="ingest-aoi-nav-btn" style="text-decoration: none;">
-        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Ingest New AOI
+        <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg> Ingest New AOI
       </a>
       <div class="status-pill" id="archiveStatusPill">
         <div class="status-dot"></div>
@@ -983,17 +1188,30 @@
   <!-- Sub-Nav Workbench Tabs -->
   <div class="bench-tabs-bar">
     <button class="bench-tab-btn active" id="tabBtnRetrieval" onclick="switchBenchTab('retrieval')">
-      <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <svg class="ui-icon icon-cyan" width="15" height="15" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
       <span>Semantic Retrieval Review</span>
       <span class="bench-tab-badge" id="badgeRetrievalCount">13 Sessions</span>
     </button>
     <button class="bench-tab-btn" id="tabBtnChange" onclick="switchBenchTab('change')">
-      <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+      <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24">
+        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+        <path d="M3 3v5h5" />
+        <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+        <path d="M16 16h5v5" />
+      </svg>
       <span>Change Detection Review</span>
       <span class="bench-tab-badge" id="badgeChangeCount">0 Runs</span>
     </button>
     <button class="bench-tab-btn" id="tabBtnAudit" onclick="switchBenchTab('audit')">
-      <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
       <span>System Audit Log</span>
       <span class="bench-tab-badge" id="badgeAuditCount">Live</span>
     </button>
@@ -1009,23 +1227,34 @@
         <!-- Text vs Image Query Toggle -->
         <div class="sidebar-mode-toggle">
           <button class="query-mode-btn active" id="btnModeText" onclick="setQueryMode('text')">
-            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24">
+              <line x1="4" y1="9" x2="20" y2="9" />
+              <line x1="4" y1="15" x2="20" y2="15" />
+              <line x1="10" y1="3" x2="8" y2="21" />
+              <line x1="16" y1="3" x2="14" y2="21" />
+            </svg>
             <span>Text Queries</span>
           </button>
           <button class="query-mode-btn" id="btnModeImage" onclick="setQueryMode('image')">
-            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
             <span>Image Queries</span>
           </button>
         </div>
 
         <!-- Query Search / Filter -->
         <div class="query-search-filter">
-          <input type="text" id="querySearchInput" class="query-search-input" placeholder="Filter search queries..." oninput="filterQueryList()">
+          <input type="text" id="querySearchInput" class="query-search-input" placeholder="Filter search queries..."
+            oninput="filterQueryList()">
         </div>
 
         <!-- Queries Container -->
         <div class="query-list-container" id="queryListContainer">
-          <div style="color: #64748b; font-size: 12px; text-align: center; padding: 20px;">Loading search sessions...</div>
+          <div style="color: #64748b; font-size: 12px; text-align: center; padding: 20px;">Loading search sessions...
+          </div>
         </div>
       </aside>
 
@@ -1045,15 +1274,22 @@
           <div style="display: flex; align-items: center; gap: 12px;">
             <!-- Filter Chips -->
             <div class="filter-chips-bar">
-              <button class="filter-chip active" id="filterAll" onclick="setFilter('all')">All (<span id="countAll">0</span>)</button>
-              <button class="filter-chip" id="filterHit" onclick="setFilter('positive')">Accepted (<span id="countHit">0</span>)</button>
-              <button class="filter-chip" id="filterNoise" onclick="setFilter('negative')">Rejected (<span id="countNoise">0</span>)</button>
-              <button class="filter-chip" id="filterPending" onclick="setFilter('pending')">Pending (<span id="countPending">0</span>)</button>
+              <button class="filter-chip active" id="filterAll" onclick="setFilter('all')">All (<span
+                  id="countAll">0</span>)</button>
+              <button class="filter-chip" id="filterHit" onclick="setFilter('positive')">Accepted (<span
+                  id="countHit">0</span>)</button>
+              <button class="filter-chip" id="filterNoise" onclick="setFilter('negative')">Rejected (<span
+                  id="countNoise">0</span>)</button>
+              <button class="filter-chip" id="filterPending" onclick="setFilter('pending')">Pending (<span
+                  id="countPending">0</span>)</button>
             </div>
 
             <!-- Rocchio Re-rank Button -->
-            <button class="rocchio-btn" id="btnRocchioRerank" onclick="triggerRocchioRerank()" title="Steer Qdrant search embedding based on accepted and rejected feedback vector centroids">
-              <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            <button class="rocchio-btn" id="btnRocchioRerank" onclick="triggerRocchioRerank()"
+              title="Steer Qdrant search embedding based on accepted and rejected feedback vector centroids">
+              <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+              </svg>
               <span>Re-Rank via Rocchio</span>
             </button>
           </div>
@@ -1075,8 +1311,14 @@
         <!-- Sidebar Header with count -->
         <div class="sidebar-mode-toggle" style="grid-template-columns: 1fr; background: rgba(15, 23, 42, 0.85);">
           <div style="display: flex; align-items: center; justify-content: space-between;">
-            <span style="font-size: 12px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
-              <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>
+            <span
+              style="font-size: 12px; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+              <svg class="ui-icon icon-cyan" width="14" height="14" viewBox="0 0 24 24">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 16h5v5" />
+              </svg>
               Change Pipeline Runs
             </span>
             <span class="stat-pill total" id="sidebarRunsCount">0 Runs</span>
@@ -1085,7 +1327,8 @@
 
         <!-- Search / Filter input -->
         <div class="query-search-filter">
-          <input type="text" id="changeRunSearchInput" class="query-search-input" placeholder="Filter runs by site, region, coords..." oninput="filterChangeRunList()">
+          <input type="text" id="changeRunSearchInput" class="query-search-input"
+            placeholder="Filter runs by site, region, coords..." oninput="filterChangeRunList()">
         </div>
 
         <!-- Runs list container -->
@@ -1110,16 +1353,26 @@
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             <!-- Severity & Decision Filter Chips -->
             <div class="filter-chips-bar">
-              <button class="filter-chip active" id="chipChangeAll" onclick="setChangeFilter('all')">All (<span id="countChangeAll">0</span>)</button>
-              <button class="filter-chip" id="chipChangeCritical" onclick="setChangeFilter('critical')" style="border-color: rgba(244, 63, 94, 0.4); color: #fb7185;">Critical (<span id="countChangeCritical">0</span>)</button>
-              <button class="filter-chip" id="chipChangeHigh" onclick="setChangeFilter('high')" style="border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;">High (<span id="countChangeHigh">0</span>)</button>
-              <button class="filter-chip" id="chipChangeConfirmed" onclick="setChangeFilter('confirmed')" style="border-color: rgba(16, 185, 129, 0.4); color: #34d399;">Confirmed (<span id="countChangeConfirmed">0</span>)</button>
-              <button class="filter-chip" id="chipChangeRejected" onclick="setChangeFilter('rejected')">Rejected (<span id="countChangeRejected">0</span>)</button>
-              <button class="filter-chip" id="chipChangePending" onclick="setChangeFilter('pending')">Pending (<span id="countChangePending">0</span>)</button>
+              <button class="filter-chip active" id="chipChangeAll" onclick="setChangeFilter('all')">All (<span
+                  id="countChangeAll">0</span>)</button>
+              <button class="filter-chip" id="chipChangeCritical" onclick="setChangeFilter('critical')"
+                style="border-color: rgba(244, 63, 94, 0.4); color: #fb7185;">Critical (<span
+                  id="countChangeCritical">0</span>)</button>
+              <button class="filter-chip" id="chipChangeHigh" onclick="setChangeFilter('high')"
+                style="border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;">High (<span
+                  id="countChangeHigh">0</span>)</button>
+              <button class="filter-chip" id="chipChangeConfirmed" onclick="setChangeFilter('confirmed')"
+                style="border-color: rgba(16, 185, 129, 0.4); color: #34d399;">Confirmed (<span
+                  id="countChangeConfirmed">0</span>)</button>
+              <button class="filter-chip" id="chipChangeRejected" onclick="setChangeFilter('rejected')">Rejected (<span
+                  id="countChangeRejected">0</span>)</button>
+              <button class="filter-chip" id="chipChangePending" onclick="setChangeFilter('pending')">Pending (<span
+                  id="countChangePending">0</span>)</button>
             </div>
 
             <!-- Sort Dropdown -->
-            <select id="changeSortSelect" onchange="sortChangeCandidates(this.value)" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(148, 163, 184, 0.25); color: #cbd5e1; font-size: 11px; padding: 5px 8px; border-radius: 6px; outline: none; font-family: monospace; cursor: pointer;">
+            <select id="changeSortSelect" onchange="sortChangeCandidates(this.value)"
+              style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(148, 163, 184, 0.25); color: #cbd5e1; font-size: 11px; padding: 5px 8px; border-radius: 6px; outline: none; font-family: monospace; cursor: pointer;">
               <option value="severity_desc">Rank by Severity (High &rarr; Low)</option>
               <option value="zscore_desc">Rank by Z-Score (Outlier Deviation)</option>
               <option value="ndvi_abs">Rank by |ΔNDVI| (Vegetation Shift)</option>
@@ -1130,18 +1383,40 @@
             <!-- Export Actions (PS Section 2.2.5 Provenance) -->
             <div style="display: flex; align-items: center; gap: 6px;">
               <!-- PDF Dossier -->
-              <button class="rocchio-btn" style="background: linear-gradient(135deg, #e11d48, #be123c); box-shadow: 0 0 12px rgba(225, 29, 72, 0.35);" onclick="downloadRunPdf()" title="Download Official Defense Intelligence PDF Dossier with embedded comparative imagery, clusters & provenance">
-                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              <button class="rocchio-btn"
+                style="background: linear-gradient(135deg, #e11d48, #be123c); box-shadow: 0 0 12px rgba(225, 29, 72, 0.35);"
+                onclick="downloadRunPdf()"
+                title="Download Official Defense Intelligence PDF Dossier with embedded comparative imagery, clusters & provenance">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="12" y1="18" x2="12" y2="12" />
+                  <line x1="9" y1="15" x2="15" y2="15" />
+                </svg>
                 <span>PDF Dossier</span>
               </button>
               <!-- GeoJSON -->
-              <button class="rocchio-btn" style="background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 0 12px rgba(2, 132, 199, 0.35);" onclick="downloadRunGeoJson()" title="Export georeferenced candidate polygons and provenance audit records">
-                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+              <button class="rocchio-btn"
+                style="background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 0 12px rgba(2, 132, 199, 0.35);"
+                onclick="downloadRunGeoJson()"
+                title="Export georeferenced candidate polygons and provenance audit records">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24">
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+                  <line x1="9" y1="3" x2="9" y2="18" />
+                  <line x1="15" y1="6" x2="15" y2="21" />
+                </svg>
                 <span>GeoJSON</span>
               </button>
               <!-- GeoTIFF Bundle -->
-              <button class="rocchio-btn" style="background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 0 12px rgba(5, 150, 105, 0.35);" onclick="downloadRunGeoTiff()" title="Export full georeferenced raster GeoTIFF bundle archive (.zip)">
-                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+              <button class="rocchio-btn"
+                style="background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 0 12px rgba(5, 150, 105, 0.35);"
+                onclick="downloadRunGeoTiff()" title="Export full georeferenced raster GeoTIFF bundle archive (.zip)">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24">
+                  <path
+                    d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                  <line x1="12" y1="22.08" x2="12" y2="12" />
+                </svg>
                 <span>GeoTIFFs (.zip)</span>
               </button>
             </div>
@@ -1149,14 +1424,16 @@
         </div>
 
         <!-- Multi-Temporal Timeline Banner Strip -->
-        <div id="changeRunTimelineBanner" style="display: none; padding: 12px 24px; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(148, 163, 184, 0.1);">
+        <div id="changeRunTimelineBanner"
+          style="display: none; padding: 12px 24px; background: rgba(15, 23, 42, 0.6); border-bottom: 1px solid rgba(148, 163, 184, 0.1);">
           <!-- Injected via JS: dates, Prithvi onset step, quality audit -->
         </div>
 
         <!-- Scrollable Candidate Queue -->
         <div class="tiles-scroll-area">
           <div id="changeCandidatesQueue" style="display: flex; flex-direction: column; gap: 16px;">
-            <div style="color: #64748b; font-size: 13px; padding: 30px; text-align: center;">Select a change run from the sidebar to inspect ranked candidate evidence.</div>
+            <div style="color: #64748b; font-size: 13px; padding: 30px; text-align: center;">Select a change run from
+              the sidebar to inspect ranked candidate evidence.</div>
           </div>
         </div>
       </main>
@@ -1166,10 +1443,13 @@
     <div id="viewAudit" class="audit-table-panel" style="display: none; width: 100%;">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
         <div>
-          <h2 style="font-size: 18px; font-weight: 700; color: #f8fafc; margin: 0 0 4px 0;">SYSTEM AUDIT & COMPLIANCE LOG</h2>
-          <div style="font-size: 12px; color: #64748b;">Chronological trace of analyst relevance decisions, Rocchio updates, and pipeline executions.</div>
+          <h2 style="font-size: 18px; font-weight: 700; color: #f8fafc; margin: 0 0 4px 0;">SYSTEM AUDIT & COMPLIANCE
+            LOG</h2>
+          <div style="font-size: 12px; color: #64748b;">Chronological trace of analyst relevance decisions, Rocchio
+            updates, and pipeline executions.</div>
         </div>
-        <button onclick="loadAuditLogs()" style="padding: 6px 12px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.35); color: #38bdf8; border-radius: 6px; font-size: 12px; cursor: pointer;">
+        <button onclick="loadAuditLogs()"
+          style="padding: 6px 12px; background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.35); color: #38bdf8; border-radius: 6px; font-size: 12px; cursor: pointer;">
           Refresh Audit Trail
         </button>
       </div>
@@ -1185,7 +1465,9 @@
           </tr>
         </thead>
         <tbody id="auditTableBody">
-          <tr><td colspan="6" style="text-align: center; color: #64748b; padding: 20px;">Loading audit logs...</td></tr>
+          <tr>
+            <td colspan="6" style="text-align: center; color: #64748b; padding: 20px;">Loading audit logs...</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -1196,11 +1478,15 @@
   <div class="image-lightbox-modal" id="imageLightboxModal" onclick="closeImageLightbox(event)">
     <div class="image-lightbox-content" onclick="event.stopPropagation()">
       <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px;">
-        <span id="lightboxTitle" style="color: #38bdf8; font-weight: 700; font-size: 13px; font-family: monospace;">FULL RESOLUTION SATELLITE TILE (512x512)</span>
-        <button onclick="closeImageLightbox()" style="background: rgba(148,163,184,0.15); border: 1px solid rgba(148,163,184,0.3); color: #e2e8f0; font-size: 14px; border-radius: 6px; padding: 2px 8px; cursor: pointer;">✕ Close</button>
+        <span id="lightboxTitle" style="color: #38bdf8; font-weight: 700; font-size: 13px; font-family: monospace;">FULL
+          RESOLUTION SATELLITE TILE (512x512)</span>
+        <button onclick="closeImageLightbox()"
+          style="background: rgba(148,163,184,0.15); border: 1px solid rgba(148,163,184,0.3); color: #e2e8f0; font-size: 14px; border-radius: 6px; padding: 2px 8px; cursor: pointer;">✕
+          Close</button>
       </div>
       <img id="lightboxImg" src="" alt="Full Resolution Satellite Tile">
-      <div id="lightboxMeta" style="color: #94a3b8; font-size: 11px; font-family: monospace; margin-top: 8px; text-align: center;"></div>
+      <div id="lightboxMeta"
+        style="color: #94a3b8; font-size: 11px; font-family: monospace; margin-top: 8px; text-align: center;"></div>
     </div>
   </div>
 
@@ -1788,7 +2074,7 @@
           bannerEl.style.display = 'block';
           const passedCount = qAudits.filter(q => q.decision === 'STAY').length || (totalEpochsSeen - (runDetails.run?.quality_dropped_count || 0));
           const droppedCount = qAudits.filter(q => q.decision === 'DROPPED').length || (runDetails.run?.quality_dropped_count || 0);
-          const bracketStr = tempSplit.onset_bracket || (activeChangeQueue[0]?.date_before ? `${String(activeChangeQueue[0].date_before).slice(0,10)} → ${String(activeChangeQueue[0].date_after).slice(0,10)}` : '2021-02-26 → 2022-02-26');
+          const bracketStr = tempSplit.onset_bracket || (activeChangeQueue[0]?.date_before ? `${String(activeChangeQueue[0].date_before).slice(0, 10)} → ${String(activeChangeQueue[0].date_after).slice(0, 10)}` : '2021-02-26 → 2022-02-26');
 
           bannerEl.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-family: monospace; font-size: 11px;">
@@ -1889,7 +2175,7 @@
       const overlayUrl = staging.overlay_image_url || activeChangeQueue[0]?.overlay_image_url || '';
       const compositeUrl = staging.composite_image_url || activeChangeQueue[0]?.composite_image_url || '';
 
-      const onsetBracket = sev.onset_bracket || tempSplit.onset_bracket || (activeChangeQueue[0]?.date_before ? `${String(activeChangeQueue[0].date_before).slice(0,10)} → ${String(activeChangeQueue[0].date_after).slice(0,10)}` : '2021-02-26 → 2022-02-26');
+      const onsetBracket = sev.onset_bracket || tempSplit.onset_bracket || (activeChangeQueue[0]?.date_before ? `${String(activeChangeQueue[0].date_before).slice(0, 10)} → ${String(activeChangeQueue[0].date_after).slice(0, 10)}` : '2021-02-26 → 2022-02-26');
       const [dateBeforeStr, dateAfterStr] = onsetBracket.includes('→') ? onsetBracket.split('→').map(s => s.trim()) : ['2021-02-26', '2022-02-26'];
 
       // Aggregate spectral metrics
@@ -1918,23 +2204,23 @@
             </div>
             <div class="timeline-epoch-strip">
               ${timelineEpochs.map((ep, idx) => {
-                const role = (ep.role || (idx === 0 ? 'baseline' : (idx === 1 ? 'onset' : 'evolution'))).toLowerCase();
-                const isOnset = role === 'baseline' || role === 'onset' || ep.date_short === dateBeforeStr || ep.date_short === dateAfterStr;
-                const qStatus = ep.quality_check?.status || (ep.cloud_pct > 0.3 ? 'DROPPED' : 'STAY');
-                const isPassed = qStatus === 'STAY';
-                const cloudPct = (Number(ep.cloud_pct || 0) * 100).toFixed(1);
-                const usablePct = ep.quality_check?.usable_pct !== undefined ? Number(ep.quality_check.usable_pct).toFixed(1) : (100 - Number(cloudPct)).toFixed(1);
-                const thumbUrl = ep.files?.thumb_url || ep.files?.thumb || '';
+          const role = (ep.role || (idx === 0 ? 'baseline' : (idx === 1 ? 'onset' : 'evolution'))).toLowerCase();
+          const isOnset = role === 'baseline' || role === 'onset' || ep.date_short === dateBeforeStr || ep.date_short === dateAfterStr;
+          const qStatus = ep.quality_check?.status || (ep.cloud_pct > 0.3 ? 'DROPPED' : 'STAY');
+          const isPassed = qStatus === 'STAY';
+          const cloudPct = (Number(ep.cloud_pct || 0) * 100).toFixed(1);
+          const usablePct = ep.quality_check?.usable_pct !== undefined ? Number(ep.quality_check.usable_pct).toFixed(1) : (100 - Number(cloudPct)).toFixed(1);
+          const thumbUrl = ep.files?.thumb_url || ep.files?.thumb || '';
 
-                return `
-                  <div class="timeline-epoch-card ${isOnset ? 'active-bracket' : ''}" onclick="openImageLightbox('${thumbUrl}', 'Epoch ${ep.epoch || (idx+1)}: ${ep.date_short || ''} (${(ep.sensor || 'Sentinel-2').toUpperCase()})', 'Usable: ${usablePct}% • Cloud: ${cloudPct}% • Status: ${qStatus}')">
+          return `
+                  <div class="timeline-epoch-card ${isOnset ? 'active-bracket' : ''}" onclick="openImageLightbox('${thumbUrl}', 'Epoch ${ep.epoch || (idx + 1)}: ${ep.date_short || ''} (${(ep.sensor || 'Sentinel-2').toUpperCase()})', 'Usable: ${usablePct}% • Cloud: ${cloudPct}% • Status: ${qStatus}')">
                     <div class="epoch-thumb-box">
                       <img src="${thumbUrl}" alt="Epoch ${ep.epoch}" onerror="handleTileThumbError(this, 'Epoch ${ep.epoch}')">
                       ${isOnset ? `<span style="position: absolute; top: 4px; left: 4px; background: rgba(245,158,11,0.9); color: #000; font-size: 9px; font-weight: 800; padding: 1px 4px; border-radius: 3px; font-family: monospace;">${role === 'baseline' ? 'T1 BASE' : 'T2 ONSET'}</span>` : ''}
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 2px;">
                       <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 700; color: #f8fafc;">
-                        <span>${ep.epoch || 'T' + (idx+1)}</span>
+                        <span>${ep.epoch || 'T' + (idx + 1)}</span>
                         <span style="font-size: 9px; color: #38bdf8; font-family: monospace;">${ep.date_short ? ep.date_short.slice(0, 4) : ''}</span>
                       </div>
                       <div style="font-size: 10px; color: #94a3b8; font-family: monospace;">${ep.date_short || 'N/A'}</div>
@@ -1947,7 +2233,7 @@
                     </div>
                   </div>
                 `;
-              }).join('')}
+        }).join('')}
             </div>
           </div>
         `;
@@ -2310,4 +2596,5 @@
   <script src="/frontend/audio.js?v=20260928_v6"></script>
   <script src="/frontend/cursor.js?v=20260928_v6"></script>
 </body>
+
 </html>

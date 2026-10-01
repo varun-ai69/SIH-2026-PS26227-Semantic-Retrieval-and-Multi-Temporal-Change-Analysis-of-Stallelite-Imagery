@@ -1,0 +1,6 @@
+# Netlify Redirects for Canopus Static Frontend
+/frontend/*    /:splat             200
+/retrieval     /retrieval.html     200
+/change        /change.html        200
+/clustering    /clustering.html    200
+/review        /review.html        200
